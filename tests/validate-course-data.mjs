@@ -9,6 +9,8 @@ const dataMatch = html.match(/const courseData = (\[[\s\S]*?\])\s*;\s*const stat
 assert.ok(scriptMatch, "无法从 index.html 找到交互脚本");
 assert.doesNotThrow(() => new Function(scriptMatch[1]), "交互脚本必须能通过 JavaScript 语法解析");
 assert.ok(dataMatch, "无法从 index.html 找到 courseData");
+assert.match(html, /id="interactionNotice"[^>]*role="status"/, "必须提供可访问的交互反馈区域");
+assert.match(scriptMatch[1], /function announce\(message\)/, "交互脚本必须提供状态反馈方法");
 
 const courseData = vm.runInNewContext(`(${dataMatch[1]})`);
 assert.equal(courseData.length, 40, "课程总数必须为 40 节");
