@@ -17,7 +17,7 @@ const identifiers = new Set();
 const perPhase = new Map();
 
 for (const lesson of courseData) {
-  assert.match(lesson.id, /^Y[1-5]-0[1-8]$/, `${lesson.id}: 课件 ID 格式错误`);
+  assert.match(lesson.id, /^S[1-5]-0[1-8]$/, `${lesson.id}: 课件 ID 格式错误`);
   assert.ok(!identifiers.has(lesson.id), `${lesson.id}: 课件 ID 重复`);
   identifiers.add(lesson.id);
 
@@ -36,7 +36,7 @@ for (const lesson of courseData) {
 }
 
 for (let phase = 0; phase < 5; phase += 1) {
-  assert.equal(perPhase.get(phase), 8, `第 ${phase + 1} 年必须恰好包含 8 节课`);
+  assert.equal(perPhase.get(phase), 8, `第 ${phase + 1} 阶段必须恰好包含 8 节课`);
 }
 
 console.log("课程数据结构通过：5 个阶段，40 节课，每节均含目标、内容与检验清单。");

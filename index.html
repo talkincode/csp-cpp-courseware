@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="面向 CSP-J 初学者的 C++ 五年交互式视频课件路线。"
+      content="面向 CSP-J 初学者的 C++ 五阶段交互式视频课件路线。"
     />
     <title>CSP C++ 训练工作台</title>
     <style>
@@ -38,8 +38,8 @@
         margin: 0;
         color: var(--ink);
         background:
-          linear-gradient(90deg, rgba(255, 249, 236, 0.035) 1px, transparent 1px) 0 0 / 32px 32px,
-          linear-gradient(rgba(255, 249, 236, 0.025) 1px, transparent 1px) 0 0 / 32px 32px,
+          radial-gradient(ellipse at 12% 0%, rgba(60, 117, 107, 0.42), transparent 42%),
+          radial-gradient(ellipse at 90% 100%, rgba(233, 96, 45, 0.14), transparent 38%),
           var(--ink-deep);
         font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       }
@@ -357,7 +357,7 @@
         padding: 10px 13px;
         color: #793313;
         background: #fff0d5;
-        border-left: 4px solid var(--orange);
+        border-top: 3px solid var(--orange);
         border-radius: 4px;
         font-size: 0.82rem;
         line-height: 1.55;
@@ -443,7 +443,8 @@
 
       .lesson-card[aria-current="true"] {
         background: #f9dcaf;
-        box-shadow: inset 5px 0 0 var(--orange);
+        outline: 2px solid var(--orange);
+        outline-offset: -2px;
       }
 
       .lesson-no {
@@ -569,7 +570,7 @@
         padding: 10px 12px;
         color: var(--teal);
         background: #e4efe5;
-        border-left: 3px solid var(--teal);
+        box-shadow: inset 0 3px 0 var(--teal);
         font-size: 0.82rem;
         line-height: 1.55;
       }
@@ -854,7 +855,7 @@
     <main class="app-shell">
       <aside class="rail" aria-label="学习阶段">
         <div class="rail-intro">
-          <p class="eyebrow">五年路线</p>
+          <p class="eyebrow">五阶段路线</p>
           <h2>从第一行<br />走向赛场</h2>
           <p>不靠跳关。每一阶段先通过检验，再进入下一段训练。</p>
         </div>
@@ -948,31 +949,31 @@
     <script>
       const phases = [
         {
-          label: "第 1 年",
+          label: "第一阶段",
           title: "建立程序感",
           short: "从电脑到程序",
           description: "从第一行 C++ 开始，建立输入、计算、判断、循环与调试的直觉。目标不是背语法，而是能独立运行和解释自己的程序。",
         },
         {
-          label: "第 2 年",
+          label: "第二阶段",
           title: "写得正确",
           short: "组织数据与代码",
           description: "开始用数组、字符串、函数和结构体组织较长程序。每个知识点都配合边界数据与复杂度意识，避免“能跑一次就算会”。",
         },
         {
-          label: "第 3 年",
+          label: "第三阶段",
           title: "算法思维入门",
           short: "从过程到方法",
           description: "把常见题意转成可以说明理由的算法选择：搜索、前缀和、双指针、贪心、栈队列和一维 DP。",
         },
         {
-          label: "第 4 年",
+          label: "第四阶段",
           title: "CSP-J 专项",
           short: "题面、算法、实现",
           description: "按 CSP-J 的真实工作流训练：读清题、建立模型、控制复杂度、实现并验证。比做更多题更重要的是少犯同一种错。",
         },
         {
-          label: "第 5 年",
+          label: "第五阶段",
           title: "赛场整合",
           short: "限时、调试、复盘",
           description: "用模拟赛和复盘把知识变成稳定表现，形成能够带进 CSP-J 考场的个人流程与赛前检查清单。",
@@ -981,7 +982,7 @@
 
       const courseData = [
         {
-          id: "Y1-01",
+          id: "S1-01",
           phase: 0,
           title: "第一行程序与编译",
           duration: "45 分钟",
@@ -992,7 +993,7 @@
           exercise: "输出自己的昵称、今天的日期和一句“我开始学 C++ 了”。",
         },
         {
-          id: "Y1-02",
+          id: "S1-02",
           phase: 0,
           title: "变量与数据类型",
           duration: "50 分钟",
@@ -1003,7 +1004,7 @@
           exercise: "读入两次比赛分数，输出总分与平均分。",
         },
         {
-          id: "Y1-03",
+          id: "S1-03",
           phase: 0,
           title: "表达式与运算顺序",
           duration: "50 分钟",
@@ -1014,7 +1015,7 @@
           exercise: "输入分钟数，输出对应的小时数和剩余分钟数。",
         },
         {
-          id: "Y1-04",
+          id: "S1-04",
           phase: 0,
           title: "输入输出与格式",
           duration: "45 分钟",
@@ -1025,7 +1026,7 @@
           exercise: "输入姓名、年龄和身高，按给定格式输出一行介绍。",
         },
         {
-          id: "Y1-05",
+          id: "S1-05",
           phase: 0,
           title: "条件判断",
           duration: "55 分钟",
@@ -1036,7 +1037,7 @@
           exercise: "输入分数，输出优秀、合格或需要复习。",
         },
         {
-          id: "Y1-06",
+          id: "S1-06",
           phase: 0,
           title: "重复执行与循环",
           duration: "55 分钟",
@@ -1047,7 +1048,7 @@
           exercise: "输入 n，输出 1 到 n 中所有偶数的和。",
         },
         {
-          id: "Y1-07",
+          id: "S1-07",
           phase: 0,
           title: "嵌套循环与规律输出",
           duration: "55 分钟",
@@ -1058,7 +1059,7 @@
           exercise: "输入 n，输出 n 行递增星号图案。",
         },
         {
-          id: "Y1-08",
+          id: "S1-08",
           phase: 0,
           title: "调试与书写习惯",
           duration: "50 分钟",
@@ -1069,7 +1070,7 @@
           exercise: "为前面任意一题写出三组测试数据：正常、最小和边界。",
         },
         {
-          id: "Y2-01",
+          id: "S2-01",
           phase: 1,
           title: "数组与下标",
           duration: "55 分钟",
@@ -1080,7 +1081,7 @@
           exercise: "读入 n 个整数，输出最大值、最小值和总和。",
         },
         {
-          id: "Y2-02",
+          id: "S2-02",
           phase: 1,
           title: "字符、字符串与编码",
           duration: "55 分钟",
@@ -1091,7 +1092,7 @@
           exercise: "输入一个不含空格的单词，统计其中数字字符的数量。",
         },
         {
-          id: "Y2-03",
+          id: "S2-03",
           phase: 1,
           title: "函数与分解",
           duration: "60 分钟",
@@ -1102,7 +1103,7 @@
           exercise: "编写函数判断一个整数是否为偶数，并在主函数中多次调用。",
         },
         {
-          id: "Y2-04",
+          id: "S2-04",
           phase: 1,
           title: "作用域与参数",
           duration: "50 分钟",
@@ -1113,7 +1114,7 @@
           exercise: "写一个函数计算两个数的和，并解释函数外原变量是否变化。",
         },
         {
-          id: "Y2-05",
+          id: "S2-05",
           phase: 1,
           title: "结构体与题目建模",
           duration: "60 分钟",
@@ -1124,7 +1125,7 @@
           exercise: "读入 n 名学生的姓名和分数，输出最高分学生的信息。",
         },
         {
-          id: "Y2-06",
+          id: "S2-06",
           phase: 1,
           title: "排序与比较规则",
           duration: "60 分钟",
@@ -1135,7 +1136,7 @@
           exercise: "读入 n 个分数，按从高到低输出。",
         },
         {
-          id: "Y2-07",
+          id: "S2-07",
           phase: 1,
           title: "枚举与模拟",
           duration: "60 分钟",
@@ -1146,7 +1147,7 @@
           exercise: "模拟一只青蛙每次跳固定距离，计算首次到达或超过终点的次数。",
         },
         {
-          id: "Y2-08",
+          id: "S2-08",
           phase: 1,
           title: "复杂度与测试点",
           duration: "55 分钟",
@@ -1157,7 +1158,7 @@
           exercise: "比较两种找最大值写法，说明哪一种更适合 n 很大时使用。",
         },
         {
-          id: "Y3-01",
+          id: "S3-01",
           phase: 2,
           title: "数学与数位处理",
           duration: "55 分钟",
@@ -1168,7 +1169,7 @@
           exercise: "输入一个正整数，输出各位数字之和。",
         },
         {
-          id: "Y3-02",
+          id: "S3-02",
           phase: 2,
           title: "递归与分治直觉",
           duration: "60 分钟",
@@ -1179,7 +1180,7 @@
           exercise: "用递归计算 1 到 n 的和，并写出 n=1 时的边界。",
         },
         {
-          id: "Y3-03",
+          id: "S3-03",
           phase: 2,
           title: "二分查找",
           duration: "60 分钟",
@@ -1190,7 +1191,7 @@
           exercise: "在有序数组中查找目标数，输出它是否出现。",
         },
         {
-          id: "Y3-04",
+          id: "S3-04",
           phase: 2,
           title: "前缀和与区间查询",
           duration: "60 分钟",
@@ -1201,7 +1202,7 @@
           exercise: "读入 n 个数和 q 次查询，回答每次区间和。",
         },
         {
-          id: "Y3-05",
+          id: "S3-05",
           phase: 2,
           title: "双指针与滑动窗口",
           duration: "60 分钟",
@@ -1212,7 +1213,7 @@
           exercise: "给定正整数数组，找和不超过 k 的最长连续段长度。",
         },
         {
-          id: "Y3-06",
+          id: "S3-06",
           phase: 2,
           title: "贪心选择",
           duration: "60 分钟",
@@ -1223,7 +1224,7 @@
           exercise: "安排尽可能多的不重叠活动，先按结束时间排序再选择。",
         },
         {
-          id: "Y3-07",
+          id: "S3-07",
           phase: 2,
           title: "栈、队列与过程顺序",
           duration: "55 分钟",
@@ -1234,7 +1235,7 @@
           exercise: "判断一串括号是否匹配，只包含 `(` 和 `)`。",
         },
         {
-          id: "Y3-08",
+          id: "S3-08",
           phase: 2,
           title: "动态规划初步",
           duration: "60 分钟",
@@ -1245,7 +1246,7 @@
           exercise: "每次可走 1 或 2 级台阶，求走到第 n 级的方法数。",
         },
         {
-          id: "Y4-01",
+          id: "S4-01",
           phase: 3,
           title: "CSP-J 题面与程序规范",
           duration: "45 分钟",
@@ -1256,7 +1257,7 @@
           exercise: "为一段有提示语和调试输出的程序清理成可提交版本。",
         },
         {
-          id: "Y4-02",
+          id: "S4-02",
           phase: 3,
           title: "读题与建模卡",
           duration: "55 分钟",
@@ -1267,7 +1268,7 @@
           exercise: "选择一道简单模拟题，写出它的输入、状态、目标和两个边界。",
         },
         {
-          id: "Y4-03",
+          id: "S4-03",
           phase: 3,
           title: "模拟题专项",
           duration: "60 分钟",
@@ -1278,7 +1279,7 @@
           exercise: "模拟积分榜：读入若干场胜平负结果，输出最终积分。",
         },
         {
-          id: "Y4-04",
+          id: "S4-04",
           phase: 3,
           title: "搜索与剪枝",
           duration: "65 分钟",
@@ -1289,7 +1290,7 @@
           exercise: "从 n 个数中选择若干个，使和恰好为 target，先完成小规模搜索。",
         },
         {
-          id: "Y4-05",
+          id: "S4-05",
           phase: 3,
           title: "排序、查找与映射",
           duration: "60 分钟",
@@ -1300,7 +1301,7 @@
           exercise: "统计若干成绩中每个分数出现次数，并输出最高频分数。",
         },
         {
-          id: "Y4-06",
+          id: "S4-06",
           phase: 3,
           title: "DP 经典模型",
           duration: "65 分钟",
@@ -1311,7 +1312,7 @@
           exercise: "给定若干天的训练收益，不能连续两天训练，求最大收益。",
         },
         {
-          id: "Y4-07",
+          id: "S4-07",
           phase: 3,
           title: "图与遍历基础",
           duration: "60 分钟",
@@ -1322,7 +1323,7 @@
           exercise: "输入一个无向图，统计其中的连通块数量。",
         },
         {
-          id: "Y4-08",
+          id: "S4-08",
           phase: 3,
           title: "子任务与得分策略",
           duration: "50 分钟",
@@ -1333,7 +1334,7 @@
           exercise: "为一道 n 很大的题写出只适用于 n<=20 的正确暴力方案，并标注限制。",
         },
         {
-          id: "Y5-01",
+          id: "S5-01",
           phase: 4,
           title: "限时解题流程",
           duration: "55 分钟",
@@ -1344,7 +1345,7 @@
           exercise: "为 40 分钟训练设计自己的时间分配，并在一次练习中执行。",
         },
         {
-          id: "Y5-02",
+          id: "S5-02",
           phase: 4,
           title: "系统化调试",
           duration: "60 分钟",
@@ -1355,7 +1356,7 @@
           exercise: "给一段错误程序设计最小数据，使它稳定输出错误结果。",
         },
         {
-          id: "Y5-03",
+          id: "S5-03",
           phase: 4,
           title: "C++ 常见陷阱复盘",
           duration: "60 分钟",
@@ -1366,7 +1367,7 @@
           exercise: "修复一段因 `int` 溢出和数组越界同时出错的程序。",
         },
         {
-          id: "Y5-04",
+          id: "S5-04",
           phase: 4,
           title: "80 分策略",
           duration: "55 分钟",
@@ -1377,7 +1378,7 @@
           exercise: "为一个区间查询题先实现 O(nq) 基线，再说明何时需要前缀和。",
         },
         {
-          id: "Y5-05",
+          id: "S5-05",
           phase: 4,
           title: "模拟赛一：实现与自测",
           duration: "60 分钟",
@@ -1388,7 +1389,7 @@
           exercise: "选择一组适合当前水平的三题训练，按个人流程完成一次模拟。",
         },
         {
-          id: "Y5-06",
+          id: "S5-06",
           phase: 4,
           title: "模拟赛复盘：错误分类",
           duration: "55 分钟",
@@ -1399,7 +1400,7 @@
           exercise: "用五类错误标签复盘上一节模拟赛，并写出下一次的一条新规则。",
         },
         {
-          id: "Y5-07",
+          id: "S5-07",
           phase: 4,
           title: "模拟赛二：稳定性",
           duration: "60 分钟",
@@ -1410,27 +1411,27 @@
           exercise: "完成第二次模拟，并对每一题记录“沿用了哪条新规则”。",
         },
         {
-          id: "Y5-08",
+          id: "S5-08",
           phase: 4,
           title: "CSP-J 总复习与后续边界",
           duration: "50 分钟",
           objectives: ["整理个人知识地图", "完成赛前检查清单", "明确 CSP-J 后的学习边界"],
           contents: ["知识地图", "赛前环境、模板和检查清单", "薄弱项计划", "CSP-S 衔接条件说明"],
           checklist: ["能完成个人赛前清单", "能标出自己的薄弱模块", "能区分 CSP-J 核心与后续拓展"],
-          video: "将五年路线收束成一张可打印清单：带进赛场的是习惯、方法和自测能力，而不是更多模板。",
+          video: "将五阶段路线收束成一张可打印清单：带进赛场的是习惯、方法和自测能力，而不是更多模板。",
           exercise: "制作一张 A4 赛前检查单，并为每个薄弱模块安排一次针对性复习。",
         },
       ];
 
       const state = {
         activePhase: 0,
-        activeLessonId: "Y1-01",
+        activeLessonId: "S1-01",
         filter: "all",
         progress: {},
         storageAvailable: true,
       };
 
-      const storageKey = "csp-cpp-courseware-progress-v1";
+      const storageKey = "csp-cpp-courseware-progress-v2";
       const phaseNav = document.querySelector("#phaseNav");
       const lessonList = document.querySelector("#lessonList");
       const lessonFilter = document.querySelector("#lessonFilter");
