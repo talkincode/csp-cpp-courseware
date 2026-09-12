@@ -1,0 +1,10 @@
+{
+  "name": "csp-cpp-courseware",
+  "version": "0.1.0",
+  "private": true,
+  "description": "面向 CSP-J 初学者的 C++ 交互式视频课件",
+  "scripts": {
+    "test": "node tests/validate-course-data.mjs",
+    "validate": "node tests/validate-course-data.mjs"
+  }
+}

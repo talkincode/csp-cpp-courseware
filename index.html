@@ -1,0 +1,1654 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="面向 CSP-J 初学者的 C++ 五年交互式视频课件路线。"
+    />
+    <title>CSP C++ 训练工作台</title>
+    <style>
+      :root {
+        --ink: #112a24;
+        --ink-deep: #071a16;
+        --paper: #ece4d3;
+        --paper-dim: #d9cfbd;
+        --paper-bright: #fff9ec;
+        --orange: #e9602d;
+        --orange-soft: #f3ad63;
+        --teal: #3c756b;
+        --mint: #bdd8c6;
+        --line: rgba(17, 42, 36, 0.2);
+        --muted: #60716a;
+        --success: #277b58;
+        --shadow: 0 18px 45px rgba(7, 26, 22, 0.2);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--ink-deep);
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        color: var(--ink);
+        background:
+          linear-gradient(90deg, rgba(255, 249, 236, 0.035) 1px, transparent 1px) 0 0 / 32px 32px,
+          linear-gradient(rgba(255, 249, 236, 0.025) 1px, transparent 1px) 0 0 / 32px 32px,
+          var(--ink-deep);
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      button,
+      select,
+      input {
+        font: inherit;
+      }
+
+      button,
+      select {
+        color: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 3px;
+      }
+
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        width: min(1440px, calc(100% - 36px));
+        margin: 0 auto;
+        padding: 22px 0 16px;
+        color: var(--paper);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        color: var(--ink-deep);
+        background: var(--orange);
+        border: 2px solid var(--paper);
+        border-radius: 50% 50% 48% 52%;
+        box-shadow: 4px 4px 0 var(--teal);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+      }
+
+      .eyebrow,
+      .section-kicker,
+      .micro-label {
+        margin: 0;
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.69rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .brand-name {
+        margin: 1px 0 0;
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.16rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+      }
+
+      .header-status {
+        display: grid;
+        grid-template-columns: auto auto;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .progress-stamp {
+        min-width: 106px;
+        padding: 8px 12px;
+        color: var(--paper);
+        border: 1px solid rgba(255, 249, 236, 0.32);
+        border-radius: 999px;
+        text-align: center;
+      }
+
+      .progress-stamp strong {
+        display: block;
+        color: var(--orange-soft);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.82rem;
+      }
+
+      .progress-stamp span {
+        font-size: 0.65rem;
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        width: min(1440px, calc(100% - 36px));
+        min-height: calc(100vh - 92px);
+        margin: 0 auto 36px;
+        overflow: hidden;
+        background: var(--paper);
+        border: 1px solid rgba(255, 249, 236, 0.35);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+      }
+
+      .rail {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        padding: 26px 16px;
+        color: var(--paper);
+        background:
+          linear-gradient(140deg, rgba(189, 216, 198, 0.12), transparent 40%),
+          var(--ink);
+      }
+
+      .rail-intro {
+        padding: 0 8px;
+      }
+
+      .rail-intro h2 {
+        margin: 7px 0 6px;
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.42rem;
+        line-height: 1.2;
+      }
+
+      .rail-intro p:last-child {
+        margin: 0;
+        color: var(--mint);
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .phase-nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .phase-button {
+        position: relative;
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 9px;
+        width: 100%;
+        padding: 10px 8px;
+        color: var(--mint);
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        text-align: left;
+        transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+      }
+
+      .phase-button:hover {
+        background: rgba(255, 249, 236, 0.07);
+        transform: translateX(2px);
+      }
+
+      .phase-button[aria-pressed="true"] {
+        color: var(--paper);
+        background: rgba(233, 96, 45, 0.14);
+        border-color: rgba(233, 96, 45, 0.66);
+      }
+
+      .phase-index {
+        display: grid;
+        width: 27px;
+        height: 27px;
+        place-items: center;
+        color: var(--ink);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .phase-button[aria-pressed="true"] .phase-index {
+        color: var(--paper);
+        background: var(--orange);
+      }
+
+      .phase-button strong,
+      .phase-button span {
+        display: block;
+      }
+
+      .phase-button strong {
+        font-size: 0.84rem;
+      }
+
+      .phase-button span {
+        margin-top: 3px;
+        color: inherit;
+        font-size: 0.67rem;
+        opacity: 0.76;
+      }
+
+      .rail-rule {
+        margin-top: auto;
+        padding: 13px 10px;
+        border-top: 1px solid rgba(189, 216, 198, 0.28);
+      }
+
+      .rail-rule p:last-child {
+        margin: 6px 0 0;
+        color: var(--mint);
+        font-size: 0.72rem;
+        line-height: 1.55;
+      }
+
+      .workspace {
+        min-width: 0;
+        padding: 30px;
+        background:
+          linear-gradient(rgba(17, 42, 36, 0.055) 1px, transparent 1px) 0 0 / 100% 31px,
+          var(--paper);
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 202px;
+        gap: 24px;
+        min-height: 190px;
+        padding: 28px 30px;
+        background:
+          radial-gradient(circle at 86% 20%, rgba(233, 96, 45, 0.24), transparent 23%),
+          linear-gradient(140deg, var(--paper-bright), var(--paper-dim));
+        border: 1px solid var(--line);
+        border-radius: 14px;
+      }
+
+      .hero::after {
+        position: absolute;
+        right: -28px;
+        bottom: -57px;
+        width: 202px;
+        height: 202px;
+        border: 26px solid rgba(60, 117, 107, 0.16);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .hero h1 {
+        max-width: 650px;
+        margin: 7px 0 10px;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(1.85rem, 3.7vw, 3.35rem);
+        line-height: 1.12;
+        letter-spacing: 0.02em;
+      }
+
+      .hero h1 em {
+        color: var(--orange);
+        font-style: normal;
+      }
+
+      .hero-copy {
+        max-width: 700px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.7;
+      }
+
+      .hero-card {
+        z-index: 1;
+        align-self: center;
+        padding: 15px;
+        color: var(--paper);
+        background: var(--ink);
+        border: 2px solid var(--orange);
+        border-radius: 8px;
+        box-shadow: 6px 6px 0 rgba(233, 96, 45, 0.36);
+        transform: rotate(2deg);
+      }
+
+      .hero-card strong {
+        display: block;
+        margin: 5px 0;
+        color: var(--orange-soft);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 2rem;
+        line-height: 1;
+      }
+
+      .hero-card p:last-child {
+        margin: 0;
+        color: var(--mint);
+        font-size: 0.72rem;
+        line-height: 1.4;
+      }
+
+      .storage-notice {
+        margin: 16px 0 0;
+        padding: 10px 13px;
+        color: #793313;
+        background: #fff0d5;
+        border-left: 4px solid var(--orange);
+        border-radius: 4px;
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.42fr);
+        gap: 22px;
+        margin-top: 24px;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+
+      .lesson-panel {
+        overflow: hidden;
+        background: rgba(255, 249, 236, 0.54);
+      }
+
+      .panel-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 17px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .panel-heading h2,
+      .detail-title {
+        margin: 4px 0 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.22rem;
+      }
+
+      .filter-control {
+        max-width: 138px;
+        padding: 7px 26px 7px 8px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        font-size: 0.72rem;
+      }
+
+      .lesson-list {
+        display: grid;
+        gap: 1px;
+        max-height: 644px;
+        overflow: auto;
+        background: var(--line);
+      }
+
+      .lesson-list-empty {
+        padding: 28px 19px;
+        color: var(--muted);
+        background: var(--paper-bright);
+        font-size: 0.85rem;
+        line-height: 1.6;
+      }
+
+      .lesson-card {
+        display: grid;
+        grid-template-columns: 34px 1fr auto;
+        gap: 11px;
+        width: 100%;
+        padding: 14px 15px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 0;
+        text-align: left;
+        transition: background 160ms ease, box-shadow 160ms ease;
+      }
+
+      .lesson-card:hover {
+        background: #fff3d9;
+      }
+
+      .lesson-card[aria-current="true"] {
+        background: #f9dcaf;
+        box-shadow: inset 5px 0 0 var(--orange);
+      }
+
+      .lesson-no {
+        color: var(--teal);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.69rem;
+        font-weight: 800;
+      }
+
+      .lesson-card h3 {
+        margin: 0;
+        font-size: 0.86rem;
+        line-height: 1.35;
+      }
+
+      .lesson-card p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 0.7rem;
+      }
+
+      .lesson-state {
+        align-self: center;
+        padding: 4px 6px;
+        color: var(--muted);
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        font-size: 0.62rem;
+        white-space: nowrap;
+      }
+
+      .lesson-state.midway {
+        color: #a75513;
+      }
+
+      .lesson-state.done {
+        color: var(--success);
+      }
+
+      .detail-panel {
+        overflow: hidden;
+        background: var(--paper-bright);
+      }
+
+      .detail-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        padding: 24px 25px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .detail-title {
+        margin-top: 7px;
+        font-size: clamp(1.45rem, 2.4vw, 2rem);
+      }
+
+      .detail-subtitle {
+        margin: 7px 0 0;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .lesson-timing {
+        align-self: start;
+        padding: 8px 10px;
+        color: var(--ink);
+        background: #f9dcaf;
+        border: 1px solid #d99552;
+        border-radius: 5px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.73rem;
+        white-space: nowrap;
+      }
+
+      .detail-body {
+        display: grid;
+        gap: 17px;
+        padding: 22px 25px 25px;
+      }
+
+      .detail-section {
+        padding: 0 0 17px;
+        border-bottom: 1px solid rgba(17, 42, 36, 0.13);
+      }
+
+      .detail-section:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      .detail-section h3 {
+        display: flex;
+        align-items: baseline;
+        gap: 9px;
+        margin: 0 0 10px;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .section-number {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.7rem;
+      }
+
+      .chip-list,
+      .content-list,
+      .checklist {
+        display: grid;
+        gap: 9px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .chip-list {
+        grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+      }
+
+      .chip-list li {
+        padding: 10px 12px;
+        color: var(--teal);
+        background: #e4efe5;
+        border-left: 3px solid var(--teal);
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+
+      .content-list li {
+        position: relative;
+        padding-left: 18px;
+        color: #3e5049;
+        font-size: 0.86rem;
+        line-height: 1.65;
+      }
+
+      .content-list li::before {
+        position: absolute;
+        left: 0;
+        color: var(--orange);
+        content: "◆";
+        font-size: 0.58rem;
+        top: 0.39rem;
+      }
+
+      .check-item {
+        display: grid;
+        grid-template-columns: 20px 1fr;
+        gap: 10px;
+        align-items: start;
+        padding: 10px 11px;
+        background: #f6f0e4;
+        border: 1px solid rgba(17, 42, 36, 0.13);
+        border-radius: 5px;
+      }
+
+      .check-item:has(input:checked) {
+        background: #e6f0e8;
+        border-color: rgba(39, 123, 88, 0.46);
+      }
+
+      .check-item input {
+        width: 17px;
+        height: 17px;
+        margin: 1px 0 0;
+        accent-color: var(--success);
+      }
+
+      .check-item span {
+        color: #3f514a;
+        font-size: 0.83rem;
+        line-height: 1.5;
+      }
+
+      .check-item input:checked + span {
+        color: var(--success);
+        text-decoration: line-through;
+        text-decoration-thickness: 1px;
+      }
+
+      .detail-footer {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 17px;
+        align-items: center;
+        margin-top: 1px;
+        padding: 15px 17px;
+        background: var(--ink);
+        border-radius: 7px;
+      }
+
+      .detail-footer p {
+        margin: 0;
+        color: var(--mint);
+        font-size: 0.78rem;
+        line-height: 1.55;
+      }
+
+      .detail-footer strong {
+        color: var(--orange-soft);
+      }
+
+      .action-button {
+        padding: 9px 12px;
+        color: var(--ink-deep);
+        background: var(--orange-soft);
+        border: 1px solid var(--paper);
+        border-radius: 4px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        transition: background 160ms ease, transform 160ms ease;
+      }
+
+      .action-button:hover {
+        background: var(--orange);
+        transform: translateY(-1px);
+      }
+
+      .action-button.secondary {
+        color: var(--paper);
+        background: transparent;
+      }
+
+      .action-button.secondary:hover {
+        color: var(--ink-deep);
+        background: var(--paper);
+      }
+
+      .footer-notes {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        margin: 21px 2px 0;
+        color: var(--muted);
+        font-size: 0.7rem;
+        line-height: 1.55;
+      }
+
+      .footer-notes kbd {
+        padding: 2px 5px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        box-shadow: 0 1px 0 var(--line);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.64rem;
+      }
+
+      @media (max-width: 980px) {
+        .app-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .rail {
+          display: grid;
+          grid-template-columns: minmax(170px, 0.45fr) 1fr;
+          gap: 15px 22px;
+          padding: 20px;
+        }
+
+        .phase-nav {
+          grid-template-columns: repeat(5, minmax(112px, 1fr));
+          overflow-x: auto;
+          padding-bottom: 5px;
+        }
+
+        .phase-button {
+          min-width: 112px;
+        }
+
+        .rail-rule {
+          grid-column: 1 / -1;
+          margin-top: 0;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .site-header,
+        .app-shell {
+          width: min(100% - 20px, 680px);
+        }
+
+        .site-header {
+          align-items: flex-start;
+        }
+
+        .header-status {
+          grid-template-columns: 1fr;
+        }
+
+        .progress-stamp {
+          min-width: 88px;
+        }
+
+        .workspace {
+          padding: 14px;
+        }
+
+        .rail {
+          display: block;
+          padding: 18px 14px;
+        }
+
+        .phase-nav {
+          margin-top: 16px;
+        }
+
+        .rail-rule {
+          display: none;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 13px;
+          min-height: 0;
+          padding: 23px 21px;
+        }
+
+        .hero-card {
+          width: min(100%, 220px);
+          justify-self: end;
+        }
+
+        .content-grid {
+          grid-template-columns: 1fr;
+          gap: 15px;
+          margin-top: 15px;
+        }
+
+        .lesson-list {
+          max-height: 300px;
+        }
+
+        .detail-header,
+        .detail-footer {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .detail-footer .action-button {
+          justify-self: start;
+        }
+
+        .footer-notes {
+          display: block;
+        }
+
+        .footer-notes p + p {
+          margin-top: 8px;
+        }
+      }
+
+      @media (max-width: 440px) {
+        .site-header {
+          gap: 12px;
+          padding-top: 13px;
+        }
+
+        .brand-mark {
+          width: 35px;
+          height: 35px;
+          font-size: 1.12rem;
+        }
+
+        .brand-name {
+          font-size: 0.98rem;
+        }
+
+        .progress-stamp {
+          padding: 6px 8px;
+        }
+
+        .hero h1 {
+          font-size: 1.72rem;
+        }
+
+        .panel-heading {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">{ }</div>
+        <div>
+          <p class="eyebrow">CSP-J / C++ LAB</p>
+          <p class="brand-name">CSP C++ 训练工作台</p>
+        </div>
+      </div>
+      <div class="header-status" aria-label="当前学习进度">
+        <div class="progress-stamp">
+          <strong id="progressValue">0%</strong>
+          <span>检验项总进度</span>
+        </div>
+        <div class="progress-stamp">
+          <strong id="lessonValue">0 / 40</strong>
+          <span>已掌握课件</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <aside class="rail" aria-label="学习阶段">
+        <div class="rail-intro">
+          <p class="eyebrow">五年路线</p>
+          <h2>从第一行<br />走向赛场</h2>
+          <p>不靠跳关。每一阶段先通过检验，再进入下一段训练。</p>
+        </div>
+        <nav id="phaseNav" class="phase-nav" aria-label="课程阶段"></nav>
+        <div class="rail-rule">
+          <p class="micro-label">训练规则</p>
+          <p>能解释、能运行、能测边界，才算“学过”。</p>
+        </div>
+      </aside>
+
+      <section class="workspace" aria-label="课程工作区">
+        <section class="hero" aria-labelledby="heroTitle">
+          <div>
+            <p id="phaseLabel" class="section-kicker"></p>
+            <h1 id="heroTitle"></h1>
+            <p id="phaseDescription" class="hero-copy"></p>
+          </div>
+          <div class="hero-card" aria-label="当前阶段课件数量">
+            <p class="micro-label">CHECKPOINT</p>
+            <strong id="phaseCount">08</strong>
+            <p>节核心视频课<br />每节 45--60 分钟</p>
+          </div>
+        </section>
+
+        <p id="storageNotice" class="storage-notice" hidden></p>
+
+        <section class="content-grid">
+          <section class="panel lesson-panel" aria-labelledby="lessonListTitle">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">课程索引</p>
+                <h2 id="lessonListTitle">本阶段课件</h2>
+              </div>
+              <label>
+                <span class="micro-label">筛选</span>
+                <select id="lessonFilter" class="filter-control" aria-label="筛选课程">
+                  <option value="all">全部课件</option>
+                  <option value="incomplete">只看未完成</option>
+                  <option value="complete">只看已掌握</option>
+                </select>
+              </label>
+            </div>
+            <div id="lessonList" class="lesson-list" aria-live="polite"></div>
+          </section>
+
+          <article class="panel detail-panel" aria-labelledby="detailTitle">
+            <header class="detail-header">
+              <div>
+                <p id="detailCode" class="section-kicker"></p>
+                <h2 id="detailTitle" class="detail-title"></h2>
+                <p id="detailSubtitle" class="detail-subtitle"></p>
+              </div>
+              <div id="lessonTiming" class="lesson-timing"></div>
+            </header>
+            <div class="detail-body">
+              <section class="detail-section" aria-labelledby="objectiveTitle">
+                <h3 id="objectiveTitle"><span class="section-number">01</span>学习目标</h3>
+                <ul id="objectiveList" class="chip-list"></ul>
+              </section>
+
+              <section class="detail-section" aria-labelledby="contentTitle">
+                <h3 id="contentTitle"><span class="section-number">02</span>具体内容</h3>
+                <ul id="contentList" class="content-list"></ul>
+              </section>
+
+              <section class="detail-section" aria-labelledby="checklistTitle">
+                <h3 id="checklistTitle"><span class="section-number">03</span>检验清单</h3>
+                <div id="checklist" class="checklist"></div>
+              </section>
+
+              <section class="detail-section" aria-labelledby="videoTitle">
+                <h3 id="videoTitle"><span class="section-number">04</span>视频组织建议</h3>
+                <ul id="videoList" class="content-list"></ul>
+              </section>
+
+              <div class="detail-footer">
+                <p><strong>练习出口：</strong><span id="exerciseText"></span></p>
+                <button id="completeLessonButton" class="action-button" type="button"></button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <footer class="footer-notes">
+          <p>学习记录只保存在当前浏览器，不上传、不排名、不收集个人信息。</p>
+          <p>快捷切课：<kbd>↑</kbd> <kbd>↓</kbd>（焦点不在输入控件时）</p>
+        </footer>
+      </section>
+    </main>
+
+    <script>
+      const phases = [
+        {
+          label: "第 1 年",
+          title: "建立程序感",
+          short: "从电脑到程序",
+          description: "从第一行 C++ 开始，建立输入、计算、判断、循环与调试的直觉。目标不是背语法，而是能独立运行和解释自己的程序。",
+        },
+        {
+          label: "第 2 年",
+          title: "写得正确",
+          short: "组织数据与代码",
+          description: "开始用数组、字符串、函数和结构体组织较长程序。每个知识点都配合边界数据与复杂度意识，避免“能跑一次就算会”。",
+        },
+        {
+          label: "第 3 年",
+          title: "算法思维入门",
+          short: "从过程到方法",
+          description: "把常见题意转成可以说明理由的算法选择：搜索、前缀和、双指针、贪心、栈队列和一维 DP。",
+        },
+        {
+          label: "第 4 年",
+          title: "CSP-J 专项",
+          short: "题面、算法、实现",
+          description: "按 CSP-J 的真实工作流训练：读清题、建立模型、控制复杂度、实现并验证。比做更多题更重要的是少犯同一种错。",
+        },
+        {
+          label: "第 5 年",
+          title: "赛场整合",
+          short: "限时、调试、复盘",
+          description: "用模拟赛和复盘把知识变成稳定表现，形成能够带进 CSP-J 考场的个人流程与赛前检查清单。",
+        },
+      ];
+
+      const courseData = [
+        {
+          id: "Y1-01",
+          phase: 0,
+          title: "第一行程序与编译",
+          duration: "45 分钟",
+          objectives: ["说清源文件、编译与运行的关系", "独立写出并输出多行文字", "看懂最常见的编译报错位置"],
+          contents: ["`.cpp` 文件、`main` 函数和程序入口", "`cout`、换行与最小可运行程序", "编译错误与运行错误的第一种区别方法"],
+          checklist: ["能新建、编译并运行一个 C++ 文件", "能解释“编译成功”不等于“答案正确”", "能修改输出文字后重新运行"],
+          video: "先演示一个能运行的最小程序，再故意删掉分号，让学习者观察报错位置与修复过程。",
+          exercise: "输出自己的昵称、今天的日期和一句“我开始学 C++ 了”。",
+        },
+        {
+          id: "Y1-02",
+          phase: 0,
+          title: "变量与数据类型",
+          duration: "50 分钟",
+          objectives: ["用变量记录题目中的量", "区分整数、实数与字符", "避免随手选择不合适的类型"],
+          contents: ["`int`、`long long`、`double`、`char` 的使用场景", "声明、赋值、更新变量", "用题目数据范围初步判断是否会溢出"],
+          checklist: ["能为人数、总分和平均分选择合理类型", "能写出变量累加过程", "能说出 `char` 与字符串不是同一类数据"],
+          video: "从“记录一场比赛成绩”的小表格出发，逐项翻译成变量，并展示类型选错后的异常结果。",
+          exercise: "读入两次比赛分数，输出总分与平均分。",
+        },
+        {
+          id: "Y1-03",
+          phase: 0,
+          title: "表达式与运算顺序",
+          duration: "50 分钟",
+          objectives: ["把文字公式翻译成 C++ 表达式", "掌握整除与取模", "用括号消除优先级歧义"],
+          contents: ["四则运算与赋值", "整数除法、`%` 的含义", "优先级、括号与常见平均数错误"],
+          checklist: ["能写出周长、面积和平均数公式", "能用 `%` 判断奇偶", "会为复杂表达式补上必要括号"],
+          video: "先用口算验证表达式，再放进程序；对比 `1 / 2` 与 `1.0 / 2` 的不同输出。",
+          exercise: "输入分钟数，输出对应的小时数和剩余分钟数。",
+        },
+        {
+          id: "Y1-04",
+          phase: 0,
+          title: "输入输出与格式",
+          duration: "45 分钟",
+          objectives: ["正确读取多个输入数据", "按题目要求输出格式", "排查格式导致的失分"],
+          contents: ["`cin` 连续读入", "`cout` 的空格、换行与小数输出", "竞赛程序不输出提示语的习惯"],
+          checklist: ["能按顺序读入多个变量", "能输出严格匹配样例的格式", "能找出多余中文提示造成的问题"],
+          video: "把同一道题的“课堂友好输出”和“竞赛提交输出”并排比较，强调格式也是答案的一部分。",
+          exercise: "输入姓名、年龄和身高，按给定格式输出一行介绍。",
+        },
+        {
+          id: "Y1-05",
+          phase: 0,
+          title: "条件判断",
+          duration: "55 分钟",
+          objectives: ["根据条件选择不同分支", "正确组合比较与逻辑条件", "覆盖等于边界的情况"],
+          contents: ["`if`、`else if`、`else`", "比较运算与 `&&`、`||`、`!`", "`=` 与 `==`、区间边界的常见错误"],
+          checklist: ["能写出三路大小比较", "能给年龄或分数题补全边界值", "能解释一个条件分支为何会执行"],
+          video: "用“比赛是否晋级”展示多个分支，并让学习者先预测边界分数会落到哪一支。",
+          exercise: "输入分数，输出优秀、合格或需要复习。",
+        },
+        {
+          id: "Y1-06",
+          phase: 0,
+          title: "重复执行与循环",
+          duration: "55 分钟",
+          objectives: ["用循环解决重复计算", "理解循环变量的变化", "主动检查死循环风险"],
+          contents: ["`for` 与 `while` 的基本结构", "累加、计数与循环条件", "循环次数和结束条件的对应关系"],
+          checklist: ["能求 1 到 n 的和", "能统计满足条件的数的个数", "能指出一个死循环缺少了什么变化"],
+          video: "先用三次重复代码制造痛点，再将它折叠为循环；每轮在纸上记录变量变化。",
+          exercise: "输入 n，输出 1 到 n 中所有偶数的和。",
+        },
+        {
+          id: "Y1-07",
+          phase: 0,
+          title: "嵌套循环与规律输出",
+          duration: "55 分钟",
+          objectives: ["看懂二维重复过程", "区分内外层循环职责", "处理简单提前结束"],
+          contents: ["行与列的含义", "嵌套 `for` 循环", "简单图案、`break` 和 `continue` 的合适时机"],
+          checklist: ["能输出 n 行 n 列的图案", "能解释每一层循环代表什么", "能在找到目标后正确停止"],
+          video: "把图案先画在格纸上，给每一行和每一列编号，再逐步映射为两层循环。",
+          exercise: "输入 n，输出 n 行递增星号图案。",
+        },
+        {
+          id: "Y1-08",
+          phase: 0,
+          title: "调试与书写习惯",
+          duration: "50 分钟",
+          objectives: ["区分三类常见错误", "养成可检查的代码书写习惯", "用小数据定位问题"],
+          contents: ["缩进、命名和分段编写", "编译错误、运行错误、答案错误", "分段输出与最小测试数据"],
+          checklist: ["能修正一个语法错误", "能自造一个最小测试数据", "能复述三类错误的区别"],
+          video: "展示一段刻意写坏的程序，不直接给答案，而是按“报错位置 - 假设 - 验证”逐步修复。",
+          exercise: "为前面任意一题写出三组测试数据：正常、最小和边界。",
+        },
+        {
+          id: "Y2-01",
+          phase: 1,
+          title: "数组与下标",
+          duration: "55 分钟",
+          objectives: ["存储一组同类数据", "安全遍历数组", "避免下标越界"],
+          contents: ["一维数组、长度和初始化", "从 0 开始的下标", "遍历、求和、最大值与最小值"],
+          checklist: ["能读入并输出一个数组", "能求数组最大最小值", "能说明最后一个元素的下标"],
+          video: "用“八次训练成绩”从散乱变量过渡到数组，强调下标和真实第几项并不相同。",
+          exercise: "读入 n 个整数，输出最大值、最小值和总和。",
+        },
+        {
+          id: "Y2-02",
+          phase: 1,
+          title: "字符、字符串与编码",
+          duration: "55 分钟",
+          objectives: ["正确处理字符序列", "区分字符与字符串", "逐个访问字符串内容"],
+          contents: ["`char` 和 `string`", "长度、下标访问与遍历", "ASCII 的有限使用边界"],
+          checklist: ["能统计字符串长度", "能遍历并统计指定字符", "能写出字符常量与字符串常量的区别"],
+          video: "从“统计一个单词中元音数量”出发，让循环、条件与字符串同时复用。",
+          exercise: "输入一个不含空格的单词，统计其中数字字符的数量。",
+        },
+        {
+          id: "Y2-03",
+          phase: 1,
+          title: "函数与分解",
+          duration: "60 分钟",
+          objectives: ["把独立逻辑拆成函数", "正确使用参数和返回值", "降低重复代码"],
+          contents: ["函数声明、定义与调用", "参数、返回值和命名", "把“是否为闰年”等判断抽成函数"],
+          checklist: ["能写一个有返回值的函数", "能给函数传入不同数据", "能解释主函数和子函数的分工"],
+          video: "先复制两段相同代码，再用函数消除重复；展示函数名如何让主程序更像题意。",
+          exercise: "编写函数判断一个整数是否为偶数，并在主函数中多次调用。",
+        },
+        {
+          id: "Y2-04",
+          phase: 1,
+          title: "作用域与参数",
+          duration: "50 分钟",
+          objectives: ["理解变量在何处可见", "避免同名变量混乱", "认识何时需要修改原变量"],
+          contents: ["局部变量和全局变量", "值传递的直觉", "引用参数的认识与谨慎使用"],
+          checklist: ["能判断变量在哪个代码块可用", "能解释函数里修改副本的结果", "能避免无意义的全局变量"],
+          video: "用同名变量制造一个“看起来改了、其实没改”的例子，再逐层追踪变量的作用域。",
+          exercise: "写一个函数计算两个数的和，并解释函数外原变量是否变化。",
+        },
+        {
+          id: "Y2-05",
+          phase: 1,
+          title: "结构体与题目建模",
+          duration: "60 分钟",
+          objectives: ["把多项相关信息组合成记录", "读写结构体成员", "用记录数组表示多名对象"],
+          contents: ["`struct` 定义和成员访问", "学生、比赛记录等建模", "结构体数组的读入与遍历"],
+          checklist: ["能定义一条学生记录", "能读写成员变量", "能按某个字段找出最佳记录"],
+          video: "先画一张“选手信息卡”，再把每列映射为结构体成员，避免只背语法。",
+          exercise: "读入 n 名学生的姓名和分数，输出最高分学生的信息。",
+        },
+        {
+          id: "Y2-06",
+          phase: 1,
+          title: "排序与比较规则",
+          duration: "60 分钟",
+          objectives: ["让数据按题意排序", "理解比较规则", "验证重复元素的处理"],
+          contents: ["冒泡排序的交换思想", "`sort` 的基本使用", "升降序与结构体比较规则"],
+          checklist: ["能排序一组整数", "能实现降序比较", "能为相同分数设计第二排序规则"],
+          video: "先手工交换三张成绩卡，再展示程序如何重复相同规则；最后引入 `sort` 作为可靠工具。",
+          exercise: "读入 n 个分数，按从高到低输出。",
+        },
+        {
+          id: "Y2-07",
+          phase: 1,
+          title: "枚举与模拟",
+          duration: "60 分钟",
+          objectives: ["把有限可能逐一检查", "按题面顺序更新状态", "避免漏情况"],
+          contents: ["枚举范围的确定", "状态变量和步骤记录", "用样例逐步追踪模拟过程"],
+          checklist: ["能写出有限枚举循环", "能画出状态变化表", "能说出一个容易漏掉的分支"],
+          video: "把“计分板更新”拆成一轮一轮的状态，先纸面模拟，再把每一步翻译成代码。",
+          exercise: "模拟一只青蛙每次跳固定距离，计算首次到达或超过终点的次数。",
+        },
+        {
+          id: "Y2-08",
+          phase: 1,
+          title: "复杂度与测试点",
+          duration: "55 分钟",
+          objectives: ["用规模判断程序能否通过", "建立 O(n) 与 O(n²) 的直觉", "主动设计边界测试"],
+          contents: ["操作次数的粗略估算", "单层和双层循环的差异", "最小、最大、重复和特殊数据"],
+          checklist: ["能比较两段循环的大致规模", "能根据 n 选用可行写法", "能设计至少三类测试点"],
+          video: "让两个不同复杂度的程序处理逐渐增大的数据，先预测再观察，避免把复杂度当符号记忆。",
+          exercise: "比较两种找最大值写法，说明哪一种更适合 n 很大时使用。",
+        },
+        {
+          id: "Y3-01",
+          phase: 2,
+          title: "数学与数位处理",
+          duration: "55 分钟",
+          objectives: ["用整除和取模处理数字", "理解循环不变量", "掌握最大公约数的基础写法"],
+          contents: ["数位拆分与重组", "辗转相除法的直觉", "循环停止条件与中间状态"],
+          checklist: ["能拆分一个三位数", "能计算两个数的 GCD", "能解释每轮循环后保留的关系"],
+          video: "用一个具体数字逐步拆位，再把每一步变成 `x % 10` 和 `x / 10`。",
+          exercise: "输入一个正整数，输出各位数字之和。",
+        },
+        {
+          id: "Y3-02",
+          phase: 2,
+          title: "递归与分治直觉",
+          duration: "60 分钟",
+          objectives: ["用更小的同类问题描述过程", "写清递归边界", "追踪有限层调用"],
+          contents: ["递归调用和终止条件", "阶乘、倒序输出等简单模型", "调用栈的直观理解"],
+          checklist: ["能先写出终止条件", "能手工追踪三层调用", "能说明无限递归为何发生"],
+          video: "先把“从 n 数到 1”写成口头规则，再标出什么时候停，最后才写函数调用。",
+          exercise: "用递归计算 1 到 n 的和，并写出 n=1 时的边界。",
+        },
+        {
+          id: "Y3-03",
+          phase: 2,
+          title: "二分查找",
+          duration: "60 分钟",
+          objectives: ["识别有序与单调前提", "维护左右边界", "处理首尾答案"],
+          contents: ["有序区间与中点", "左右边界收缩", "死循环、越界与答案在端点"],
+          checklist: ["能判断一道题是否适合二分", "能解释每次丢弃哪半边", "能测试目标在首尾和不存在"],
+          video: "用猜数字游戏演示区间不断缩小，再把“知道在哪半边”翻译为边界更新。",
+          exercise: "在有序数组中查找目标数，输出它是否出现。",
+        },
+        {
+          id: "Y3-04",
+          phase: 2,
+          title: "前缀和与区间查询",
+          duration: "60 分钟",
+          objectives: ["预处理连续数据", "用公式快速查询区间和", "避免下标偏移错误"],
+          contents: ["前缀和定义", "`sum[r] - sum[l - 1]` 的来源", "从第一个元素开始的特殊情况"],
+          checklist: ["能构造前缀和数组", "能查询任意连续区间", "能处理 l=1 的边界"],
+          video: "把每次重新相加的低效过程画出来，再把已经算过的部分保存为一张累计表。",
+          exercise: "读入 n 个数和 q 次查询，回答每次区间和。",
+        },
+        {
+          id: "Y3-05",
+          phase: 2,
+          title: "双指针与滑动窗口",
+          duration: "60 分钟",
+          objectives: ["用两个位置维护一个连续区间", "判断指针移动时机", "保持窗口条件"],
+          contents: ["左右指针的角色", "窗口扩大与收缩", "空窗口、满窗口和边界检查"],
+          checklist: ["能画出两个指针的移动", "能说出何时移动左指针", "能处理没有满足条件的情况"],
+          video: "用一排卡片和可移动夹子表示窗口，先让学习者动手决定移动哪一侧。",
+          exercise: "给定正整数数组，找和不超过 k 的最长连续段长度。",
+        },
+        {
+          id: "Y3-06",
+          phase: 2,
+          title: "贪心选择",
+          duration: "60 分钟",
+          objectives: ["提出局部选择规则", "用反例检查规则", "理解贪心并非总是可用"],
+          contents: ["选择标准", "排序后做决策", "反例与小规模验证"],
+          checklist: ["能说出一个明确贪心规则", "能尝试构造反例", "能解释排序为何服务于选择"],
+          video: "从“优先选什么”开始，让两个不同规则在小数据上比赛，突出正确性不能只靠直觉。",
+          exercise: "安排尽可能多的不重叠活动，先按结束时间排序再选择。",
+        },
+        {
+          id: "Y3-07",
+          phase: 2,
+          title: "栈、队列与过程顺序",
+          duration: "55 分钟",
+          objectives: ["区分后进先出和先进先出", "选择合适容器", "完成基础括号匹配"],
+          contents: ["`stack` 与 `queue` 的操作", "括号匹配", "广度优先的顺序直觉"],
+          checklist: ["能说明两种容器的出入顺序", "能完成一段括号匹配", "能判断何时使用队列"],
+          video: "让纸卡实际进入和离开两种队列，再映射到 `push`、`top/front`、`pop`。",
+          exercise: "判断一串括号是否匹配，只包含 `(` 和 `)`。",
+        },
+        {
+          id: "Y3-08",
+          phase: 2,
+          title: "动态规划初步",
+          duration: "60 分钟",
+          objectives: ["定义状态含义", "写出小问题到大问题的转移", "重视初始化"],
+          contents: ["一维 DP 表", "状态、转移和初值", "手算前三步再编码"],
+          checklist: ["能用一句话解释 dp[i]", "能写出初始状态", "能用小 n 验证转移"],
+          video: "从爬楼梯的前三步手算表出发，先找规律再写循环，避免一上来套模板。",
+          exercise: "每次可走 1 或 2 级台阶，求走到第 n 级的方法数。",
+        },
+        {
+          id: "Y4-01",
+          phase: 3,
+          title: "CSP-J 题面与程序规范",
+          duration: "45 分钟",
+          objectives: ["按竞赛要求提交干净程序", "从题面圈出数据范围", "避免格式性失分"],
+          contents: ["输入输出与样例", "数据范围、时空限制的初读", "调试输出和无关文字的清理"],
+          checklist: ["能从题面标出 n 的范围", "能删掉调试输出", "能按样例独立运行程序"],
+          video: "拿一张仿真题面进行“荧光笔审题”，先圈范围和格式，再开始讨论算法。",
+          exercise: "为一段有提示语和调试输出的程序清理成可提交版本。",
+        },
+        {
+          id: "Y4-02",
+          phase: 3,
+          title: "读题与建模卡",
+          duration: "55 分钟",
+          objectives: ["把题意拆成结构化信息", "识别已知、未知和约束", "在编码前列出边界"],
+          contents: ["已知/未知/目标", "样例反推", "变量、状态、算法候选和边界卡片"],
+          checklist: ["能完成一张建模卡", "能用自己的话复述题目目标", "能写出至少两个边界条件"],
+          video: "全程先不写代码，只填写建模卡；最后才说明哪一项信息决定算法选择。",
+          exercise: "选择一道简单模拟题，写出它的输入、状态、目标和两个边界。",
+        },
+        {
+          id: "Y4-03",
+          phase: 3,
+          title: "模拟题专项",
+          duration: "60 分钟",
+          objectives: ["正确还原多步骤规则", "按顺序更新状态", "用自造样例验证过程"],
+          contents: ["状态表", "事件顺序", "条件分支和每轮更新", "样例追踪"],
+          checklist: ["能画出每一步状态表", "能解释先后顺序为何重要", "能自造一个与样例不同的数据"],
+          video: "边读题边填状态表，故意交换两个步骤展示错误，帮助学习者看见顺序的影响。",
+          exercise: "模拟积分榜：读入若干场胜平负结果，输出最终积分。",
+        },
+        {
+          id: "Y4-04",
+          phase: 3,
+          title: "搜索与剪枝",
+          duration: "65 分钟",
+          objectives: ["把选择过程画成搜索树", "实现回溯边界", "判断安全的剪枝条件"],
+          contents: ["DFS、选择与撤销", "搜索边界", "可行性剪枝与不漏解原则"],
+          checklist: ["能画出小规模搜索树", "能写出停止搜索的条件", "能解释一次回溯后恢复了什么"],
+          video: "先列举 3 个元素的所有选择，让搜索树可见；每个剪枝都要先问“会不会漏掉答案”。",
+          exercise: "从 n 个数中选择若干个，使和恰好为 target，先完成小规模搜索。",
+        },
+        {
+          id: "Y4-05",
+          phase: 3,
+          title: "排序、查找与映射",
+          duration: "60 分钟",
+          objectives: ["根据数据范围选择工具", "处理重复数据", "在排序后继续扫描或查找"],
+          contents: ["排序后扫描", "二分查找复用", "计数数组与简单映射的边界"],
+          checklist: ["能说明何时用排序", "能处理重复元素", "能按范围选择数组或映射方案"],
+          video: "让同一题分别用暴力、排序和计数思路处理，重点比较“范围”如何改变选择。",
+          exercise: "统计若干成绩中每个分数出现次数，并输出最高频分数。",
+        },
+        {
+          id: "Y4-06",
+          phase: 3,
+          title: "DP 经典模型",
+          duration: "65 分钟",
+          objectives: ["识别阶段性最优决策", "写出状态转移", "处理不可达或初始状态"],
+          contents: ["选或不选模型", "线性 DP", "状态表、转移和初始化检查"],
+          checklist: ["能列出状态表列名", "能写出转移来源", "能检查不可达状态不被误用"],
+          video: "先为一个小规模选择题填表，再从表格反推循环顺序；不直接投放完整模板。",
+          exercise: "给定若干天的训练收益，不能连续两天训练，求最大收益。",
+        },
+        {
+          id: "Y4-07",
+          phase: 3,
+          title: "图与遍历基础",
+          duration: "60 分钟",
+          objectives: ["用点和边表示关系", "完成基础 DFS/BFS", "防止重复访问"],
+          contents: ["邻接表的直觉", "访问标记", "连通块与最短层数的初步认识"],
+          checklist: ["能画出小图和邻接关系", "能写访问标记", "能说明 DFS 与 BFS 的顺序差异"],
+          video: "从校园地图到图模型，先在纸上走一遍，再让程序按相同规则访问相邻节点。",
+          exercise: "输入一个无向图，统计其中的连通块数量。",
+        },
+        {
+          id: "Y4-08",
+          phase: 3,
+          title: "子任务与得分策略",
+          duration: "50 分钟",
+          objectives: ["在限时中优先获得稳定分数", "识别可做子任务", "安排检查时间"],
+          contents: ["子任务与部分分", "暴力基线", "特殊情况和复杂度升级路线"],
+          checklist: ["能划分一道题的可做部分", "能写出保底方案", "能为检查预留时间"],
+          video: "用一题分层数据范围展示：先写哪怕只过小数据的正确程序，也比空白更有价值。",
+          exercise: "为一道 n 很大的题写出只适用于 n<=20 的正确暴力方案，并标注限制。",
+        },
+        {
+          id: "Y5-01",
+          phase: 4,
+          title: "限时解题流程",
+          duration: "55 分钟",
+          objectives: ["形成固定解题顺序", "在编码前留下建模痕迹", "为检查预留时间"],
+          contents: ["审题计时", "建模草稿", "编码、样例、自测与提交前检查"],
+          checklist: ["能写一张个人流程卡", "能在限时内完成审题记录", "不会跳过样例和边界检查"],
+          video: "把一个小时拆成可见的时间段，展示选题、编码和检查如何防止最后几分钟慌乱。",
+          exercise: "为 40 分钟训练设计自己的时间分配，并在一次练习中执行。",
+        },
+        {
+          id: "Y5-02",
+          phase: 4,
+          title: "系统化调试",
+          duration: "60 分钟",
+          objectives: ["按证据缩小错误范围", "构造最小复现", "记录修复原因"],
+          contents: ["最小复现", "分段输出", "断言思路与差分检查", "修改后回归测试"],
+          checklist: ["能把一个错误缩小到小数据", "能写出验证假设的输出", "能说明修复后重新测了什么"],
+          video: "不允许“乱改直到对”为例，完整演示一个 bug 从复现、假设到回归的过程。",
+          exercise: "给一段错误程序设计最小数据，使它稳定输出错误结果。",
+        },
+        {
+          id: "Y5-03",
+          phase: 4,
+          title: "C++ 常见陷阱复盘",
+          duration: "60 分钟",
+          objectives: ["识别语言层面的失分点", "根据范围选择 `long long`", "系统检查数组和表达式"],
+          contents: ["溢出、初始化、数组越界", "优先级与比较", "输入格式和未清理的调试代码"],
+          checklist: ["能识别五类常见陷阱", "能为大乘积选择合适类型", "能检查数组访问范围"],
+          video: "将五个微型错误程序做成“故障卡”，先让学习者预测输出或报错，再拆根因。",
+          exercise: "修复一段因 `int` 溢出和数组越界同时出错的程序。",
+        },
+        {
+          id: "Y5-04",
+          phase: 4,
+          title: "80 分策略",
+          duration: "55 分钟",
+          objectives: ["先实现可验证的基线", "利用特殊情况和子任务", "避免伪优化"],
+          contents: ["暴力正确性", "子任务覆盖", "特殊数据", "从基线到优化的验证"],
+          checklist: ["能先写小数据可过方案", "能标注适用范围", "能解释为何优化没有破坏正确性"],
+          video: "对比“直接冲最优但写错”和“先有正确基线再升级”，强调稳定得分的决策。",
+          exercise: "为一个区间查询题先实现 O(nq) 基线，再说明何时需要前缀和。",
+        },
+        {
+          id: "Y5-05",
+          phase: 4,
+          title: "模拟赛一：实现与自测",
+          duration: "60 分钟",
+          objectives: ["在题组中执行固定流程", "保存自测数据", "记录时间和阻塞点"],
+          contents: ["限时模拟", "提交顺序", "自测表", "时间记录"],
+          checklist: ["能完成一次完整模拟", "能保存至少三组测试数据", "能记录每题的卡点"],
+          video: "本课以任务单为主，讲师只在关键时间节点提醒流程，不在中途讲答案。",
+          exercise: "选择一组适合当前水平的三题训练，按个人流程完成一次模拟。",
+        },
+        {
+          id: "Y5-06",
+          phase: 4,
+          title: "模拟赛复盘：错误分类",
+          duration: "55 分钟",
+          objectives: ["从失分中抽取可改规则", "区分不同错误类型", "重做关键题验证修复"],
+          contents: ["读题错、算法错、实现错、边界错、时间错", "复盘记录模板", "重做与对比"],
+          checklist: ["能为每个失分分类", "能给每一类写一条改法", "能重做至少一道关键题"],
+          video: "展示一份真实但匿名化的复盘表，把“粗心”拆成可观察、可改进的具体行为。",
+          exercise: "用五类错误标签复盘上一节模拟赛，并写出下一次的一条新规则。",
+        },
+        {
+          id: "Y5-07",
+          phase: 4,
+          title: "模拟赛二：稳定性",
+          duration: "60 分钟",
+          objectives: ["用新题验证流程改进", "比较两次表现", "识别已经稳定的习惯"],
+          contents: ["新题组独立解题", "交叉检查", "与第一次模拟的对比", "稳定习惯记录"],
+          checklist: ["能独立完成第二次模拟", "能比较两次时间分配", "能说出一个已经稳定的习惯"],
+          video: "减少讲解干预，重点展示赛后如何对照上次复盘规则检查自己是否真的改变。",
+          exercise: "完成第二次模拟，并对每一题记录“沿用了哪条新规则”。",
+        },
+        {
+          id: "Y5-08",
+          phase: 4,
+          title: "CSP-J 总复习与后续边界",
+          duration: "50 分钟",
+          objectives: ["整理个人知识地图", "完成赛前检查清单", "明确 CSP-J 后的学习边界"],
+          contents: ["知识地图", "赛前环境、模板和检查清单", "薄弱项计划", "CSP-S 衔接条件说明"],
+          checklist: ["能完成个人赛前清单", "能标出自己的薄弱模块", "能区分 CSP-J 核心与后续拓展"],
+          video: "将五年路线收束成一张可打印清单：带进赛场的是习惯、方法和自测能力，而不是更多模板。",
+          exercise: "制作一张 A4 赛前检查单，并为每个薄弱模块安排一次针对性复习。",
+        },
+      ];
+
+      const state = {
+        activePhase: 0,
+        activeLessonId: "Y1-01",
+        filter: "all",
+        progress: {},
+        storageAvailable: true,
+      };
+
+      const storageKey = "csp-cpp-courseware-progress-v1";
+      const phaseNav = document.querySelector("#phaseNav");
+      const lessonList = document.querySelector("#lessonList");
+      const lessonFilter = document.querySelector("#lessonFilter");
+      const storageNotice = document.querySelector("#storageNotice");
+
+      function loadProgress() {
+        try {
+          const raw = window.localStorage.getItem(storageKey);
+          if (!raw) return {};
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+        } catch {
+          state.storageAvailable = false;
+        }
+        return {};
+      }
+
+      function saveProgress() {
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(state.progress));
+        } catch {
+          state.storageAvailable = false;
+        }
+      }
+
+      function completedIndexes(lesson) {
+        const saved = state.progress[lesson.id];
+        if (!Array.isArray(saved)) return [];
+        return saved.filter((index) => Number.isInteger(index) && index >= 0 && index < lesson.checklist.length);
+      }
+
+      function lessonStatus(lesson) {
+        const completed = completedIndexes(lesson).length;
+        if (completed === 0) return { label: "待启动", className: "" };
+        if (completed === lesson.checklist.length) return { label: "已掌握", className: "done" };
+        return { label: `${completed}/${lesson.checklist.length}`, className: "midway" };
+      }
+
+      function allProgress() {
+        const total = courseData.reduce((count, lesson) => count + lesson.checklist.length, 0);
+        const completed = courseData.reduce((count, lesson) => count + completedIndexes(lesson).length, 0);
+        const completedLessons = courseData.filter((lesson) => completedIndexes(lesson).length === lesson.checklist.length).length;
+        return { total, completed, completedLessons };
+      }
+
+      function activeLesson() {
+        return courseData.find((lesson) => lesson.id === state.activeLessonId) ?? courseData[0];
+      }
+
+      function visibleLessons() {
+        return courseData.filter((lesson) => {
+          if (lesson.phase !== state.activePhase) return false;
+          const completed = completedIndexes(lesson).length === lesson.checklist.length;
+          if (state.filter === "complete") return completed;
+          if (state.filter === "incomplete") return !completed;
+          return true;
+        });
+      }
+
+      function renderPhaseNav() {
+        phaseNav.innerHTML = phases
+          .map(
+            (phase, index) => `
+              <button class="phase-button" type="button" data-phase="${index}" aria-pressed="${index === state.activePhase}">
+                <span class="phase-index">${String(index + 1).padStart(2, "0")}</span>
+                <span><strong>${phase.label} · ${phase.title}</strong><span>${phase.short}</span></span>
+              </button>
+            `,
+          )
+          .join("");
+      }
+
+      function renderHero() {
+        const phase = phases[state.activePhase];
+        const count = courseData.filter((lesson) => lesson.phase === state.activePhase).length;
+        document.querySelector("#phaseLabel").textContent = `${phase.label} / ${phase.short}`;
+        document.querySelector("#heroTitle").innerHTML = `${phase.title}，<em>不跳关</em>。`;
+        document.querySelector("#phaseDescription").textContent = phase.description;
+        document.querySelector("#phaseCount").textContent = String(count).padStart(2, "0");
+      }
+
+      function renderProgress() {
+        const progress = allProgress();
+        document.querySelector("#progressValue").textContent = `${Math.round((progress.completed / progress.total) * 100)}%`;
+        document.querySelector("#lessonValue").textContent = `${progress.completedLessons} / ${courseData.length}`;
+        storageNotice.hidden = state.storageAvailable;
+        storageNotice.textContent = "浏览器未允许保存学习记录：进度仅保留在当前会话。你仍可阅读和勾选本课检验项。";
+      }
+
+      function renderLessonList() {
+        const lessons = visibleLessons();
+        if (lessons.length === 0) {
+          lessonList.innerHTML = '<p class="lesson-list-empty">这个筛选条件下没有课件。切回“全部课件”或继续完成当前阶段的检验项。</p>';
+          return;
+        }
+
+        lessonList.innerHTML = lessons
+          .map((lesson) => {
+            const status = lessonStatus(lesson);
+            return `
+              <button class="lesson-card" type="button" data-lesson-id="${lesson.id}" aria-current="${lesson.id === state.activeLessonId}">
+                <span class="lesson-no">${lesson.id}</span>
+                <span><h3>${lesson.title}</h3><p>${lesson.duration} · ${lesson.objectives[0]}</p></span>
+                <span class="lesson-state ${status.className}">${status.label}</span>
+              </button>
+            `;
+          })
+          .join("");
+      }
+
+      function renderDetail() {
+        const lesson = activeLesson();
+        const completed = completedIndexes(lesson);
+        const fullyComplete = completed.length === lesson.checklist.length;
+
+        document.querySelector("#detailCode").textContent = `${lesson.id} / 课件详情`;
+        document.querySelector("#detailTitle").textContent = lesson.title;
+        document.querySelector("#detailSubtitle").textContent = `当前检验：${completed.length}/${lesson.checklist.length} 项 · 先完成本课清单，再进入下一课。`;
+        document.querySelector("#lessonTiming").textContent = lesson.duration;
+        document.querySelector("#objectiveList").innerHTML = lesson.objectives.map((item) => `<li>${item}</li>`).join("");
+        document.querySelector("#contentList").innerHTML = lesson.contents.map((item) => `<li>${item}</li>`).join("");
+        document.querySelector("#videoList").innerHTML = `<li>${lesson.video}</li>`;
+        document.querySelector("#exerciseText").textContent = lesson.exercise;
+        document.querySelector("#checklist").innerHTML = lesson.checklist
+          .map(
+            (item, index) => `
+              <label class="check-item">
+                <input type="checkbox" data-check-index="${index}" ${completed.includes(index) ? "checked" : ""} />
+                <span>${item}</span>
+              </label>
+            `,
+          )
+          .join("");
+
+        const button = document.querySelector("#completeLessonButton");
+        button.textContent = fullyComplete ? "撤销本课完成" : "标记本课已完成";
+        button.classList.toggle("secondary", fullyComplete);
+      }
+
+      function render() {
+        renderPhaseNav();
+        renderHero();
+        renderProgress();
+        renderLessonList();
+        renderDetail();
+      }
+
+      function selectLesson(lessonId) {
+        const lesson = courseData.find((item) => item.id === lessonId);
+        if (!lesson) return;
+        state.activeLessonId = lesson.id;
+        state.activePhase = lesson.phase;
+        render();
+      }
+
+      function moveLesson(direction) {
+        const pool = courseData.filter((lesson) => lesson.phase === state.activePhase);
+        const currentIndex = pool.findIndex((lesson) => lesson.id === state.activeLessonId);
+        const nextIndex = Math.max(0, Math.min(pool.length - 1, currentIndex + direction));
+        if (nextIndex !== currentIndex) selectLesson(pool[nextIndex].id);
+      }
+
+      phaseNav.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-phase]");
+        if (!button) return;
+        const phase = Number(button.dataset.phase);
+        state.activePhase = phase;
+        const firstLesson = courseData.find((lesson) => lesson.phase === phase);
+        if (firstLesson) state.activeLessonId = firstLesson.id;
+        render();
+      });
+
+      lessonList.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-lesson-id]");
+        if (button) selectLesson(button.dataset.lessonId);
+      });
+
+      lessonFilter.addEventListener("change", (event) => {
+        state.filter = event.target.value;
+        renderLessonList();
+      });
+
+      document.querySelector("#checklist").addEventListener("change", (event) => {
+        const input = event.target.closest("[data-check-index]");
+        if (!input) return;
+        const lesson = activeLesson();
+        const index = Number(input.dataset.checkIndex);
+        const completed = new Set(completedIndexes(lesson));
+        if (input.checked) completed.add(index);
+        else completed.delete(index);
+        state.progress[lesson.id] = [...completed].sort((a, b) => a - b);
+        saveProgress();
+        render();
+      });
+
+      document.querySelector("#completeLessonButton").addEventListener("click", () => {
+        const lesson = activeLesson();
+        const completed = completedIndexes(lesson);
+        state.progress[lesson.id] = completed.length === lesson.checklist.length ? [] : lesson.checklist.map((_, index) => index);
+        saveProgress();
+        render();
+      });
+
+      window.addEventListener("keydown", (event) => {
+        const target = event.target;
+        if (target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLButtonElement) return;
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          moveLesson(1);
+        }
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          moveLesson(-1);
+        }
+      });
+
+      state.progress = loadProgress();
+      render();
+    </script>
+  </body>
+</html>
