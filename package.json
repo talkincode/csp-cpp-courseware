@@ -2,9 +2,12 @@
   "name": "csp-cpp-courseware",
   "version": "0.1.0",
   "private": true,
-  "description": "面向 CSP-J 初学者的 C++ 交互式视频课件",
+  "description": "面向 CSP-J 初学者的 C++ 交互式课程",
   "scripts": {
-    "test": "node tests/validate-course-data.mjs",
-    "validate": "node tests/validate-course-data.mjs"
+    "dev": "bun --watch scripts/dev.ts",
+    "start": "bun scripts/dev.ts",
+    "test": "bun test",
+    "validate": "bun test",
+    "scaffold:lessons": "bun scripts/scaffold-lessons.ts"
   }
 }

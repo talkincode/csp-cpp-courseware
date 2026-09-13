@@ -1,0 +1,1751 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="S1-01 第一行程序与编译：面向 CSP-J 初学者的互动式 C++ 入门课。"
+    />
+    <title>S1-01 · 让第一行 C++ 跑起来</title>
+    <style>
+      :root {
+        --forest: #0c2620;
+        --forest-soft: #174137;
+        --forest-fog: #35665a;
+        --paper: #f3ead7;
+        --paper-bright: #fffaf0;
+        --paper-shadow: #ddcfb8;
+        --ink: #18372f;
+        --muted: #687a70;
+        --orange: #e6612c;
+        --orange-soft: #f3ba76;
+        --mint: #d7e6cd;
+        --gold: #f8c85f;
+        --success: #278057;
+        --danger: #ad4325;
+        --line: rgba(24, 55, 47, 0.2);
+        --shadow: 0 21px 54px rgba(1, 16, 12, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: var(--forest);
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 10% 0%, rgba(70, 126, 108, 0.56), transparent 42%),
+          radial-gradient(ellipse at 94% 100%, rgba(230, 97, 44, 0.23), transparent 43%),
+          var(--forest);
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 3px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 19px 0;
+        color: var(--paper);
+      }
+
+      .back-link {
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .back-link:hover {
+        color: var(--orange-soft);
+      }
+
+      .course-marker {
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.73rem;
+        letter-spacing: 0.08em;
+      }
+
+      .sound-toggle {
+        padding: 8px 11px;
+        color: var(--paper);
+        background: transparent;
+        border: 1px solid rgba(255, 250, 240, 0.44);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        transition: background 150ms ease, color 150ms ease;
+      }
+
+      .sound-toggle:hover {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .topbar-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .lesson-shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto 34px;
+        overflow: hidden;
+        background: var(--paper);
+        border: 1px solid rgba(255, 250, 240, 0.36);
+        border-radius: 17px;
+        box-shadow: var(--shadow);
+      }
+
+      .lesson-hero {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 252px;
+        gap: 34px;
+        padding: clamp(30px, 7vw, 70px) clamp(24px, 6vw, 68px);
+        background:
+          radial-gradient(circle at 93% 18%, rgba(230, 97, 44, 0.23), transparent 20%),
+          linear-gradient(130deg, var(--paper-bright), var(--paper-shadow));
+      }
+
+      .lesson-hero::after {
+        position: absolute;
+        right: -67px;
+        bottom: -105px;
+        width: 270px;
+        height: 270px;
+        border: 32px solid rgba(53, 102, 90, 0.16);
+        border-radius: 48% 52% 50% 50%;
+        content: "";
+      }
+
+      .lesson-hero h1 {
+        max-width: 690px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(2.35rem, 5.5vw, 5.1rem);
+        line-height: 0.99;
+        letter-spacing: -0.035em;
+      }
+
+      .lesson-hero h1 code {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.75em;
+        letter-spacing: -0.07em;
+      }
+
+      .lesson-hero p {
+        max-width: 580px;
+        margin: 20px 0 0;
+        color: #476056;
+        font-size: 0.98rem;
+        line-height: 1.78;
+      }
+
+      .primary-action,
+      .secondary-action,
+      .flow-action,
+      .answer-option,
+      .step-button {
+        border: 0;
+        border-radius: 5px;
+        transition: transform 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+      }
+
+      .primary-action {
+        margin-top: 25px;
+        padding: 12px 17px;
+        color: var(--forest);
+        background: var(--orange-soft);
+        box-shadow: 4px 5px 0 rgba(230, 97, 44, 0.31);
+        font-weight: 800;
+      }
+
+      .primary-action:hover {
+        background: var(--orange);
+        transform: translateY(-2px);
+      }
+
+      .primary-action:active,
+      .secondary-action:active,
+      .flow-action:active,
+      .answer-option:active {
+        transform: translateY(1px) scale(0.98);
+      }
+
+      .mission-slip {
+        z-index: 1;
+        align-self: end;
+        padding: 21px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 2px solid var(--orange);
+        border-radius: 7px;
+        box-shadow: 9px 10px 0 rgba(230, 97, 44, 0.25);
+        transform: rotate(2.2deg);
+      }
+
+      .mission-slip strong,
+      .mission-slip span {
+        display: block;
+      }
+
+      .mission-slip strong {
+        color: var(--orange-soft);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.3rem;
+      }
+
+      .mission-slip span {
+        margin-top: 10px;
+        color: var(--mint);
+        font-size: 0.78rem;
+        line-height: 1.63;
+      }
+
+      .learning-area {
+        display: grid;
+        grid-template-columns: 244px minmax(0, 1fr);
+        min-height: 750px;
+        background:
+          linear-gradient(rgba(24, 55, 47, 0.055) 1px, transparent 1px) 0 0 / 100% 34px,
+          var(--paper);
+      }
+
+      .task-rail {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+        padding: 31px 18px;
+        color: var(--paper);
+        background:
+          linear-gradient(155deg, rgba(215, 230, 205, 0.13), transparent 45%),
+          var(--forest);
+      }
+
+      .task-rail h2 {
+        margin: 0;
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.35rem;
+      }
+
+      .task-progress {
+        margin: 2px 0 6px;
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.77rem;
+      }
+
+      .step-list {
+        display: grid;
+        gap: 9px;
+      }
+
+      .step-button {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+        gap: 9px;
+        width: 100%;
+        padding: 11px 7px;
+        color: var(--mint);
+        background: transparent;
+        border: 1px solid transparent;
+        text-align: left;
+      }
+
+      .step-button:hover:not([aria-disabled="true"]) {
+        background: rgba(255, 250, 240, 0.08);
+        transform: translateX(2px);
+      }
+
+      .step-button[aria-current="step"] {
+        color: var(--paper);
+        background: rgba(230, 97, 44, 0.16);
+        border-color: rgba(230, 97, 44, 0.74);
+      }
+
+      .step-button[aria-disabled="true"] {
+        color: rgba(215, 230, 205, 0.43);
+      }
+
+      .step-number {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.69rem;
+        font-weight: 900;
+      }
+
+      .step-button[aria-current="step"] .step-number {
+        color: var(--paper);
+        background: var(--orange);
+      }
+
+      .step-button[aria-disabled="true"] .step-number {
+        color: rgba(12, 38, 32, 0.6);
+        background: rgba(215, 230, 205, 0.35);
+      }
+
+      .step-copy strong,
+      .step-copy span {
+        display: block;
+      }
+
+      .step-copy strong {
+        font-size: 0.82rem;
+      }
+
+      .step-copy span {
+        margin-top: 3px;
+        font-size: 0.66rem;
+        line-height: 1.35;
+        opacity: 0.83;
+      }
+
+      .rail-note {
+        margin: auto 2px 0;
+        padding-top: 17px;
+        border-top: 1px solid rgba(215, 230, 205, 0.27);
+        color: var(--mint);
+        font-size: 0.73rem;
+        line-height: 1.65;
+      }
+
+      .workbench {
+        min-width: 0;
+        padding: clamp(24px, 4vw, 48px);
+      }
+
+      .step-panel[hidden] {
+        display: none;
+      }
+
+      .step-panel {
+        max-width: 790px;
+        animation: arrive 240ms ease-out both;
+      }
+
+      @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateY(7px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .step-panel h2 {
+        max-width: 710px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(1.65rem, 3vw, 2.55rem);
+        line-height: 1.16;
+      }
+
+      .step-lead {
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: #52675d;
+        font-size: 0.93rem;
+        line-height: 1.75;
+      }
+
+      .guided-note {
+        max-width: 690px;
+        margin: 25px 0;
+        padding: 13px 15px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        font-size: 0.84rem;
+        line-height: 1.62;
+      }
+
+      .code-sheet {
+        position: relative;
+        max-width: 705px;
+        overflow: hidden;
+        margin: 26px 0;
+        padding: 21px 0 17px;
+        background:
+          linear-gradient(90deg, transparent 0 47px, rgba(230, 97, 44, 0.22) 47px 48px, transparent 48px),
+          repeating-linear-gradient(to bottom, transparent 0 29px, rgba(24, 55, 47, 0.09) 29px 30px),
+          var(--paper-bright);
+        border: 1px solid var(--line);
+        box-shadow: 6px 8px 0 rgba(24, 55, 47, 0.12);
+      }
+
+      .code-sheet::before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 5px;
+        background: var(--forest-fog);
+        content: "";
+      }
+
+      .code-sheet ol {
+        margin: 0;
+        padding: 0 22px 0 71px;
+      }
+
+      .code-sheet li {
+        min-height: 30px;
+        padding-left: 10px;
+        color: #28483e;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: clamp(0.75rem, 1.7vw, 0.88rem);
+        line-height: 30px;
+        white-space: pre-wrap;
+      }
+
+      .code-sheet li::marker {
+        color: #8f9d93;
+      }
+
+      .code-sheet .highlight {
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.36);
+      }
+
+      .code-sheet .focus-line {
+        color: var(--forest);
+        background: rgba(215, 230, 205, 0.68);
+        font-weight: 800;
+      }
+
+      .inline-code {
+        padding: 1px 4px;
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.26);
+        border-radius: 3px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.9em;
+      }
+
+      .callout-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 13px;
+        max-width: 705px;
+        margin: 22px 0;
+      }
+
+      .callout {
+        min-height: 124px;
+        padding: 15px;
+        background: rgba(255, 250, 240, 0.67);
+        border-top: 3px solid var(--forest-fog);
+      }
+
+      .callout strong,
+      .callout span {
+        display: block;
+      }
+
+      .callout strong {
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .callout span {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        line-height: 1.57;
+      }
+
+      .secondary-action {
+        padding: 10px 13px;
+        color: var(--forest);
+        background: transparent;
+        border: 1px solid var(--forest-fog);
+        font-weight: 800;
+      }
+
+      .secondary-action:hover {
+        color: var(--paper);
+        background: var(--forest);
+      }
+
+      .inline-feedback {
+        min-height: 1.8em;
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+
+      .inline-feedback[data-tone="error"] {
+        color: var(--danger);
+      }
+
+      .flow-line {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin: 30px 0 20px;
+      }
+
+      .flow-action {
+        position: relative;
+        min-height: 102px;
+        padding: 14px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .flow-action:not(:last-child)::after {
+        position: absolute;
+        top: 50%;
+        right: -13px;
+        z-index: 1;
+        color: var(--orange);
+        content: "→";
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        transform: translateY(-50%);
+      }
+
+      .flow-action:hover:not([aria-disabled="true"]) {
+        background: #fff0d5;
+        transform: translateY(-2px);
+      }
+
+      .flow-action[aria-disabled="true"] {
+        color: #9aa89f;
+        background: rgba(221, 207, 184, 0.53);
+      }
+
+      .flow-action.is-done {
+        color: var(--paper);
+        background: var(--forest-soft);
+        border-color: var(--forest-soft);
+      }
+
+      .flow-index,
+      .flow-action strong,
+      .flow-action span {
+        display: block;
+      }
+
+      .flow-index {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+      }
+
+      .flow-action.is-done .flow-index {
+        color: var(--orange-soft);
+      }
+
+      .flow-action strong {
+        margin-top: 9px;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .flow-action span {
+        margin-top: 7px;
+        font-size: 0.7rem;
+        line-height: 1.43;
+      }
+
+      .terminal {
+        max-width: 705px;
+        min-height: 156px;
+        margin: 19px 0 0;
+        padding: 16px 17px;
+        overflow: auto;
+        color: #d7e6cd;
+        background: #071b16;
+        border-top: 4px solid var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.81rem;
+        line-height: 1.65;
+        white-space: pre-wrap;
+      }
+
+      .terminal .terminal-success {
+        color: #a8e1bc;
+      }
+
+      .terminal .faq-term,
+      .terminal .faq-term:hover,
+      .terminal .faq-term[aria-expanded="true"] {
+        padding: 0 6px;
+        color: #0c2620;
+        background: #f8c85f;
+        border-bottom-color: #d9a63a;
+      }
+
+      .terminal .terminal-warm {
+        color: var(--orange-soft);
+      }
+
+      .fix-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 21px;
+      }
+
+      .fix-actions button {
+        min-height: 70px;
+        padding: 10px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .fix-actions button:hover {
+        background: #fff0d5;
+      }
+
+      .fix-actions button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .quiz-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin: 23px 0 18px;
+      }
+
+      .quiz-seed {
+        color: var(--muted);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.71rem;
+      }
+
+      .quiz-form {
+        display: grid;
+        gap: 19px;
+      }
+
+      .question {
+        padding: 20px 0 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .question h3 {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.12rem;
+        line-height: 1.5;
+      }
+
+      .question-objective {
+        margin: 7px 0 0;
+        color: var(--muted);
+        font-size: 0.73rem;
+        line-height: 1.45;
+      }
+
+      .answer-options {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .answer-option {
+        display: grid;
+        grid-template-columns: 20px 26px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding: 11px 12px;
+        color: var(--ink);
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .answer-option:hover:not(.is-locked) {
+        background: #fff0d5;
+      }
+
+      .answer-option input {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        accent-color: var(--forest-fog);
+      }
+
+      .answer-letter {
+        display: grid;
+        width: 24px;
+        height: 24px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+        font-weight: 900;
+      }
+
+      .answer-option.is-correct {
+        color: #174d35;
+        background: #e2f2e4;
+        border-color: rgba(39, 128, 87, 0.57);
+      }
+
+      .answer-option.is-incorrect {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .answer-option.is-locked {
+        cursor: default;
+      }
+
+      .explanation {
+        margin: 10px 0 0 56px;
+        color: #52675d;
+        font-size: 0.8rem;
+        line-height: 1.62;
+      }
+
+      .quiz-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 11px;
+        margin-top: 23px;
+      }
+
+      .quiz-result {
+        min-height: 1.8em;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 800;
+        line-height: 1.6;
+      }
+
+      .quiz-result[data-tone="warn"] {
+        color: #91501a;
+      }
+
+      .external-boundary {
+        max-width: 790px;
+        margin: 34px 0 0;
+        padding: 15px 17px;
+        color: #486057;
+        background: rgba(221, 207, 184, 0.55);
+        border-top: 2px solid var(--forest-fog);
+        font-size: 0.8rem;
+        line-height: 1.63;
+      }
+
+      .external-boundary strong {
+        color: var(--forest);
+      }
+
+      .completion-ribbon {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 10;
+        max-width: min(370px, calc(100vw - 40px));
+        padding: 13px 15px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 1px solid var(--orange-soft);
+        border-radius: 6px;
+        box-shadow: 7px 9px 0 rgba(230, 97, 44, 0.28);
+        font-size: 0.82rem;
+        line-height: 1.55;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(12px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .completion-ribbon.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .storage-notice {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 9;
+        max-width: min(370px, calc(100vw - 40px));
+        margin: 0;
+        padding: 11px 14px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        box-shadow: 5px 7px 0 rgba(24, 55, 47, 0.14);
+        font-size: 0.76rem;
+        line-height: 1.55;
+      }
+
+      .confetti-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 11;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .confetti {
+        position: absolute;
+        top: 34%;
+        left: 50%;
+        width: 10px;
+        height: 16px;
+        background: var(--confetti-color);
+        clip-path: polygon(50% 0, 100% 28%, 72% 100%, 0 71%, 11% 20%);
+        animation: burst 880ms cubic-bezier(0.14, 0.78, 0.32, 1) forwards;
+        transform: translate(-50%, -50%) rotate(var(--spin));
+      }
+
+      @keyframes burst {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) rotate(var(--spin));
+        }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--drift-x)), calc(-50% + var(--drift-y))) rotate(calc(var(--spin) + 250deg));
+        }
+      }
+
+      @media (max-width: 880px) {
+        .lesson-hero {
+          grid-template-columns: 1fr;
+        }
+
+        .mission-slip {
+          width: min(100%, 290px);
+          justify-self: end;
+        }
+
+        .learning-area {
+          grid-template-columns: 1fr;
+        }
+
+        .task-rail {
+          display: grid;
+          grid-template-columns: minmax(150px, 0.45fr) 1fr;
+          gap: 12px 23px;
+          padding: 22px;
+        }
+
+        .step-list {
+          grid-template-columns: repeat(4, minmax(135px, 1fr));
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .step-button {
+          min-width: 135px;
+        }
+
+        .rail-note {
+          grid-column: 1 / -1;
+          margin: 0;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .topbar,
+        .lesson-shell {
+          width: min(100% - 18px, 620px);
+        }
+
+        .topbar {
+          padding: 12px 0;
+        }
+
+        .course-marker {
+          display: none;
+        }
+
+        .lesson-hero {
+          padding: 34px 22px;
+        }
+
+        .lesson-hero h1 {
+          font-size: clamp(2.2rem, 13vw, 3.5rem);
+        }
+
+        .mission-slip {
+          justify-self: stretch;
+          width: auto;
+          transform: rotate(1deg);
+        }
+
+        .task-rail {
+          display: block;
+          padding: 21px 14px;
+        }
+
+        .step-list {
+          margin-top: 14px;
+        }
+
+        .rail-note {
+          display: none;
+        }
+
+        .workbench {
+          padding: 28px 19px;
+        }
+
+        .callout-row,
+        .flow-line,
+        .fix-actions {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-action:not(:last-child)::after {
+          top: auto;
+          right: 50%;
+          bottom: -22px;
+          transform: translateX(50%) rotate(90deg);
+        }
+
+        .flow-line {
+          gap: 28px;
+        }
+
+        .code-sheet {
+          margin-right: -5px;
+          margin-left: -5px;
+        }
+
+        .code-sheet ol {
+          padding-right: 9px;
+          padding-left: 62px;
+        }
+
+        .code-sheet li {
+          padding-left: 6px;
+          font-size: 0.7rem;
+        }
+
+        .completion-ribbon,
+        .storage-notice {
+          right: 10px;
+          bottom: 10px;
+          max-width: calc(100vw - 20px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 1ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body data-faq-terms="cpp-file include main cout compile gpp semicolon">
+    <header class="topbar">
+      <a class="back-link" href="../../index.html">← 返回课程路线</a>
+      <span class="course-marker">第一阶段 · S1-01 · 45 分钟</span>
+      <div class="topbar-tools">
+        <button id="faqCatalogButton" class="faq-open" type="button">常见问题</button>
+        <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">音效：开</button>
+      </div>
+    </header>
+
+    <main class="lesson-shell">
+      <section class="lesson-hero">
+        <div>
+          <h1>让你的第一行 <code>C++</code> 跑起来</h1>
+          <p>
+            这一课不要求你背很多单词。你只要完成四个小任务：看懂程序入口、走一遍编译流程、修复一个小错误，再做一套随机小测。
+          </p>
+          <button id="beginButton" class="primary-action" type="button">开始第一个任务</button>
+        </div>
+        <aside class="mission-slip" aria-label="本课任务">
+          <strong>本课任务</strong>
+          <span>把一份 <button type="button" class="faq-term" data-faq="cpp-file">.cpp</button> 源文件变成屏幕上的第一句输出，并知道出错时应该先看哪里。</span>
+        </aside>
+      </section>
+
+      <section id="learningArea" class="learning-area" aria-label="互动学习区">
+        <nav class="task-rail" aria-label="本课任务步骤">
+          <div>
+            <h2>任务路线</h2>
+            <p id="taskProgress" class="task-progress">0 / 4 已推进</p>
+          </div>
+          <div class="step-list">
+            <button class="step-button" type="button" data-step="0" aria-current="step">
+              <span class="step-number">1</span>
+              <span class="step-copy"><strong>认识程序</strong><span>找到入口</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="1" aria-disabled="true">
+              <span class="step-number">2</span>
+              <span class="step-copy"><strong>走编译流程</strong><span>从源文件到运行</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="2" aria-disabled="true">
+              <span class="step-number">3</span>
+              <span class="step-copy"><strong>找一个分号</strong><span>第一次排错</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="3" aria-disabled="true">
+              <span class="step-number">4</span>
+              <span class="step-copy"><strong>随机小测</strong><span>检查是否理解</span></span>
+            </button>
+          </div>
+          <p class="rail-note">没有真的卡住：每一步完成后，下一步会自动点亮。你也可以随时回看已经完成的任务。</p>
+        </nav>
+
+        <div class="workbench">
+          <section class="step-panel" data-panel="0">
+            <h2>任务 1：先找到程序的“开门钥匙”</h2>
+            <p class="step-lead">
+              你看到的每一行都有用，但程序真正从 <button type="button" class="faq-term" data-faq="main">main</button> 开始执行。先点击按钮，把入口这一行点亮。遇到不认识的词，点它或点右上角“常见问题”。
+            </p>
+            <div class="code-sheet" aria-label="一个最小 C++ 程序">
+              <ol>
+                <li>#include &lt;iostream&gt;</li>
+                <li id="mainLine">int main() {</li>
+                <li>  std::cout &lt;&lt; "Hello, CSP!" &lt;&lt; "\n";</li>
+                <li>  return 0;</li>
+                <li>}</li>
+              </ol>
+            </div>
+            <div class="callout-row" aria-label="程序结构说明">
+              <div class="callout">
+                <strong>头文件</strong>
+                <span><button type="button" class="faq-term" data-faq="include">#include</button> 让程序能使用输入输出工具。</span>
+              </div>
+              <div class="callout">
+                <strong>入口</strong>
+                <span><button type="button" class="faq-term" data-faq="main">main</button> 是程序开始工作的地方。</span>
+              </div>
+              <div class="callout">
+                <strong>输出</strong>
+                <span><button type="button" class="faq-term" data-faq="cout">cout</button> 把文字或结果显示到屏幕。</span>
+              </div>
+            </div>
+            <button id="inspectSourceButton" class="secondary-action" type="button">点亮 main 入口</button>
+            <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="1" hidden>
+            <h2>任务 2：程序不是写完就会自己运行</h2>
+            <p class="step-lead">
+              电脑先看到的是给人看的 <button type="button" class="faq-term" data-faq="cpp-file">hello.cpp</button>；<button type="button" class="faq-term" data-faq="compile">编译</button>会把它翻译成电脑可以运行的程序。按从左到右的顺序点亮流程。后面出现的 <button type="button" class="faq-term" data-faq="gpp">g++</button> 只是这个翻译工具的名字。
+            </p>
+            <p class="guided-note"><strong>这是概念演示，不是真正的在线编译器。</strong> 真实的 C++ 编译会在你的电脑工具中完成；这里帮你记住正确流程。</p>
+            <div class="flow-line" aria-label="源文件、编译、运行流程">
+              <button id="saveSourceButton" class="flow-action" type="button">
+                <span class="flow-index">A</span>
+                <strong>写入源文件</strong>
+                <span>保存为 hello.cpp</span>
+              </button>
+              <button id="compileButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">B</span>
+                <strong>开始编译</strong>
+                <span>翻译成可执行程序</span>
+              </button>
+              <button id="runButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">C</span>
+                <strong>运行程序</strong>
+                <span>看到自己的输出</span>
+              </button>
+            </div>
+            <pre id="terminal" class="terminal" aria-live="polite">$ 等待你写入第一份源文件...</pre>
+            <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="2" hidden>
+            <h2>任务 3：修好第一个“少了分号”的程序</h2>
+            <p class="step-lead">
+              C++ 中多数一行指令都要用 <button type="button" class="faq-term" data-faq="semicolon">;</button> 结束。下面这段代码在输出行少了一个分号；选出最小、最准确的修复方式。
+            </p>
+            <div class="code-sheet" aria-label="有一个分号错误的 C++ 程序">
+              <ol>
+                <li>#include &lt;iostream&gt;</li>
+                <li>int main() {</li>
+                <li class="highlight">  std::cout &lt;&lt; "Hello, CSP!" &lt;&lt; "\n"</li>
+                <li>  return 0;</li>
+                <li>}</li>
+              </ol>
+            </div>
+            <div class="fix-actions" aria-label="选择修复方式">
+              <button type="button" data-fix="semicolon">在输出行末尾添加 ;</button>
+              <button type="button" data-fix="cin">把 cout 改成 cin</button>
+              <button type="button" data-fix="return">删除 return 0;</button>
+            </div>
+            <p id="debugFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="3" hidden>
+            <h2>任务 4：随机小测，看看你是否真的懂了</h2>
+            <p class="step-lead">
+              每次生成三道不同的选择题。答完后看解析，不要只看分数；如果有一题不确定，回到对应任务再看一遍。
+            </p>
+            <div class="quiz-tools">
+              <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
+              <span id="quizSeed" class="quiz-seed"></span>
+            </div>
+            <form id="quizForm" class="quiz-form" aria-describedby="quizResult"></form>
+            <div class="quiz-footer">
+              <button id="submitQuizButton" class="primary-action" type="button">提交并查看解析</button>
+              <p id="quizResult" class="quiz-result" role="status" aria-live="polite"></p>
+            </div>
+          </section>
+
+          <aside class="external-boundary">
+            <strong>视频交付边界：</strong>本课的视频课件由仓库外流程制作。本页面只实现互动学习、引导和随机小测，不加载、不生产也不渲染视频资产。
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <p id="storageNotice" class="storage-notice" hidden></p>
+    <div id="completionRibbon" class="completion-ribbon" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+    <script>
+      const storageKey = "csp-cpp-s1-01-progress-v1";
+      const questionPool = [
+        {
+          id: "entry",
+          objective: "知道程序从哪里开始执行",
+          prompt: "C++ 程序通常从哪一个函数开始执行？",
+          options: ["main", "cout", "include", "return"],
+          answer: 0,
+          explanation: "main 是程序入口。cout 用来输出，include 引入工具，return 用来结束函数并返回结果。",
+        },
+        {
+          id: "source-file",
+          objective: "区分源文件与运行结果",
+          prompt: "下面哪一个最像刚写好的 C++ 源文件名？",
+          options: ["hello.cpp", "hello.exe", "hello.output", "hello.score"],
+          answer: 0,
+          explanation: ".cpp 是 C++ 源文件的常见扩展名；它还需要经过编译，才能变成可运行程序。",
+        },
+        {
+          id: "workflow",
+          objective: "记住写入、编译、运行的顺序",
+          prompt: "把 C++ 程序显示到屏幕的正确顺序是？",
+          options: ["写源文件 → 编译 → 运行", "运行 → 编译 → 写源文件", "编译 → 写源文件 → 运行", "写源文件 → 运行 → 编译"],
+          answer: 0,
+          explanation: "先有源文件，再由编译器翻译，最后才运行翻译后的程序。",
+        },
+        {
+          id: "cout",
+          objective: "识别最基本的输出工具",
+          prompt: "想把“Hello”显示到屏幕，下面哪个工具最接近正确选择？",
+          options: ["std::cout", "std::cin", "int", "main"],
+          answer: 0,
+          explanation: "std::cout 负责输出；std::cin 负责读入；int 和 main 分别承担类型与入口的角色。",
+        },
+        {
+          id: "semicolon",
+          objective: "认识分号的作用",
+          prompt: "下面的输出语句少了什么最容易导致编译报错？",
+          options: ["行末的分号 ;", "文件名中的 .cpp", "main 前面的 int", "双引号里的文字"],
+          answer: 0,
+          explanation: "这类语句通常要用分号结束。少了分号时，编译器会指出附近的语法问题。",
+        },
+      ];
+
+      const defaultState = {
+        activeStep: 0,
+        sourceInspected: false,
+        sourceSaved: false,
+        compiled: false,
+        ran: false,
+        debugSolved: false,
+        quizSeed: createSeed(),
+        answers: {},
+        quizSubmitted: false,
+        bestScore: 0,
+        soundEnabled: true,
+      };
+
+      let storageAvailable = true;
+      let state = loadState();
+      let notificationTimer;
+      let audioContext;
+
+      const panels = [...document.querySelectorAll(".step-panel")];
+      const stepButtons = [...document.querySelectorAll("[data-step]")];
+      const taskProgress = document.querySelector("#taskProgress");
+      const mainLine = document.querySelector("#mainLine");
+      const sourceFeedback = document.querySelector("#sourceFeedback");
+      const flowFeedback = document.querySelector("#flowFeedback");
+      const debugFeedback = document.querySelector("#debugFeedback");
+      const terminal = document.querySelector("#terminal");
+      const quizForm = document.querySelector("#quizForm");
+      const quizResult = document.querySelector("#quizResult");
+      const completionRibbon = document.querySelector("#completionRibbon");
+      const storageNotice = document.querySelector("#storageNotice");
+      const confettiLayer = document.querySelector("#confettiLayer");
+      const soundToggle = document.querySelector("#soundToggle");
+
+      function createSeed() {
+        const values = new Uint32Array(1);
+        crypto.getRandomValues(values);
+        return values[0];
+      }
+
+      function loadState() {
+        try {
+          const stored = JSON.parse(window.localStorage.getItem(storageKey) ?? "null");
+          if (!stored || typeof stored !== "object" || Array.isArray(stored)) return { ...defaultState };
+
+          return {
+            ...defaultState,
+            activeStep: Number.isInteger(stored.activeStep) ? stored.activeStep : 0,
+            sourceInspected: stored.sourceInspected === true,
+            sourceSaved: stored.sourceSaved === true,
+            compiled: stored.compiled === true,
+            ran: stored.ran === true,
+            debugSolved: stored.debugSolved === true,
+            quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
+            answers: stored.answers && typeof stored.answers === "object" && !Array.isArray(stored.answers) ? stored.answers : {},
+            quizSubmitted: stored.quizSubmitted === true,
+            bestScore: Number.isInteger(stored.bestScore) ? stored.bestScore : 0,
+            soundEnabled: stored.soundEnabled !== false,
+          };
+        } catch {
+          storageAvailable = false;
+          return { ...defaultState };
+        }
+      }
+
+      function saveState() {
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(state));
+          return true;
+        } catch {
+          storageAvailable = false;
+          return false;
+        }
+      }
+
+      function questionSetForSeed(seed) {
+        const random = seededRandom(seed);
+        const shuffled = [...questionPool];
+
+        for (let index = shuffled.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(random() * (index + 1));
+          [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+        }
+
+        return shuffled.slice(0, 3);
+      }
+
+      function currentQuestions() {
+        return questionSetForSeed(state.quizSeed);
+      }
+
+      function seededRandom(seed) {
+        let value = seed >>> 0;
+        return () => {
+          value += 0x6d2b79f5;
+          let result = value;
+          result = Math.imul(result ^ (result >>> 15), result | 1);
+          result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
+          return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, (character) => {
+          const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
+          return entities[character];
+        });
+      }
+
+      function unlockedStepCount() {
+        return [state.sourceInspected, state.ran, state.debugSolved, state.quizSubmitted].filter(Boolean).length;
+      }
+
+      function isStepUnlocked(step) {
+        return [true, state.sourceInspected, state.ran, state.debugSolved][step] ?? false;
+      }
+
+      function clampActiveStep() {
+        while (state.activeStep > 0 && !isStepUnlocked(state.activeStep)) {
+          state.activeStep -= 1;
+        }
+      }
+
+      function showFeedback(element, message, tone = "success") {
+        element.textContent = message;
+        element.dataset.tone = tone === "error" ? "error" : "";
+      }
+
+      function announce(message) {
+        completionRibbon.textContent = message;
+        completionRibbon.classList.add("is-visible");
+        window.clearTimeout(notificationTimer);
+        notificationTimer = window.setTimeout(() => {
+          completionRibbon.classList.remove("is-visible");
+        }, 3200);
+      }
+
+      function updateStorageNotice() {
+        storageNotice.hidden = storageAvailable;
+        storageNotice.textContent = "浏览器没有允许保存学习记录：本次互动仍可继续，但刷新页面后不会恢复进度。";
+      }
+
+      function playSound(kind) {
+        if (!state.soundEnabled) return;
+
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextConstructor) {
+          state.soundEnabled = false;
+          renderSoundToggle();
+          announce("当前浏览器不支持音效，已自动关闭音效。");
+          return;
+        }
+
+        audioContext ??= new AudioContextConstructor();
+        const context = audioContext;
+        const notes = kind === "reward" ? [523.25, 659.25, 783.99] : kind === "error" ? [180] : [392];
+
+        if (context.state === "suspended") {
+          void context.resume().catch(() => {
+            announce("浏览器暂未允许播放音效；你仍可以继续学习。");
+          });
+        }
+
+        notes.forEach((frequency, index) => {
+          const oscillator = context.createOscillator();
+          const gain = context.createGain();
+          const startAt = context.currentTime + index * 0.08;
+
+          oscillator.type = kind === "reward" ? "triangle" : "sine";
+          oscillator.frequency.setValueAtTime(frequency, startAt);
+          gain.gain.setValueAtTime(0.0001, startAt);
+          gain.gain.exponentialRampToValueAtTime(0.08, startAt + 0.012);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.14);
+          oscillator.connect(gain).connect(context.destination);
+          oscillator.start(startAt);
+          oscillator.stop(startAt + 0.15);
+        });
+      }
+
+      function reward(message) {
+        announce(message);
+        playSound("reward");
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        const colors = ["#e6612c", "#f8c85f", "#d7e6cd", "#35665a"];
+        for (let index = 0; index < 20; index += 1) {
+          const particle = document.createElement("span");
+          particle.className = "confetti";
+          particle.style.setProperty("--confetti-color", colors[index % colors.length]);
+          particle.style.setProperty("--drift-x", `${Math.round((Math.random() - 0.5) * 360)}px`);
+          particle.style.setProperty("--drift-y", `${Math.round((Math.random() - 0.2) * 300)}px`);
+          particle.style.setProperty("--spin", `${Math.round(Math.random() * 240)}deg`);
+          confettiLayer.append(particle);
+          particle.addEventListener("animationend", () => particle.remove(), { once: true });
+        }
+      }
+
+      function renderSoundToggle() {
+        soundToggle.textContent = state.soundEnabled ? "音效：开" : "音效：关";
+        soundToggle.setAttribute("aria-pressed", String(state.soundEnabled));
+      }
+
+      function renderSteps() {
+        clampActiveStep();
+        taskProgress.textContent = `${unlockedStepCount()} / 4 已推进`;
+
+        stepButtons.forEach((button) => {
+          const step = Number(button.dataset.step);
+          button.setAttribute("aria-disabled", String(!isStepUnlocked(step)));
+          if (step === state.activeStep) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+        });
+
+        panels.forEach((panel) => {
+          panel.hidden = Number(panel.dataset.panel) !== state.activeStep;
+        });
+      }
+
+      function renderSourceTask() {
+        mainLine.classList.toggle("focus-line", state.sourceInspected);
+        document.querySelector("#inspectSourceButton").disabled = state.sourceInspected;
+        if (state.sourceInspected) {
+          showFeedback(sourceFeedback, "找到了：main 是程序启动后首先进入的函数。下一步已经点亮。");
+        } else {
+          sourceFeedback.textContent = "";
+        }
+      }
+
+      function renderFlowTask() {
+        const saveButton = document.querySelector("#saveSourceButton");
+        const compileButton = document.querySelector("#compileButton");
+        const runButton = document.querySelector("#runButton");
+
+        saveButton.setAttribute("aria-disabled", String(state.sourceSaved));
+        compileButton.setAttribute("aria-disabled", String(!state.sourceSaved || state.compiled));
+        runButton.setAttribute("aria-disabled", String(!state.compiled || state.ran));
+        saveButton.classList.toggle("is-done", state.sourceSaved);
+        compileButton.classList.toggle("is-done", state.compiled);
+        runButton.classList.toggle("is-done", state.ran);
+
+        if (state.ran) {
+          terminal.innerHTML = '$ <span class="terminal-warm"><button type="button" class="faq-term" data-faq="gpp">g++</button> hello.cpp -o hello</span>\n<span class="terminal-success">编译成功：生成可执行程序 hello</span>\n$ <span class="terminal-warm">./hello</span>\n<span class="terminal-success">Hello, CSP!</span>';
+          showFeedback(flowFeedback, "你已经走完“写源文件 → 编译 → 运行”。下一步可以练习第一次排错。点 g++ 可查看它是什么。");
+        } else if (state.compiled) {
+          terminal.innerHTML = '$ <span class="terminal-warm"><button type="button" class="faq-term" data-faq="gpp">g++</button> hello.cpp -o hello</span>\n<span class="terminal-success">编译成功：生成可执行程序 hello</span>\n$ 等待你运行程序...';
+          showFeedback(flowFeedback, "编译不是运行：现在点击最后一步，看看程序真正输出什么。不认识 g++ 就点它。");
+        } else if (state.sourceSaved) {
+          terminal.innerHTML = '$ <span class="terminal-warm">hello.cpp</span>\n源文件已保存，等待编译器翻译...';
+          showFeedback(flowFeedback, "很好，电脑现在有了源文件；下一步请让编译器翻译它。");
+        } else {
+          terminal.textContent = "$ 等待你写入第一份源文件...";
+          flowFeedback.textContent = "";
+        }
+      }
+
+      function renderDebugTask() {
+        const fixButtons = [...document.querySelectorAll("[data-fix]")];
+        fixButtons.forEach((button) => {
+          button.disabled = state.debugSolved;
+          button.classList.toggle("is-correct", state.debugSolved && button.dataset.fix === "semicolon");
+        });
+
+        if (state.debugSolved) {
+          showFeedback(debugFeedback, "修好了。少分号是典型的编译错误：先看报错附近的这一行，再检查语句是否完整。");
+        } else {
+          debugFeedback.textContent = "";
+          debugFeedback.dataset.tone = "";
+        }
+      }
+
+      function renderQuiz() {
+        const questions = currentQuestions();
+        const letters = ["A", "B", "C", "D"];
+        document.querySelector("#quizSeed").textContent = `本次试卷标识：${state.quizSeed}`;
+
+        quizForm.innerHTML = questions
+          .map((question, questionIndex) => {
+            const selected = Number(state.answers[question.id]);
+            const options = question.options
+              .map((option, optionIndex) => {
+                const isCorrect = state.quizSubmitted && optionIndex === question.answer;
+                const isIncorrect = state.quizSubmitted && selected === optionIndex && optionIndex !== question.answer;
+                const classes = [
+                  "answer-option",
+                  state.quizSubmitted ? "is-locked" : "",
+                  isCorrect ? "is-correct" : "",
+                  isIncorrect ? "is-incorrect" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+
+                return `
+                  <label class="${classes}">
+                    <input
+                      type="radio"
+                      name="${question.id}"
+                      value="${optionIndex}"
+                      ${selected === optionIndex ? "checked" : ""}
+                      ${state.quizSubmitted ? "disabled" : ""}
+                    />
+                    <span class="answer-letter">${letters[optionIndex]}</span>
+                    <span>${escapeHtml(option)}</span>
+                  </label>
+                `;
+              })
+              .join("");
+
+            return `
+              <section class="question">
+                <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
+                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <div class="answer-options">${options}</div>
+                ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
+              </section>
+            `;
+          })
+          .join("");
+
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+        const submitButton = document.querySelector("#submitQuizButton");
+        submitButton.disabled = state.quizSubmitted || unanswered > 0;
+        submitButton.textContent = state.quizSubmitted ? "本套题已提交" : unanswered > 0 ? `还差 ${unanswered} 题` : "提交并查看解析";
+
+        if (state.quizSubmitted) {
+          const score = quizScore(questions);
+          const passed = score >= 2;
+          quizResult.dataset.tone = passed ? "" : "warn";
+          quizResult.textContent = passed
+            ? `本次答对 ${score}/3。很好，已经能说清本课核心流程。`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+        } else {
+          quizResult.textContent = "";
+          quizResult.dataset.tone = "";
+        }
+      }
+
+      function quizScore(questions = currentQuestions()) {
+        return questions.reduce((score, question) => score + (Number(state.answers[question.id]) === question.answer ? 1 : 0), 0);
+      }
+
+      function render() {
+        renderSteps();
+        renderSourceTask();
+        renderFlowTask();
+        renderDebugTask();
+        renderQuiz();
+        renderSoundToggle();
+        updateStorageNotice();
+      }
+
+      function selectStep(step) {
+        if (!isStepUnlocked(step)) {
+          announce("先完成前一个任务，下一步就会自动点亮。");
+          playSound("error");
+          return;
+        }
+
+        state.activeStep = step;
+        saveState();
+        render();
+        document.querySelector(`[data-panel="${step}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function refreshQuiz() {
+        const currentIds = currentQuestions()
+          .map((question) => question.id)
+          .sort()
+          .join(",");
+        let nextSeed = createSeed();
+
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          const nextIds = questionSetForSeed(nextSeed)
+            .map((question) => question.id)
+            .sort()
+            .join(",");
+          if (nextIds !== currentIds) break;
+          nextSeed = (nextSeed + 0x9e3779b9) >>> 0;
+        }
+
+        state.quizSeed = nextSeed;
+        state.answers = {};
+        state.quizSubmitted = false;
+        saveState();
+        renderQuiz();
+        announce("已换一套随机题。请先独立作答，再查看解析。");
+        playSound("calm");
+      }
+
+      document.querySelector("#beginButton").addEventListener("click", () => {
+        document.querySelector("#learningArea").scrollIntoView({ behavior: "smooth", block: "start" });
+        announce("从任务 1 开始：先找到程序入口。");
+      });
+
+      stepButtons.forEach((button) => {
+        button.addEventListener("click", () => selectStep(Number(button.dataset.step)));
+      });
+
+      document.querySelector("#inspectSourceButton").addEventListener("click", () => {
+        state.sourceInspected = true;
+        state.activeStep = 1;
+        saveState();
+        render();
+        reward("任务 1 完成：你已经找到 main 入口，开始走编译流程。");
+      });
+
+      document.querySelector("#saveSourceButton").addEventListener("click", () => {
+        if (state.sourceSaved) {
+          announce("源文件已经写入，下一步请点击“开始编译”。");
+          return;
+        }
+
+        state.sourceSaved = true;
+        saveState();
+        renderFlowTask();
+        announce("hello.cpp 已写入。下一步，请让编译器翻译它。");
+        playSound("calm");
+      });
+
+      document.querySelector("#compileButton").addEventListener("click", () => {
+        if (!state.sourceSaved) {
+          announce("先写入 hello.cpp，编译器才有内容可以翻译。");
+          playSound("error");
+          return;
+        }
+        if (state.compiled) {
+          announce("编译已经完成，下一步请运行程序。");
+          return;
+        }
+
+        state.compiled = true;
+        saveState();
+        renderFlowTask();
+        announce("编译成功：现在有一个可以运行的程序了。");
+        playSound("calm");
+      });
+
+      document.querySelector("#runButton").addEventListener("click", () => {
+        if (!state.compiled) {
+          announce("先完成编译，才能运行程序。");
+          playSound("error");
+          return;
+        }
+        if (state.ran) {
+          announce("程序已经运行过了，可以进入下一项排错任务。");
+          return;
+        }
+
+        state.ran = true;
+        state.activeStep = 2;
+        saveState();
+        render();
+        reward("任务 2 完成：你让第一句 C++ 输出跑起来了。");
+      });
+
+      document.querySelectorAll("[data-fix]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.dataset.fix === "semicolon") {
+            state.debugSolved = true;
+            state.activeStep = 3;
+            saveState();
+            render();
+            reward("任务 3 完成：你找到了缺失的分号。现在去做随机小测吧。");
+            return;
+          }
+
+          showFeedback(debugFeedback, "这不会修复语句结尾不完整的问题。请回到红色标记的输出行，想想一条语句怎样结束。", "error");
+          announce("再看一眼红色标记的输出行：它缺的是结束符号。");
+          playSound("error");
+        });
+      });
+
+      quizForm.addEventListener("change", (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== "radio") return;
+
+        state.answers[input.name] = Number(input.value);
+        saveState();
+        renderQuiz();
+        announce("答案已记录。三题都选完后可以提交查看解析。");
+        playSound("calm");
+      });
+
+      document.querySelector("#submitQuizButton").addEventListener("click", () => {
+        const questions = currentQuestions();
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+
+        if (unanswered > 0) {
+          announce(`还有 ${unanswered} 题未选择答案。`);
+          playSound("error");
+          return;
+        }
+
+        state.quizSubmitted = true;
+        const score = quizScore(questions);
+        state.bestScore = Math.max(state.bestScore, score);
+        saveState();
+        render();
+
+        if (score === questions.length) {
+          reward("三题全对！第一课的核心流程已经掌握。");
+        } else if (score >= 2) {
+          reward(`答对 ${score}/3，任务完成。回看解析会让记忆更牢。`);
+        } else {
+          announce(`答对 ${score}/3。先看每题解析，再换一套题巩固。`);
+          playSound("error");
+        }
+      });
+
+      document.querySelector("#newQuizButton").addEventListener("click", refreshQuiz);
+
+      soundToggle.addEventListener("click", () => {
+        state.soundEnabled = !state.soundEnabled;
+        saveState();
+        renderSoundToggle();
+        announce(state.soundEnabled ? "音效已开启：之后的操作会有轻提示音。" : "音效已关闭：仍会保留所有视觉反馈。");
+        if (state.soundEnabled) playSound("calm");
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return;
+        if (event.key === "ArrowRight") selectStep(Math.min(3, state.activeStep + 1));
+        if (event.key === "ArrowLeft") selectStep(Math.max(0, state.activeStep - 1));
+      });
+
+      render();
+    </script>
+    <script src="/glossary/faq-panel.js"></script>
+  </body>
+</html>

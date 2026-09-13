@@ -1,0 +1,22 @@
+{
+  "id": "S1-01",
+  "title": "第一行程序与编译",
+  "status": "implemented",
+  "interactive": {
+    "status": "implemented",
+    "entry": "index.html",
+    "reviewState": "awaiting-user-review"
+  },
+  "assessment": {
+    "status": "implemented",
+    "mode": "randomized-choice",
+    "questionCount": 3,
+    "questionBankSize": 5,
+    "choiceDominant": true
+  },
+  "video": {
+    "owner": "external",
+    "status": "not-managed-in-this-repository"
+  },
+  "faqTermIds": ["cpp-file", "include", "main", "cout", "compile", "gpp", "semicolon"]
+}

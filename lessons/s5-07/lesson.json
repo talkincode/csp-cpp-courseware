@@ -1,0 +1,17 @@
+{
+  "id": "S5-07",
+  "title": "模拟赛二：稳定性",
+  "status": "planned",
+  "interactive": {
+    "status": "planned",
+    "entry": null
+  },
+  "assessment": {
+    "status": "planned",
+    "mode": "randomized-choice"
+  },
+  "video": {
+    "owner": "external",
+    "status": "not-managed-in-this-repository"
+  }
+}

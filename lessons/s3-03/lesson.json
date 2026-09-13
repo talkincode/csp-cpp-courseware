@@ -1,0 +1,17 @@
+{
+  "id": "S3-03",
+  "title": "二分查找",
+  "status": "planned",
+  "interactive": {
+    "status": "planned",
+    "entry": null
+  },
+  "assessment": {
+    "status": "planned",
+    "mode": "randomized-choice"
+  },
+  "video": {
+    "owner": "external",
+    "status": "not-managed-in-this-repository"
+  }
+}

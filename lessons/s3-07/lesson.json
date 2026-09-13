@@ -1,0 +1,17 @@
+{
+  "id": "S3-07",
+  "title": "栈、队列与过程顺序",
+  "status": "planned",
+  "interactive": {
+    "status": "planned",
+    "entry": null
+  },
+  "assessment": {
+    "status": "planned",
+    "mode": "randomized-choice"
+  },
+  "video": {
+    "owner": "external",
+    "status": "not-managed-in-this-repository"
+  }
+}
