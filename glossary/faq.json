@@ -1,0 +1,102 @@
+{
+  "terms": [
+    {
+      "id": "cpp-file",
+      "term": ".cpp 源文件",
+      "aliases": [".cpp", "源文件", "hello.cpp"],
+      "summary": "给人看、给编译器用的 C++ 原稿。",
+      "answer": "`.cpp` 是 C++ 程序的常见文件名结尾，里面写的是给人阅读的代码。电脑还不能直接运行它，必须先经过编译，才会变成可执行程序。",
+      "remember": "先有 .cpp，再编译，最后才能运行。",
+      "links": [
+        {
+          "title": "C++ 源文件与翻译过程（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/translation_phases"
+        }
+      ]
+    },
+    {
+      "id": "include",
+      "term": "#include",
+      "aliases": ["include", "头文件"],
+      "summary": "向程序借用现成工具的一行说明。",
+      "answer": "`#include <iostream>` 的意思是：请把输入输出这套现成工具借给我用。没有它，后面的 `cout` 就找不到地方。现在只要把它理解成“借用工具”，不必背头文件清单。",
+      "remember": "看到 #include，先把它当成“我要使用后面这个工具”。",
+      "links": [
+        {
+          "title": "#include 预处理指令（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/preprocessor/include"
+        }
+      ]
+    },
+    {
+      "id": "main",
+      "term": "main",
+      "aliases": ["int main", "入口"],
+      "summary": "程序开始干活的地方。",
+      "answer": "`main` 是 C++ 程序的入口函数。电脑运行程序时，会先走进 `main`，再执行里面的语句。现在只要记住：要找程序从哪开始，就找 `main`。",
+      "remember": "程序从 main 开始执行。",
+      "links": [
+        {
+          "title": "main 函数（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/main_function"
+        }
+      ]
+    },
+    {
+      "id": "cout",
+      "term": "cout",
+      "aliases": ["std::cout", "输出"],
+      "summary": "把文字或结果显示到屏幕上的工具。",
+      "answer": "`std::cout` 用来往屏幕上写东西。`std` 表示它来自标准库，`cout` 可以记成“character output（字符输出）”。它和 `cin` 相反：`cout` 是输出，`cin` 是读入。",
+      "remember": "想显示到屏幕，用 cout；想从键盘读入，用 cin。",
+      "links": [
+        {
+          "title": "std::cout（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/cout"
+        }
+      ]
+    },
+    {
+      "id": "compile",
+      "term": "编译",
+      "aliases": ["编译器", "compile"],
+      "summary": "把人写的代码翻译成电脑能运行的程序。",
+      "answer": "编译就像翻译：`.cpp` 是中文草稿，电脑更习惯看翻译后的可执行程序。编译成功只说明“语法能看懂”，还不保证答案一定正确。运行程序是编译之后的下一步。",
+      "remember": "编译成功 ≠ 答案正确。",
+      "links": [
+        {
+          "title": "从源文件到可执行程序（Microsoft Learn）",
+          "url": "https://learn.microsoft.com/zh-cn/cpp/build/walkthrough-compile-a-c-program-on-the-command-line"
+        }
+      ]
+    },
+    {
+      "id": "gpp",
+      "term": "g++",
+      "aliases": ["g++", "gcc"],
+      "summary": "一个常用的 C++ 编译器命令。",
+      "answer": "`g++` 读作“g plus plus”，是把 C++ 源文件翻译成可执行程序的工具。例如 `g++ hello.cpp -o hello` 的意思是：请把 `hello.cpp` 翻译成名叫 `hello` 的程序。本课只演示这个意思，不要求你现在记住全部参数。",
+      "remember": "看到 g++，就把它当成“请翻译这份 C++ 源文件”。",
+      "links": [
+        {
+          "title": "g++ 与 GCC 的关系（GNU）",
+          "url": "https://gcc.gnu.org/onlinedocs/gcc/G_002b_002b-and-GCC.html"
+        }
+      ]
+    },
+    {
+      "id": "semicolon",
+      "term": "分号 ;",
+      "aliases": [";", "分号"],
+      "summary": "多数 C++ 语句的结束符号。",
+      "answer": "C++ 里很多一行指令写完后要加 `;`，告诉编译器“这句话到此结束”。少了分号，编译器常常会在附近报语法错误。它不是输出内容的一部分，只是语句的句号。",
+      "remember": "输出语句末尾通常要有分号。",
+      "links": [
+        {
+          "title": "语句与分号（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/statements"
+        }
+      ]
+    }
+  ]
+}

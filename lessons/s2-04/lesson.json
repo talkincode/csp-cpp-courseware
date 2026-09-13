@@ -1,0 +1,17 @@
+{
+  "id": "S2-04",
+  "title": "作用域与参数",
+  "status": "planned",
+  "interactive": {
+    "status": "planned",
+    "entry": null
+  },
+  "assessment": {
+    "status": "planned",
+    "mode": "randomized-choice"
+  },
+  "video": {
+    "owner": "external",
+    "status": "not-managed-in-this-repository"
+  }
+}

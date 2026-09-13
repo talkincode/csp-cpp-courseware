@@ -649,6 +649,14 @@
         color: var(--orange-soft);
       }
 
+      .detail-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
       .action-button {
         padding: 9px 12px;
         color: var(--ink-deep);
@@ -663,6 +671,22 @@
       .action-button:hover {
         background: var(--orange);
         transform: translateY(-1px);
+      }
+
+      .lesson-entry {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+      }
+
+      .lesson-entry[hidden] {
+        display: none;
+      }
+
+      .lesson-entry-status {
+        color: var(--mint);
+        font-size: 0.72rem;
+        line-height: 1.45;
       }
 
       .action-button.secondary {
@@ -812,7 +836,7 @@
           gap: 12px;
         }
 
-        .detail-footer .action-button {
+        .detail-footer .detail-actions {
           justify-self: start;
         }
 
@@ -907,7 +931,7 @@
           <div class="hero-card" aria-label="当前阶段课件数量">
             <p class="micro-label">CHECKPOINT</p>
             <strong id="phaseCount">08</strong>
-            <p>节核心视频课<br />每节 45--60 分钟</p>
+            <p>节核心课程<br />每节 45--60 分钟</p>
           </div>
         </section>
 
@@ -958,13 +982,17 @@
               </section>
 
               <section class="detail-section" aria-labelledby="videoTitle">
-                <h3 id="videoTitle"><span class="section-number">04</span>视频组织建议</h3>
+                <h3 id="videoTitle"><span class="section-number">04</span>外部视频制作建议</h3>
                 <ul id="videoList" class="content-list"></ul>
               </section>
 
               <div class="detail-footer">
                 <p><strong>练习出口：</strong><span id="exerciseText"></span></p>
-                <button id="completeLessonButton" class="action-button" type="button"></button>
+                <div class="detail-actions">
+                  <span id="lessonEntryStatus" class="lesson-entry-status"></span>
+                  <a id="lessonEntryLink" class="action-button lesson-entry" href="lessons/s1-01/" hidden>进入互动课</a>
+                  <button id="completeLessonButton" class="action-button" type="button"></button>
+                </div>
               </div>
             </div>
           </article>
@@ -1614,6 +1642,18 @@
         const button = document.querySelector("#completeLessonButton");
         button.textContent = fullyComplete ? "撤销本课完成" : "标记本课已完成";
         button.classList.toggle("secondary", fullyComplete);
+
+        const entryLink = document.querySelector("#lessonEntryLink");
+        const entryStatus = document.querySelector("#lessonEntryStatus");
+        const interactiveLessonAvailable = lesson.id === "S1-01";
+        entryLink.hidden = !interactiveLessonAvailable;
+        if (interactiveLessonAvailable) {
+          entryLink.href = `lessons/${lesson.id.toLowerCase()}/`;
+          entryLink.textContent = "进入互动课";
+          entryStatus.textContent = "互动课已开放";
+        } else {
+          entryStatus.textContent = "互动课件正在制作";
+        }
       }
 
       function render() {

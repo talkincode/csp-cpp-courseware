@@ -1,0 +1,17 @@
+{
+  "id": "S1-08",
+  "title": "调试与书写习惯",
+  "status": "planned",
+  "interactive": {
+    "status": "planned",
+    "entry": null
+  },
+  "assessment": {
+    "status": "planned",
+    "mode": "randomized-choice"
+  },
+  "video": {
+    "owner": "external",
+    "status": "not-managed-in-this-repository"
+  }
+}
