@@ -79,3 +79,7 @@ test("S1-02 wires variable and type FAQ terms into the guided lesson", async () 
 test("S1-03 wires expression FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s1-03", ["integer-division", "modulo", "parentheses"]);
 });
+
+test("S1-04 wires input-output FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s1-04", ["cin", "newline", "prompt-output"]);
+});
