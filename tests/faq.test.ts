@@ -123,3 +123,7 @@ test("S2-05 wires struct FAQ terms into the guided lesson", async () => {
 test("S2-06 wires sorting FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s2-06", ["bubble-sort", "sort", "comparison-rule"]);
 });
+
+test("S2-07 wires enumeration and simulation FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s2-07", ["enumeration", "enumeration-range", "simulation"]);
+});
