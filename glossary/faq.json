@@ -881,6 +881,76 @@
           "url": "https://zh.cppreference.com/w/cpp/language/reference"
         }
       ]
+    },
+    {
+      "id": "struct",
+      "term": "结构体",
+      "aliases": ["struct", "记录", "自定义类型"],
+      "summary": "自己设计的记录卡，把相关信息放在一起。",
+      "answer": "结构体（struct）是一张自定义记录卡。例如 Student 里同时放 name 和 score，表示同一个人。先定义格子，再声明 Student stu; 用点号读写。本课用它给题目里的一个人建模，class 是拓展。",
+      "remember": "相关信息放进同一张 struct 记录卡。",
+      "links": [
+        {
+          "title": "类与结构体（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/class"
+        }
+      ]
+    },
+    {
+      "id": "member",
+      "term": "成员",
+      "aliases": ["成员变量", "字段", "member"],
+      "summary": "结构体里的一格，比如姓名或分数。",
+      "answer": "成员是结构体里的一格，例如 name 和 score。访问时写成 stu.name，点后面才是这一条记录里的某一项。先改这一格，不会把整张卡弄丢。现在只要会读写成员。",
+      "remember": "成员是记录卡上的一格，用点号去拿。",
+      "links": [
+        {
+          "title": "数据成员（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/data_members"
+        }
+      ]
+    },
+    {
+      "id": "member-access",
+      "term": "成员访问",
+      "aliases": [".", "点号", "stu.score"],
+      "summary": "用点号取出结构体某一格。",
+      "answer": "点号 . 用来取出某一格：stu.score = 95 是给这位同学的分数赋值。只写 score = 95 改的不是这张卡。本课只练点号；指针箭头 -> 是拓展，现在不必会。",
+      "remember": "写成 stu.score，不要只写一个光秃秃的 score。",
+      "links": [
+        {
+          "title": "成员访问运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_member_access"
+        }
+      ]
+    },
+    {
+      "id": "struct-array",
+      "term": "结构体数组",
+      "aliases": ["记录数组", "Student a[n]"],
+      "summary": "一叠同样格式的记录卡。",
+      "answer": "结构体数组是一叠记录卡：Student a[3]; 第 0 张是 a[0]，它的分数是 a[0].score。遍历时先选哪一张卡，再选这一张的哪一格。不要把姓名数组和分数数组分开硬记对应关系。",
+      "remember": "先选 a[i] 这张卡，再写 a[i].score 这一格。",
+      "links": [
+        {
+          "title": "数组声明（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/array"
+        }
+      ]
+    },
+    {
+      "id": "field-compare",
+      "term": "按字段比较",
+      "aliases": ["按成员比较", "找最高分", "字段"],
+      "summary": "比较记录卡上的某一格，而不是比较下标。",
+      "answer": "按字段比较就是看某一格。找最高分时比较 a[i].score，不要以为下标大就是分高。并列时本课先记下其中一位；第二关键字留给下一课排序。嵌套结构体不是现在必会。",
+      "remember": "找最佳记录时，比较的是某一格，不是下标。",
+      "links": [
+        {
+          "title": "比较运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_comparison"
+        }
+      ]
     }
   ]
 }
