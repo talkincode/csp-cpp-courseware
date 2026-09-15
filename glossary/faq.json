@@ -685,6 +685,62 @@
           "url": "https://learn.microsoft.com/zh-cn/cpp/cpp/arrays-cpp"
         }
       ]
+    },
+    {
+      "id": "string",
+      "term": "string",
+      "aliases": ["字符串", "std::string"],
+      "summary": "存放一串字符的类型。",
+      "answer": "`string` 用来装一串文字，例如 `\"Ada\"`。单引号 `'A'` 是一个字符，双引号 `\"Ada\"` 是字符串。姓名、单词都用 `string`，不要用 `char` 硬塞一整串。",
+      "remember": "一串文字用 string，一个字符用 char。",
+      "links": [
+        {
+          "title": "std::string（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/string/basic_string"
+        }
+      ]
+    },
+    {
+      "id": "string-length",
+      "term": "字符串长度",
+      "aliases": ["s.size()", "s.length()", "长度"],
+      "summary": "字符串里一共有几个字符。",
+      "answer": "`s.size()` 或 `s.length()` 告诉你字符串里有几个字符。长度为 n 时，最后一个下标是 n-1。空字符串长度是 0，不要去读 `s[0]`。",
+      "remember": "长度用 s.size()，最后一个下标是 n-1。",
+      "links": [
+        {
+          "title": "basic_string::size（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/string/basic_string/size"
+        }
+      ]
+    },
+    {
+      "id": "string-index",
+      "term": "字符串下标",
+      "aliases": ["s[0]", "字符访问", "下标访问"],
+      "summary": "取出字符串里某一个字符。",
+      "answer": "字符串也能用下标：`s[0]` 是第 1 个字符。它拿到的是 `char`，不是另一整串。写 `s[n]` 越界。现在记住：下标取出一个字符。",
+      "remember": "s[0] 取出第一个字符，s[n] 越界。",
+      "links": [
+        {
+          "title": "basic_string::operator[]（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/string/basic_string/operator_at"
+        }
+      ]
+    },
+    {
+      "id": "ascii",
+      "term": "ASCII",
+      "aliases": ["字符编码", "编码", "'0'"],
+      "summary": "用数字记住常见英文字符。",
+      "answer": "电脑内部用数字记字符。`'0'` 到 `'9'`、`'A'` 到 `'Z'` 在 ASCII 里是连续的，所以可以写 `c >= '0' && c <= '9'` 判断数字。本课只练这一小段，不要求背编码表。",
+      "remember": "判断数字字符：c >= '0' && c <= '9'。",
+      "links": [
+        {
+          "title": "ASCII 与字符编码（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/ascii"
+        }
+      ]
     }
   ]
 }
