@@ -321,6 +321,62 @@
           "url": "https://zh.cppreference.com/w/cpp/io"
         }
       ]
+    },
+    {
+      "id": "if",
+      "term": "if",
+      "aliases": ["if", "条件", "分支"],
+      "summary": "满足条件才执行的一段话。",
+      "answer": "`if` 用来做选择：条件成立就走进后面的大括号，不成立就跳过。现在只要记住：先问“是不是”，再决定走不走这一支。",
+      "remember": "条件成立才执行 if 后面的语句。",
+      "links": [
+        {
+          "title": "if 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/if"
+        }
+      ]
+    },
+    {
+      "id": "else-if",
+      "term": "else if / else",
+      "aliases": ["else if", "else", "否则"],
+      "summary": "前面的条件不成立时，再试下一支或走剩下的路。",
+      "answer": "`else if` 是“刚才不行，再问下一个问题”。`else` 是“前面都不成立，就走这里”。三路判断写成 if / else if / else，每一分分数只走进其中一支。",
+      "remember": "从上往下问，问中了就停，剩下的不再问。",
+      "links": [
+        {
+          "title": "if 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/if"
+        }
+      ]
+    },
+    {
+      "id": "equal-equal",
+      "term": "== 比较相等",
+      "aliases": ["==", "等于", "比较相等"],
+      "summary": "问两个值是不是一样，不会改变量。",
+      "answer": "`==` 是提问：“左边和右边一样吗？” 它不会改变量。单个 `=` 才是赋值，会把右边装进左边。写条件时要用 `==`，不要写成单个 `=`。",
+      "remember": "条件里问相不相等，用两个等号。",
+      "links": [
+        {
+          "title": "比较运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_comparison"
+        }
+      ]
+    },
+    {
+      "id": "logical-and",
+      "term": "&& 并且",
+      "aliases": ["&&", "并且", "逻辑与"],
+      "summary": "两个条件都成立才算成立。",
+      "answer": "`&&` 读作“并且”：左边和右边都是真，整个条件才是真。例如 7 到 12 岁写成 `age >= 7 && age <= 12`。这是建议掌握，现在先会 if 和比较就够。",
+      "remember": "&& 表示两个条件都要满足。",
+      "links": [
+        {
+          "title": "逻辑运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_logical"
+        }
+      ]
     }
   ]
 }
