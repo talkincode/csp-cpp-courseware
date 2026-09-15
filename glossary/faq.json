@@ -741,6 +741,76 @@
           "url": "https://zh.cppreference.com/w/cpp/language/ascii"
         }
       ]
+    },
+    {
+      "id": "function",
+      "term": "函数",
+      "aliases": ["function", "子函数"],
+      "summary": "把一段可重复使用的工作单独写出来。",
+      "answer": "函数是一小段有名字的代码。主函数 `main` 负责流程，子函数负责一件具体事，例如判断偶数。写一次，就能在多处调用。重复的判断不要复制粘贴，抽成函数。",
+      "remember": "一件独立的事写成一个函数，写一次用多次。",
+      "links": [
+        {
+          "title": "函数（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/functions"
+        }
+      ]
+    },
+    {
+      "id": "parameter",
+      "term": "参数",
+      "aliases": ["parameter", "形参"],
+      "summary": "调用函数时传进去的数据。",
+      "answer": "参数是函数需要的输入。写 `bool isEven(int x)` 时，`x` 是参数。调用 `isEven(4)` 就把 4 交给 x。函数里用 x 计算，默认不会改外面的变量。",
+      "remember": "参数是传进去的数据，调用时写在括号里。",
+      "links": [
+        {
+          "title": "函数声明（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/function"
+        }
+      ]
+    },
+    {
+      "id": "return-value",
+      "term": "返回值",
+      "aliases": ["return", "返回"],
+      "summary": "函数算完后交回给调用者的结果。",
+      "answer": "`return` 把结果交回去。`return x % 2 == 0;` 会交回 true 或 false。只 `cout` 不 return，调用处拿不到判断结果。本课先练有返回值的函数。",
+      "remember": "要用结果就 return，不要只打印。",
+      "links": [
+        {
+          "title": "return 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/return"
+        }
+      ]
+    },
+    {
+      "id": "function-call",
+      "term": "函数调用",
+      "aliases": ["调用", "call"],
+      "summary": "让已经写好的函数真正跑一次。",
+      "answer": "写好函数还不够，要用 `函数名(参数)` 调用它。`isEven(4)` 是调用，`bool isEven(int x)` 是定义。定义告诉电脑怎么做，调用才真正做一次。",
+      "remember": "定义是说明书，调用才真正跑一次。",
+      "links": [
+        {
+          "title": "函数调用（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_other#Built-in_function_call_operator"
+        }
+      ]
+    },
+    {
+      "id": "function-definition",
+      "term": "函数定义",
+      "aliases": ["定义", "函数体"],
+      "summary": "写出函数的名字、参数、返回值和怎么做。",
+      "answer": "定义长这样：`bool isEven(int x) { return x % 2 == 0; }`。前面是返回类型和名字，括号里是参数，花括号里是怎么做。本课先把定义和调用写在同一个文件里。",
+      "remember": "定义写出怎么做，调用时再传入具体数字。",
+      "links": [
+        {
+          "title": "函数定义（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/function"
+        }
+      ]
     }
   ]
 }
