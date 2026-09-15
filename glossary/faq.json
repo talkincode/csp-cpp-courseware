@@ -265,6 +265,62 @@
           "url": "https://zh.cppreference.com/w/cpp/language/operator_precedence"
         }
       ]
+    },
+    {
+      "id": "cin",
+      "term": "cin",
+      "aliases": ["std::cin", "输入", ">>"],
+      "summary": "从键盘或评测机读入数据的工具。",
+      "answer": "`std::cin` 用来读入数据。`cin >> a >> b` 会按空格或换行分开，依次放进变量。现在记住：读入用 cin，连续读几个量就写几个 `>>`。",
+      "remember": "读入用 cin，连续几个量就写几个 >>。",
+      "links": [
+        {
+          "title": "std::cin（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/cin"
+        }
+      ]
+    },
+    {
+      "id": "newline",
+      "term": "换行",
+      "aliases": ["endl", "\\n", "换行符"],
+      "summary": "让输出从下一行继续。",
+      "answer": "换行就是输出后到下一行。C++ 里常用 `\\n` 或 `endl`。样例是两行，你的程序也必须换行；少换行或多空格都会和样例对不上。",
+      "remember": "样例怎么换行，程序就怎么换行。",
+      "links": [
+        {
+          "title": "std::endl（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/manip/endl"
+        }
+      ]
+    },
+    {
+      "id": "fixed-precision",
+      "term": "固定小数位",
+      "aliases": ["setprecision", "fixed", "小数位数"],
+      "summary": "把小数按题目要求的位数打印出来。",
+      "answer": "`cout << fixed << setprecision(2)` 会把小数固定成两位，例如 1.5 打成 1.50。这是建议掌握，不是现在的硬门槛。题目没要求时，先保证空格和换行正确。",
+      "remember": "题目要几位小数，再用 fixed 和 setprecision。",
+      "links": [
+        {
+          "title": "setprecision（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/manip/setprecision"
+        }
+      ]
+    },
+    {
+      "id": "prompt-output",
+      "term": "提示语",
+      "aliases": ["请输入", "多余输出", "提示文字"],
+      "summary": "写给同学看的说明，竞赛提交时通常不能出现。",
+      "answer": "课堂程序可以写“请输入”。竞赛提交不行：评测机会把你的每一行输出拿去和样例比对，多出来的中文提示会被当成错误答案。",
+      "remember": "竞赛程序只输出题目要求的答案，不输出请输入。",
+      "links": [
+        {
+          "title": "iostream 输入输出概览（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io"
+        }
+      ]
     }
   ]
 }
