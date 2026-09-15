@@ -1021,6 +1021,76 @@
           "url": "https://zh.cppreference.com/w/cpp/algorithm/stable_sort"
         }
       ]
+    },
+    {
+      "id": "enumeration",
+      "term": "枚举",
+      "aliases": ["枚举法", "逐一尝试", "enumerate"],
+      "summary": "在有限范围内把每个可能都试一遍。",
+      "answer": "枚举就是在有限范围内把每个可能都试一遍。例如从 1 数到 3，就让 i 依次等于 1、2、3。现在只要会画这个范围；搜索树和剪枝是拓展。",
+      "remember": "有限范围里，每个可能都试一遍。",
+      "links": [
+        {
+          "title": "for 循环（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "enumeration-range",
+      "term": "枚举范围",
+      "aliases": ["从 1 到 n", "循环范围", "range"],
+      "summary": "从哪数到哪，决定哪些情况会被试到。",
+      "answer": "枚举范围是“从哪数到哪”。写成 for (int i = 1; i <= n; i++) 就是从 1 到 n。范围写错会漏掉数或多数。先确定起止，再开始循环。",
+      "remember": "先写清从哪数到哪，再开始试。",
+      "links": [
+        {
+          "title": "for 循环（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "state-update",
+      "term": "状态更新",
+      "aliases": ["状态", "evenCount", "更新变量"],
+      "summary": "过程中要记住的量，每走一步就按题意改它。",
+      "answer": "状态是过程中要记住的量，例如已经数到几个偶数。每走一步就按题意改它：遇到偶数就把 evenCount 加 1。不要指望一次变出答案。",
+      "remember": "每走一步，按题意改一次要记住的量。",
+      "links": [
+        {
+          "title": "if 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/if"
+        }
+      ]
+    },
+    {
+      "id": "simulation",
+      "term": "模拟",
+      "aliases": ["按题意走", "逐步执行", "simulate"],
+      "summary": "按题目说的过程一步步走，并更新状态。",
+      "answer": "模拟就是按题目说的过程一步步走：先看当前是谁，再更新状态，再看下一步。它不是一次变出答案的魔法公式。现在只要会跟着样例走三步。",
+      "remember": "模拟就是按题意一步步走，边走边改状态。",
+      "links": [
+        {
+          "title": "语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/statements"
+        }
+      ]
+    },
+    {
+      "id": "missed-branch",
+      "term": "漏分支",
+      "aliases": ["漏掉情况", "漏掉 i=2", "missed case"],
+      "summary": "某个该试的情况没有试到。",
+      "answer": "漏分支就是某个该试的情况没试到。例如 1 到 3 找偶数，如果跳过 2，答案就会少 1。画状态变化时，每个 i 都要走到。搜索剪枝是拓展。",
+      "remember": "每个该试的情况都要走到，不能跳过。",
+      "links": [
+        {
+          "title": "if 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/if"
+        }
+      ]
     }
   ]
 }
