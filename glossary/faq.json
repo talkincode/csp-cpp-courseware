@@ -615,6 +615,76 @@
           "url": "https://zh.cppreference.com/w/cpp/io/cout"
         }
       ]
+    },
+    {
+      "id": "array",
+      "term": "数组",
+      "aliases": ["array", "一维数组", "int a[n]"],
+      "summary": "把一组同类数据放进同一排格子。",
+      "answer": "数组是一排格子，每个格子装同一种数据。`int a[n]` 表示 n 个整数排成一排。题目里有很多同类分数时，用数组比开一堆变量清楚。本课只练一维数组。",
+      "remember": "一组同类数据，用一个数组装。",
+      "links": [
+        {
+          "title": "数组声明（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/array"
+        }
+      ]
+    },
+    {
+      "id": "subscript",
+      "term": "下标",
+      "aliases": ["下标", "index", "a[0]"],
+      "summary": "指出数组里第几个格子。",
+      "answer": "下标从 0 开始：`a[0]` 是第 1 个，`a[1]` 是第 2 个。长度为 n 时，最后一个是 `a[n - 1]`，不是 `a[n]`。下标像门牌号，不要和“第几个”写成同一个数字。",
+      "remember": "第 1 个元素的下标是 0，最后一个是 n-1。",
+      "links": [
+        {
+          "title": "下标运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_member_access"
+        }
+      ]
+    },
+    {
+      "id": "array-length",
+      "term": "数组长度",
+      "aliases": ["长度", "n", "格子个数"],
+      "summary": "数组里一共有多少个格子。",
+      "answer": "长度 n 告诉你有多少个元素。声明 `int a[n]` 时，一共 n 个格子。遍历常用 `for (int i = 0; i < n; i++)`，写成 `i < n` 才能刚好走到最后一个 `a[n - 1]`。",
+      "remember": "长度是格子个数，最后一个下标比长度小 1。",
+      "links": [
+        {
+          "title": "数组声明（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/array"
+        }
+      ]
+    },
+    {
+      "id": "array-init",
+      "term": "数组初始化",
+      "aliases": ["初始化", "initialization", "赋值"],
+      "summary": "给数组格子放上起始值。",
+      "answer": "刚声明的数组格子里可能是垃圾值。先赋值或读入，再用它们比大小。`int a[8] = {}` 或逐个 `a[i] = ...` 都可以。现在记住：用之前先放好数。",
+      "remember": "用之前先赋值，不要拿垃圾值当成绩。",
+      "links": [
+        {
+          "title": "聚合初始化（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/aggregate_initialization"
+        }
+      ]
+    },
+    {
+      "id": "out-of-bounds",
+      "term": "下标越界",
+      "aliases": ["越界", "out of bounds", "a[n]"],
+      "summary": "去碰数组里不存在的格子。",
+      "answer": "长度为 n 的数组，合法下标是 0 到 n-1。写 `a[n]` 或负数下标就是越界。越界时程序可能崩溃，也可能悄悄给错结果。本课必会：先问这个下标还在不在范围内。",
+      "remember": "合法下标是 0 到 n-1，a[n] 越界。",
+      "links": [
+        {
+          "title": "C++ 数组（Microsoft Learn）",
+          "url": "https://learn.microsoft.com/zh-cn/cpp/cpp/arrays-cpp"
+        }
+      ]
     }
   ]
 }

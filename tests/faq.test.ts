@@ -99,3 +99,7 @@ test("S1-07 wires nested-loop FAQ terms into the guided lesson", async () => {
 test("S1-08 wires debugging FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s1-08", ["compile-error", "wrong-answer", "debug-print"]);
 });
+
+test("S2-01 wires array FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s2-01", ["array", "subscript", "out-of-bounds"]);
+});
