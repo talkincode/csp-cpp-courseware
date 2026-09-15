@@ -377,6 +377,90 @@
           "url": "https://zh.cppreference.com/w/cpp/language/operator_logical"
         }
       ]
+    },
+    {
+      "id": "for",
+      "term": "for 循环",
+      "aliases": ["for", "for循环", "计数循环"],
+      "summary": "事先知道次数时，按次数重复做事。",
+      "answer": "`for` 把“从哪开始、做到何时停、每次怎么变”写在一行。例如 `for (int i = 1; i <= n; i++)` 表示 i 从 1 走到 n。现在先用它求连续和。",
+      "remember": "知道做几次，就先写 for。",
+      "links": [
+        {
+          "title": "for 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "while",
+      "term": "while 循环",
+      "aliases": ["while", "当...时"],
+      "summary": "条件还成立就继续做。",
+      "answer": "`while` 先问条件，成立才进去做事。次数事先不知道时更常用，例如一直读到没有新数。这是建议掌握，现在先会 `for` 就够。",
+      "remember": "次数不确定时，再用 while。",
+      "links": [
+        {
+          "title": "while 循环（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/while"
+        }
+      ]
+    },
+    {
+      "id": "loop-variable",
+      "term": "循环变量",
+      "aliases": ["i", "循环变量", "计数器"],
+      "summary": "记录现在做到第几次的那个变量。",
+      "answer": "循环变量常常叫 `i`。它告诉程序现在是第几轮，以及下一轮该变成多少。求 1 到 n 的和时，`i` 既是次数，也是要加进去的数。",
+      "remember": "循环变量既记次数，也常参与计算。",
+      "links": [
+        {
+          "title": "for 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "accumulation",
+      "term": "累加",
+      "aliases": ["sum", "累加", "求和", "sum += i"],
+      "summary": "把一串数逐步加进同一个变量。",
+      "answer": "累加先准备 `sum = 0`，再在每一轮做 `sum += i`。最后 `sum` 就是连续和。不要在循环里把 sum 重新设成 0，否则前面加过的会丢。",
+      "remember": "sum 先清零，再一轮加一次。",
+      "links": [
+        {
+          "title": "算术运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_arithmetic"
+        }
+      ]
+    },
+    {
+      "id": "infinite-loop",
+      "term": "死循环",
+      "aliases": ["死循环", "无限循环", "停不下来"],
+      "summary": "循环条件一直成立，程序停不下来。",
+      "answer": "如果循环变量不更新，比如写了 `i <= n` 却忘记 `i++`，条件会一直成立。程序就会停不下来，这叫死循环。必会：每一轮都要让循环更接近结束。",
+      "remember": "每一轮都要让循环更接近结束。",
+      "links": [
+        {
+          "title": "for 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "do-while",
+      "term": "do-while",
+      "aliases": ["do while", "先做再问"],
+      "summary": "先做一次，再决定要不要继续。",
+      "answer": "`do-while` 会先执行一次循环体，再问条件。这是拓展，现在不用。CSP-J 入门先会 `for` 和 `while` 就够，不要把 do-while 当成硬门槛。",
+      "remember": "do-while 是拓展，现在先会 for。",
+      "links": [
+        {
+          "title": "do-while 循环（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/do"
+        }
+      ]
     }
   ]
 }
