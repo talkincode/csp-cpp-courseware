@@ -83,3 +83,7 @@ test("S1-03 wires expression FAQ terms into the guided lesson", async () => {
 test("S1-04 wires input-output FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s1-04", ["cin", "newline", "prompt-output"]);
 });
+
+test("S1-05 wires condition FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s1-05", ["if", "else-if", "equal-equal"]);
+});
