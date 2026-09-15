@@ -1,17 +1,23 @@
 {
   "id": "S2-03",
   "title": "函数与分解",
-  "status": "planned",
+  "status": "implemented",
   "interactive": {
-    "status": "planned",
-    "entry": null
+    "status": "implemented",
+    "entry": "index.html",
+    "reviewState": "awaiting-user-review"
   },
   "assessment": {
-    "status": "planned",
-    "mode": "randomized-choice"
+    "status": "implemented",
+    "mode": "randomized-choice",
+    "questionCount": 3,
+    "questionBankSize": 5,
+    "choiceDominant": true,
+    "reviewState": "awaiting-user-review"
   },
   "video": {
     "owner": "external",
     "status": "not-managed-in-this-repository"
-  }
+  },
+  "faqTermIds": ["function", "parameter", "return-value", "function-call", "function-definition"]
 }
