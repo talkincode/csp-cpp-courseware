@@ -531,6 +531,90 @@
           "url": "https://zh.cppreference.com/w/cpp/language/continue"
         }
       ]
+    },
+    {
+      "id": "compile-error",
+      "term": "编译错误",
+      "aliases": ["编译错误", "compile error", "语法错误"],
+      "summary": "编译器拒绝翻译，程序还没开始跑。",
+      "answer": "编译错误是编译器看不懂代码时给出的拒绝。常见原因是少写分号、括号不成对。程序此时还没开始运行。现在只要记住：编译不过，先改语法。",
+      "remember": "编译不过，先改语法，不要先怀疑算法。",
+      "links": [
+        {
+          "title": "C++ 常见错误（Microsoft Learn）",
+          "url": "https://learn.microsoft.com/zh-cn/cpp/error-messages/compiler-errors-1/c-cpp-build-errors"
+        }
+      ]
+    },
+    {
+      "id": "runtime-error",
+      "term": "运行错误",
+      "aliases": ["运行错误", "runtime error", "崩溃"],
+      "summary": "已经编译成功，但跑起来中途停住。",
+      "answer": "运行错误是程序已经编译成功，却在运行中途停住或崩溃，例如除以 0。电脑开始跑了，但没有正常结束。现在记住：能编译不等于能跑完。",
+      "remember": "能编译 ≠ 能跑完。",
+      "links": [
+        {
+          "title": "异常与错误处理（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/error"
+        }
+      ]
+    },
+    {
+      "id": "wrong-answer",
+      "term": "答案错误",
+      "aliases": ["答案错误", "WA", "Wrong Answer"],
+      "summary": "能跑完，但输出和题目要求不一样。",
+      "answer": "答案错误是程序能跑完，输出却和样例或题意不同。编译器和电脑都没喊停，问题在算法或格式。现在记住：能跑完不等于答对。",
+      "remember": "能跑完 ≠ 答对。",
+      "links": [
+        {
+          "title": "C++ 输入输出（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io"
+        }
+      ]
+    },
+    {
+      "id": "indentation",
+      "term": "缩进",
+      "aliases": ["缩进", "对齐", "indent"],
+      "summary": "把同一层语句对齐，方便人检查。",
+      "answer": "缩进是把同一层语句对齐，让人一眼看出谁在循环或判断里面。C++ 不靠缩进决定对错，但乱缩进会让你自己看错行。现在记住：对齐是给自己看的。",
+      "remember": "缩进给自己看；对错仍看语法。",
+      "links": [
+        {
+          "title": "语句与复合语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/statements"
+        }
+      ]
+    },
+    {
+      "id": "naming",
+      "term": "命名",
+      "aliases": ["命名", "变量名", "identifier"],
+      "summary": "给变量起能说出含义的名字。",
+      "answer": "命名是给变量起能看懂的名字，比如 n、sum，而不是 a1、tmp2。好名字让检查时少猜它记的是什么。现在记住：名字要能说出它记的量。",
+      "remember": "名字要能说出它记的是什么。",
+      "links": [
+        {
+          "title": "标识符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/identifiers"
+        }
+      ]
+    },
+    {
+      "id": "debug-print",
+      "term": "分段输出",
+      "aliases": ["分段输出", "调试输出", "cout 中间值"],
+      "summary": "在关键步骤临时打印中间值。",
+      "answer": "分段输出是在关键步骤临时用 cout 打印中间值，确认程序走到哪、变量是多少。查完再删掉，不要留给评测机。现在记住：先用小数据，再打印中间值。",
+      "remember": "先用小数据，再打印中间值。",
+      "links": [
+        {
+          "title": "std::cout（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/cout"
+        }
+      ]
     }
   ]
 }
