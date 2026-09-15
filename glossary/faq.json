@@ -811,6 +811,76 @@
           "url": "https://zh.cppreference.com/w/cpp/language/function"
         }
       ]
+    },
+    {
+      "id": "scope",
+      "term": "作用域",
+      "aliases": ["可见范围", "scope"],
+      "summary": "变量在哪些代码里还能被看见、被使用。",
+      "answer": "作用域就是变量的可见范围。写在函数里面的变量，出了这个函数就不能再用。现在先记住：在哪儿声明，就在那一块里用。",
+      "remember": "变量在哪儿声明，就在那一块里看得见。",
+      "links": [
+        {
+          "title": "作用域（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/scope"
+        }
+      ]
+    },
+    {
+      "id": "local-variable",
+      "term": "局部变量",
+      "aliases": ["局部", "local"],
+      "summary": "写在函数或代码块里面的变量。",
+      "answer": "局部变量写在函数花括号里。函数开始时它才出现，函数结束它就消失。main 里看不见 addOne 里的 t。现在先用局部变量，不要急着把什么都写成全局。",
+      "remember": "函数里的变量，出了函数就看不见。",
+      "links": [
+        {
+          "title": "声明与作用域（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/declarations"
+        }
+      ]
+    },
+    {
+      "id": "global-variable",
+      "term": "全局变量",
+      "aliases": ["全局", "global"],
+      "summary": "写在所有函数外面、到处都能看见的变量。",
+      "answer": "全局变量写在函数外面，很多函数都能改它，容易互相踩脚。CSP-J 里偶尔能用，但本课建议先把数据放进参数和局部变量。全局变量是认识项，不是现在必会。",
+      "remember": "能用参数和局部变量就先不用全局变量。",
+      "links": [
+        {
+          "title": "存储期（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/storage_duration"
+        }
+      ]
+    },
+    {
+      "id": "pass-by-value",
+      "term": "值传递",
+      "aliases": ["传值", "副本", "pass by value"],
+      "summary": "函数拿到的是一份拷贝，改它不会改外面的变量。",
+      "answer": "普通参数默认是值传递：调用 addOne(n) 时，函数里的 x 是 n 的副本。x = x + 1 只改副本，n 还是原来的数。看起来改了、其实没改，就是因为改的是副本。",
+      "remember": "值传递改的是副本，外面的变量不会变。",
+      "links": [
+        {
+          "title": "函数调用（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_other#Built-in_function_call_operator"
+        }
+      ]
+    },
+    {
+      "id": "reference",
+      "term": "引用",
+      "aliases": ["&", "引用参数", "reference"],
+      "summary": "给原变量起另一个名字，改它就是改原来的变量。",
+      "answer": "写成 int &x 时，x 不是副本，而是原变量的另一个名字。void addOne(int &x) 里 x = x + 1 会真的改外面的 n。只有确实要改原变量时才用引用。指针是拓展，现在不必会。",
+      "remember": "要改原变量才用 int &x；只算结果就用值传递。",
+      "links": [
+        {
+          "title": "引用声明（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/reference"
+        }
+      ]
     }
   ]
 }

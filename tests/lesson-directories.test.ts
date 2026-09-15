@@ -301,10 +301,33 @@ test("S2-03 supplies a guided function lesson and randomized choice quiz", async
   expect(source).toContain("isLeap");
 });
 
+test("S2-04 supplies a guided scope-and-parameter lesson and randomized choice quiz", async () => {
+  const { source, manifest } = await expectImplementedInteractiveLesson("s2-04");
+
+  expect(manifest.faqTermIds).toContain("scope");
+  expect(manifest.faqTermIds).toContain("local-variable");
+  expect(manifest.faqTermIds).toContain("global-variable");
+  expect(manifest.faqTermIds).toContain("pass-by-value");
+  expect(manifest.faqTermIds).toContain("reference");
+  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(source).toContain("必会");
+  expect(source).toContain("建议掌握");
+  expect(source).toContain("拓展");
+  expect(source).toContain('courseId: "S2-04"');
+  expect(source).toContain('type: "choice"');
+  expect(source).toContain("不会在浏览器里运行 C++");
+  expect(source).toContain("csp-cpp-s2-04-progress-v1");
+  expect(source).toContain("course-plan / 自编");
+  expect(source).toContain("题库暂时不可用");
+  expect(source).toContain("void addOne(int x)");
+  expect(source).toContain("addOne(n)");
+  expect(source).toContain("int &x");
+});
+
 test("the dashboard only exposes an interactive entry for implemented lessons", async () => {
   const dashboard = await Bun.file(`${import.meta.dir}/../index.html`).text();
 
-  expect(dashboard).toContain('const implementedInteractiveLessons = ["S1-01", "S1-02", "S1-03", "S1-04", "S1-05", "S1-06", "S1-07", "S1-08", "S2-01", "S2-02", "S2-03"]');
+  expect(dashboard).toContain('const implementedInteractiveLessons = ["S1-01", "S1-02", "S1-03", "S1-04", "S1-05", "S1-06", "S1-07", "S1-08", "S2-01", "S2-02", "S2-03", "S2-04"]');
   expect(dashboard).toContain(".lesson-entry[hidden] {");
   expect(dashboard).toContain("display: none;");
   expect(dashboard).toContain("互动课件正在制作");

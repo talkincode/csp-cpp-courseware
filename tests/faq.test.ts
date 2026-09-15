@@ -111,3 +111,7 @@ test("S2-02 wires string FAQ terms into the guided lesson", async () => {
 test("S2-03 wires function FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s2-03", ["function", "parameter", "return-value"]);
 });
+
+test("S2-04 wires scope and parameter FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s2-04", ["scope", "local-variable", "pass-by-value"]);
+});
