@@ -131,3 +131,7 @@ test("S2-07 wires enumeration and simulation FAQ terms into the guided lesson", 
 test("S2-08 wires complexity and test-point FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s2-08", ["operation-count", "linear-time", "test-point"]);
 });
+
+test("S3-01 wires digit and GCD FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s3-01", ["digit", "gcd", "loop-invariant"]);
+});
