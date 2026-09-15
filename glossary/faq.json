@@ -1091,6 +1091,76 @@
           "url": "https://zh.cppreference.com/w/cpp/language/if"
         }
       ]
+    },
+    {
+      "id": "operation-count",
+      "term": "操作次数",
+      "aliases": ["步数", "大约几次", "operation count"],
+      "summary": "程序大概要做多少步活。",
+      "answer": "操作次数就是程序大概要做多少步。一层循环从 0 走到 n-1，大约做 n 次；两层循环套在一起，大约做 n×n 次。现在先会数，不必背严格证明。",
+      "remember": "先数循环大概跑几次，再判断能不能跑完。",
+      "links": [
+        {
+          "title": "for 循环（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "linear-time",
+      "term": "O(n)",
+      "aliases": ["线性", "大约 n 次", "O(n)"],
+      "summary": "大约做 n 次，n 变大时工作量跟着变大。",
+      "answer": "O(n) 可以先记成“大约做 n 次”。n=3 大约 3 步，n=100000 大约十万步。CSP-J 1 秒常常能做大约一亿步，所以单层循环通常够用。严格证明是拓展。",
+      "remember": "看到 O(n)，先想“大约做 n 次”。",
+      "links": [
+        {
+          "title": "复杂度初步（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/complexity/"
+        }
+      ]
+    },
+    {
+      "id": "quadratic-time",
+      "term": "O(n²)",
+      "aliases": ["平方", "大约 n×n 次", "O(n^2)", "O(n²)"],
+      "summary": "大约做 n 乘 n 次，n 变大时差得很快。",
+      "answer": "O(n²) 可以先记成“大约做 n×n 次”。n=3 大约 9 步；n=100000 大约 100000×100000，远超一秒能做的量。两层循环常常是这种。主定理是拓展。",
+      "remember": "看到 O(n²)，先想“大约做 n 乘 n 次”。",
+      "links": [
+        {
+          "title": "复杂度初步（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/complexity/"
+        }
+      ]
+    },
+    {
+      "id": "boundary-data",
+      "term": "边界数据",
+      "aliases": ["最小数据", "最大数据", "边界", "boundary"],
+      "summary": "最小、最大或刚好卡在条件边上的输入。",
+      "answer": "边界数据是最小、最大或刚好卡在条件边上的输入。例如 n=1 和题目允许的最大 n。只测样例不够；这些数最容易让循环或判断出错。",
+      "remember": "除了样例，至少再测最小和最大。",
+      "links": [
+        {
+          "title": "for 循环（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "test-point",
+      "term": "测试点",
+      "aliases": ["测试数据", "评测点", "test case"],
+      "summary": "用来检查程序的一组输入，常含边界。",
+      "answer": "测试点是用来检查程序的一组输入。自己出题时至少准备普通数据、最小数据和最大数据。评测机会用很多组；你先会自己造三组，不必猜隐藏数据。",
+      "remember": "自己至少准备普通、最小、最大三类测试点。",
+      "links": [
+        {
+          "title": "NOI 官网",
+          "url": "https://www.noi.cn/"
+        }
+      ]
     }
   ]
 }
