@@ -1645,7 +1645,8 @@
 
         const entryLink = document.querySelector("#lessonEntryLink");
         const entryStatus = document.querySelector("#lessonEntryStatus");
-        const interactiveLessonAvailable = lesson.id === "S1-01";
+        const implementedInteractiveLessons = ["S1-01", "S1-02"];
+        const interactiveLessonAvailable = implementedInteractiveLessons.includes(lesson.id);
         entryLink.hidden = !interactiveLessonAvailable;
         if (interactiveLessonAvailable) {
           entryLink.href = `lessons/${lesson.id.toLowerCase()}/`;

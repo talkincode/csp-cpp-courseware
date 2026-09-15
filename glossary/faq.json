@@ -97,6 +97,104 @@
           "url": "https://zh.cppreference.com/w/cpp/language/statements"
         }
       ]
+    },
+    {
+      "id": "variable",
+      "term": "变量",
+      "aliases": ["variable", "声明变量"],
+      "summary": "给一个值起名字，方便后面反复使用。",
+      "answer": "变量像贴了名字的盒子：先起名字并说明类型，再把值放进去。程序用这个名字读取或更新盒子里的内容。现在只要记住：变量有名字、有类型、有当前值。",
+      "remember": "变量 = 有名字、有类型、里面装着当前值。",
+      "links": [
+        {
+          "title": "声明与名字（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/declarations"
+        }
+      ]
+    },
+    {
+      "id": "int",
+      "term": "int",
+      "aliases": ["整数", "integer"],
+      "summary": "存放常见整数的类型。",
+      "answer": "`int` 用来存放没有小数点的整数，比如人数、名次、普通分数。CSP-J 入门时，计数题先考虑 `int`。特别大的整数再改用 `long long`。",
+      "remember": "人数、次数、普通分数，先想 int。",
+      "links": [
+        {
+          "title": "基本类型（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/types"
+        }
+      ]
+    },
+    {
+      "id": "long-long",
+      "term": "long long",
+      "aliases": ["long long", "长整数"],
+      "summary": "需要装更大整数时用的类型。",
+      "answer": "`long long` 也是整数，但比 `int` 更能装大数。题目范围很大、总分可能爆掉普通整数时，建议用它。本课只要养成看范围的习惯，不必背完整范围表。",
+      "remember": "数可能很大时，用 long long 更稳妥。",
+      "links": [
+        {
+          "title": "基本类型（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/types"
+        }
+      ]
+    },
+    {
+      "id": "double",
+      "term": "double",
+      "aliases": ["实数", "小数"],
+      "summary": "存放带小数的数的类型。",
+      "answer": "`double` 用来存放可能有小数的量，例如平均分。整数除法会丢掉小数；需要平均数时，通常选 `double`。现在只要能选对类型，不必背精度细节。",
+      "remember": "平均分、可能有小数的量，用 double。",
+      "links": [
+        {
+          "title": "基本类型（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/types"
+        }
+      ]
+    },
+    {
+      "id": "char",
+      "term": "char",
+      "aliases": ["字符"],
+      "summary": "存放单个字符的类型。",
+      "answer": "`char` 一次只装一个字符，例如 `'A'`。它不是一串文字。姓名、整句话要等到后面学习字符串。现在分清：一个字母用 `char`，姓名不是 `char`。",
+      "remember": "char 装一个字符；一串文字不是 char。",
+      "links": [
+        {
+          "title": "基本类型（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/types"
+        }
+      ]
+    },
+    {
+      "id": "assignment",
+      "term": "赋值",
+      "aliases": ["=", "赋值语句"],
+      "summary": "把右边的值放进左边的变量。",
+      "answer": "`score = 10;` 表示把 10 放进名叫 score 的变量。`score = score + 5;` 是取出当前值加 5，再放回去。这里的 `=` 是放进去，不是比较两边是否相等。",
+      "remember": "C++ 的 = 表示放进变量，不是比较是否相等。",
+      "links": [
+        {
+          "title": "赋值运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_assignment"
+        }
+      ]
+    },
+    {
+      "id": "overflow",
+      "term": "溢出",
+      "aliases": ["overflow", "整数溢出"],
+      "summary": "数太大，当前类型装不下。",
+      "answer": "类型像盒子，太小就会装不下。普通 `int` 装常见整数够用，特别大的总分可能溢出，结果会变得奇怪。本课建议先看题目范围；精确上下界不是现在的硬门槛。",
+      "remember": "先看题目范围，再决定用 int 还是 long long。",
+      "links": [
+        {
+          "title": "基本类型（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/types"
+        }
+      ]
     }
   ]
 }

@@ -25,15 +25,18 @@ bun run dev
 
 ## 课件目录
 
-每节课都有自己的目录：`lessons/<小写课程-id>/`。全部 40 个目录及其 `lesson.json` 已由 Bun 脚手架建立；目前首个可体验的互动课件是：
+每节课都有自己的目录：`lessons/<小写课程-id>/`。全部 40 个目录及其 `lesson.json` 已由 Bun 脚手架建立；目前可体验的互动课件是：
 
 ```text
 lessons/s1-01/
 ├── index.html   # 引导式互动学习与随机选择题小测
 └── lesson.json  # 本课的交付状态；视频明确为仓库外实现
+lessons/s1-02/
+├── index.html   # 变量与数据类型的互动学习与随机选择题小测
+└── lesson.json  # 本课的交付状态；视频明确为仓库外实现
 ```
 
-启动 `bun run dev` 后，打开 <http://localhost:4173/lessons/s1-01/>。其余课程目录目前只保留元数据，尚未实现页面。
+启动 `bun run dev` 后，打开 <http://localhost:4173/lessons/s1-01/> 或 <http://localhost:4173/lessons/s1-02/>。其余课程目录目前只保留元数据，尚未实现页面。
 
 课件里的陌生词（例如 `g++`）可点开 [`glossary/faq.json`](./glossary/faq.json) 中的基础解释。后续课件出现同类概念时，也必须引用同一份词条表。
 
