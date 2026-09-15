@@ -91,3 +91,7 @@ test("S1-05 wires condition FAQ terms into the guided lesson", async () => {
 test("S1-06 wires loop FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s1-06", ["for", "while", "infinite-loop"]);
 });
+
+test("S1-07 wires nested-loop FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s1-07", ["nested-loop", "outer-loop", "break"]);
+});
