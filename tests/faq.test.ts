@@ -13,8 +13,32 @@ type FaqTerm = {
 
 const catalogFile = Bun.file(`${import.meta.dir}/../glossary/faq.json`);
 const panelFile = Bun.file(`${import.meta.dir}/../glossary/faq-panel.js`);
-const lessonFile = Bun.file(`${import.meta.dir}/../lessons/s1-01/index.html`);
-const manifestFile = Bun.file(`${import.meta.dir}/../lessons/s1-01/lesson.json`);
+
+async function expectLessonFaqWiring(directory: string, extraIds: string[] = []) {
+  const catalog = (await catalogFile.json()) as { terms: FaqTerm[] };
+  const catalogIds = new Set(catalog.terms.map((term) => term.id));
+  const manifest = (await Bun.file(`${import.meta.dir}/../lessons/${directory}/lesson.json`).json()) as {
+    faqTermIds: string[];
+  };
+  const lesson = await Bun.file(`${import.meta.dir}/../lessons/${directory}/index.html`).text();
+  const panel = await panelFile.text();
+
+  expect(panel).toContain('const catalogUrl = "/glossary/faq.json"');
+  expect(panel).toContain("faq-shell");
+  expect(panel).toContain("继续学习");
+  expect(lesson).toContain('src="/glossary/faq-panel.js"');
+  expect(lesson).toContain('id="faqCatalogButton"');
+  expect(manifest.faqTermIds.length).toBeGreaterThan(0);
+
+  for (const id of manifest.faqTermIds) {
+    expect(catalogIds.has(id)).toBe(true);
+    expect(lesson).toContain(`data-faq="${id}"`);
+  }
+
+  for (const id of extraIds) {
+    expect(lesson).toContain(`data-faq="${id}"`);
+  }
+}
 
 test("the shared FAQ catalog only contains basic, linkable beginner answers", async () => {
   const catalog = (await catalogFile.json()) as { terms: FaqTerm[] };
@@ -41,26 +65,13 @@ test("the shared FAQ catalog only contains basic, linkable beginner answers", as
 });
 
 test("S1-01 wires every declared FAQ term into the guided lesson", async () => {
-  const catalog = (await catalogFile.json()) as { terms: FaqTerm[] };
-  const catalogIds = new Set(catalog.terms.map((term) => term.id));
-  const manifest = (await manifestFile.json()) as { faqTermIds: string[] };
-  const lesson = await lessonFile.text();
   const panel = await panelFile.text();
-
-  expect(panel).toContain('const catalogUrl = "/glossary/faq.json"');
-  expect(panel).toContain("faq-shell");
-  expect(panel).toContain("继续学习");
   expect(panel).toContain(".terminal .faq-term[aria-expanded=\"true\"]");
   expect(panel).toContain("color: #0c2620");
   expect(panel).toContain("background: #f8c85f");
-  expect(lesson).toContain('src="/glossary/faq-panel.js"');
-  expect(lesson).toContain('id="faqCatalogButton"');
-  expect(manifest.faqTermIds.length).toBeGreaterThan(0);
+  await expectLessonFaqWiring("s1-01", ["gpp"]);
+});
 
-  for (const id of manifest.faqTermIds) {
-    expect(catalogIds.has(id)).toBe(true);
-    expect(lesson).toContain(`data-faq="${id}"`);
-  }
-
-  expect(lesson).toContain('data-faq="gpp"');
+test("S1-02 wires variable and type FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s1-02", ["int", "char", "variable"]);
 });

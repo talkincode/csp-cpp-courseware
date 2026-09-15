@@ -1,17 +1,22 @@
 {
   "id": "S1-02",
   "title": "变量与数据类型",
-  "status": "planned",
+  "status": "implemented",
   "interactive": {
-    "status": "planned",
-    "entry": null
+    "status": "implemented",
+    "entry": "index.html",
+    "reviewState": "awaiting-user-review"
   },
   "assessment": {
-    "status": "planned",
-    "mode": "randomized-choice"
+    "status": "implemented",
+    "mode": "randomized-choice",
+    "questionCount": 3,
+    "questionBankSize": 5,
+    "choiceDominant": true
   },
   "video": {
     "owner": "external",
     "status": "not-managed-in-this-repository"
-  }
+  },
+  "faqTermIds": ["variable", "int", "long-long", "double", "char", "assignment", "overflow"]
 }

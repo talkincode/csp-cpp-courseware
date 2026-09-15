@@ -28,11 +28,12 @@ test("every planned course owns a lesson directory and manifest", async () => {
   }
 });
 
-test("the first lesson supplies a guided interactive page and randomized choice quiz", async () => {
-  const manifestFile = Bun.file(`${lessonsRoot}/s1-01/lesson.json`);
-  const firstLesson = Bun.file(`${lessonsRoot}/s1-01/index.html`);
+async function expectImplementedInteractiveLesson(directory: string) {
+  const manifestFile = Bun.file(`${lessonsRoot}/${directory}/lesson.json`);
+  const lessonPage = Bun.file(`${lessonsRoot}/${directory}/index.html`);
 
   const manifest = (await manifestFile.json()) as LessonManifest & {
+    faqTermIds?: string[];
     interactive: LessonManifest["interactive"] & { reviewState: string };
     assessment: LessonManifest["assessment"] & {
       choiceDominant: boolean;
@@ -41,14 +42,21 @@ test("the first lesson supplies a guided interactive page and randomized choice 
     };
   };
   expect(manifest.status).toBe("implemented");
+  expect(manifest.interactive.status).toBe("implemented");
   expect(manifest.interactive.entry).toBe("index.html");
   expect(manifest.interactive.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.status).toBe("implemented");
   expect(manifest.assessment.mode).toBe("randomized-choice");
   expect(manifest.assessment.choiceDominant).toBe(true);
+  expect(manifest.assessment.questionCount).toBe(3);
   expect(manifest.assessment.questionBankSize).toBeGreaterThan(manifest.assessment.questionCount);
+  expect(manifest.video.owner).toBe("external");
+  expect(manifest.video.status).toBe("not-managed-in-this-repository");
+  expect(Array.isArray(manifest.faqTermIds)).toBe(true);
+  expect((manifest.faqTermIds ?? []).length).toBeGreaterThan(0);
 
-  expect(await firstLesson.exists()).toBe(true);
-  const source = await firstLesson.text();
+  expect(await lessonPage.exists()).toBe(true);
+  const source = await lessonPage.text();
   expect(source).toContain("const questionPool");
   expect(source).toContain("function questionSetForSeed");
   expect(source).toContain("crypto.getRandomValues");
@@ -56,12 +64,35 @@ test("the first lesson supplies a guided interactive page and randomized choice 
   expect(source).toContain("prefers-reduced-motion");
   expect(source).toContain('aria-disabled="true"');
   expect(source).toContain("grid-template-columns: 20px 26px minmax(0, 1fr);");
+  expect(source).toContain('src="/glossary/faq-panel.js"');
+  expect(source).toContain('id="faqCatalogButton"');
+  expect(source).not.toContain("<video");
+  return { manifest, source };
+}
+
+test("the first lesson supplies a guided interactive page and randomized choice quiz", async () => {
+  await expectImplementedInteractiveLesson("s1-01");
+});
+
+test("S1-02 supplies a guided variable lesson and randomized choice quiz", async () => {
+  const { source, manifest } = await expectImplementedInteractiveLesson("s1-02");
+
+  expect(manifest.faqTermIds).toContain("int");
+  expect(manifest.faqTermIds).toContain("char");
+  expect(manifest.faqTermIds).toContain("variable");
+  expect(source).toContain("必会");
+  expect(source).toContain("建议掌握");
+  expect(source).toContain("拓展");
+  expect(source).toContain('courseId: "S1-02"');
+  expect(source).toContain('type: "choice"');
+  expect(source).toContain("不会在浏览器里运行 C++");
+  expect(source).toContain("csp-cpp-s1-02-progress-v1");
 });
 
 test("the dashboard only exposes an interactive entry for implemented lessons", async () => {
   const dashboard = await Bun.file(`${import.meta.dir}/../index.html`).text();
 
-  expect(dashboard).toContain('const interactiveLessonAvailable = lesson.id === "S1-01";');
+  expect(dashboard).toContain('const implementedInteractiveLessons = ["S1-01", "S1-02"]');
   expect(dashboard).toContain(".lesson-entry[hidden] {");
   expect(dashboard).toContain("display: none;");
   expect(dashboard).toContain("互动课件正在制作");
