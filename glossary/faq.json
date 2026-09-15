@@ -195,6 +195,76 @@
           "url": "https://zh.cppreference.com/w/cpp/language/types"
         }
       ]
+    },
+    {
+      "id": "expression",
+      "term": "表达式",
+      "aliases": ["expression", "算式"],
+      "summary": "用运算符号把变量和数字连成一句可计算的话。",
+      "answer": "表达式就是可以算出一个值的算式。例如 `2 * (length + width)` 会先算括号里的和，再乘 2。本课先学会把文字公式翻译成这样的算式，不必背完整运算符表。",
+      "remember": "表达式是可以算出一个值的算式。",
+      "links": [
+        {
+          "title": "表达式（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/expressions"
+        }
+      ]
+    },
+    {
+      "id": "integer-division",
+      "term": "整除 /",
+      "aliases": ["整数除法", "/", "整除"],
+      "summary": "两个整数相除时，小数部分会被丢掉。",
+      "answer": "在 C++ 里，两个 int 相除得到的还是整数。`7 / 2` 的结果是 3，不是 3.5。需要小数时，至少一边写成小数，例如 `7.0 / 2`。本课先记住：整数除法会丢掉余下的小数。",
+      "remember": "两个整数相除，结果仍是整数，小数会被丢掉。",
+      "links": [
+        {
+          "title": "算术运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_arithmetic"
+        }
+      ]
+    },
+    {
+      "id": "modulo",
+      "term": "取模 %",
+      "aliases": ["%", "取余", "取模"],
+      "summary": "算出整除后剩下的余数。",
+      "answer": "`%` 读作取模，得到的是余数。`7 % 2` 等于 1，因为 7 分成 3 个 2 还剩 1。判断奇数偶数常用 `n % 2`。它不是百分号的意思。",
+      "remember": "% 得到余数；n % 2 等于 0 就是偶数。",
+      "links": [
+        {
+          "title": "算术运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_arithmetic"
+        }
+      ]
+    },
+    {
+      "id": "precedence",
+      "term": "运算优先级",
+      "aliases": ["优先级", "先乘除后加减"],
+      "summary": "没有括号时，乘除会比加减先算。",
+      "answer": "C++ 和口算一样，通常先算乘除，再算加减。所以 `a + b / 2` 会先算 `b / 2`，再加 a。想先算加法，就要加括号。完整优先级表是拓展，现在不用背。",
+      "remember": "没括号时先乘除后加减；拿不准就加括号。",
+      "links": [
+        {
+          "title": "运算符优先级（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_precedence"
+        }
+      ]
+    },
+    {
+      "id": "parentheses",
+      "term": "括号 ()",
+      "aliases": ["括号", "()", "圆括号"],
+      "summary": "用来指定“先算哪一部分”。",
+      "answer": "括号会改变运算顺序。`(a + b) / 2` 会先把 a 和 b 加起来再除以 2。写平均数、周长这种公式时，宁可多加括号，也不要靠记忆去赌优先级。",
+      "remember": "想先算哪一步，就给哪一步加括号。",
+      "links": [
+        {
+          "title": "运算符优先级（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_precedence"
+        }
+      ]
     }
   ]
 }
