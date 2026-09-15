@@ -951,6 +951,76 @@
           "url": "https://zh.cppreference.com/w/cpp/language/operator_comparison"
         }
       ]
+    },
+    {
+      "id": "bubble-sort",
+      "term": "冒泡思想",
+      "aliases": ["冒泡", "冒泡排序", "bubble"],
+      "summary": "反复比较相邻两个数，把更大的往后换。",
+      "answer": "冒泡思想就是：从左到右看相邻两格，如果左边比右边大，就交换。大的像气泡一样往后走。本课用它看懂“比较再交换”，不要求背完整算法名。快排、堆排是拓展。",
+      "remember": "相邻比较，大的往后换。",
+      "links": [
+        {
+          "title": "std::swap（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/swap"
+        }
+      ]
+    },
+    {
+      "id": "sort",
+      "term": "sort",
+      "aliases": ["std::sort", "排序函数"],
+      "summary": "标准库里按比较规则把一段数排好的工具。",
+      "answer": "sort(a, a + n) 表示把数组 a 的前 n 个元素按比较规则排好，默认从小到大。它是建议掌握的现成工具。本课不在浏览器里运行它，也不要求手写快排。",
+      "remember": "sort(a, a + n) 默认把前 n 个数从小到大排好。",
+      "links": [
+        {
+          "title": "std::sort（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/sort"
+        }
+      ]
+    },
+    {
+      "id": "comparison-rule",
+      "term": "比较规则",
+      "aliases": ["比较器", "谁排前面", "cmp"],
+      "summary": "规定两个元素谁应该排在前面。",
+      "answer": "比较规则回答“谁该排前面”。默认是更小的在前。按分数从高到低时，分数大的应排前面。现在只要会说清规则；lambda 比较器是拓展。",
+      "remember": "先说清谁该排前面，再交给排序去做。",
+      "links": [
+        {
+          "title": "比较运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_comparison"
+        }
+      ]
+    },
+    {
+      "id": "swap",
+      "term": "交换",
+      "aliases": ["swap", "对调"],
+      "summary": "把两个位置上的值对调。",
+      "answer": "交换就是对调两格：原来 a[0]=3、a[1]=1，交换后变成 1 和 3。冒泡每一步都可能交换相邻两格。写成 swap(a[i], a[i+1])。本课只演示这个动作。",
+      "remember": "交换就是把两个位置上的值对调。",
+      "links": [
+        {
+          "title": "std::swap（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/swap"
+        }
+      ]
+    },
+    {
+      "id": "stability",
+      "term": "稳定性",
+      "aliases": ["稳定排序", "相同元素顺序", "stable"],
+      "summary": "同样的元素，排序后是否还保持原来的先后。",
+      "answer": "稳定性问的是：两个分数相同的人，原来在前的排完还在不在前。稳定排序会保持原顺序。本课只要能用小例子检查；严格证明和 stable_sort 细节是拓展。",
+      "remember": "相同元素如果仍保持原来先后，就是稳定的。",
+      "links": [
+        {
+          "title": "std::stable_sort（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/stable_sort"
+        }
+      ]
     }
   ]
 }
