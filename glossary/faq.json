@@ -1161,6 +1161,48 @@
           "url": "https://www.noi.cn/"
         }
       ]
+    },
+    {
+      "id": "digit",
+      "term": "数位",
+      "aliases": ["各位", "个位", "digit"],
+      "summary": "整数里从右往左的每一位数字。",
+      "answer": "数位是整数里的每一位。个位在最右边，用 `n % 10` 取出；用 `n / 10` 去掉个位后，原来的十位会变成新的个位。现在只要会拆数字，不必先转成字符串。",
+      "remember": "个位用 n % 10，去掉个位用 n / 10。",
+      "links": [
+        {
+          "title": "算术运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_arithmetic"
+        }
+      ]
+    },
+    {
+      "id": "gcd",
+      "term": "最大公约数",
+      "aliases": ["GCD", "gcd", "辗转相除"],
+      "summary": "两个正整数都能整除的最大那个数。",
+      "answer": "最大公约数 GCD 是两个正整数都能整除的最大那个数。辗转相除：用较大数除以较小数，换成「较小数和余数」再继续，直到余数为 0，另一个数就是 GCD。扩展欧几里得现在是拓展。",
+      "remember": "余数变成 0 时，另一个数就是 GCD。",
+      "links": [
+        {
+          "title": "std::gcd（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/numeric/gcd"
+        }
+      ]
+    },
+    {
+      "id": "loop-invariant",
+      "term": "循环不变量",
+      "aliases": ["不变量", "invariant"],
+      "summary": "每一轮循环都成立、用来保证答案还对的关系。",
+      "answer": "循环不变量是每一轮都成立的关系。拆数位时「还没处理的部分仍在 n 里」一直成立；求 GCD 时「当前两个数的公约数不变」。它帮你解释循环为什么能停。不必背形式化证明。",
+      "remember": "每一轮都要保住同一条关系，循环才靠得住。",
+      "links": [
+        {
+          "title": "循环（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/statements#Iteration_statements"
+        }
+      ]
     }
   ]
 }
