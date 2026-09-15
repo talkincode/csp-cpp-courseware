@@ -461,6 +461,76 @@
           "url": "https://zh.cppreference.com/w/cpp/language/do"
         }
       ]
+    },
+    {
+      "id": "nested-loop",
+      "term": "嵌套循环",
+      "aliases": ["嵌套循环", "两层循环", "双重循环"],
+      "summary": "一个循环里面再放一个循环。",
+      "answer": "嵌套循环就是外层每走一步，内层把该做的事完整做一遍。印 n 行 n 列星星时，外层走行，内层走列。现在只要记住：里外两层各管一件事。",
+      "remember": "外层走一步，内层完整跑一轮。",
+      "links": [
+        {
+          "title": "for 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "outer-loop",
+      "term": "外层循环",
+      "aliases": ["外层", "外循环", "行循环"],
+      "summary": "包在外面、通常表示“第几行”的循环。",
+      "answer": "外层循环常常写成 `for (int r = 1; r <= n; r++)`，表示当前是第 r 行。它每加一次，里面的内层循环都会重新从头跑完。画图案时先想外层管哪一维。",
+      "remember": "外层多半管行：r 变了，就换一行。",
+      "links": [
+        {
+          "title": "for 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "inner-loop",
+      "term": "内层循环",
+      "aliases": ["内层", "内循环", "列循环"],
+      "summary": "写在外层里面、通常表示“第几列”的循环。",
+      "answer": "内层循环常常写成 `for (int c = 1; c <= n; c++)`，表示当前是第 c 列。外层还没换行时，内层要把这一行的每一列都做完。不要让内外层抢同一件事。",
+      "remember": "内层多半管列：一行里的每一格。",
+      "links": [
+        {
+          "title": "for 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/for"
+        }
+      ]
+    },
+    {
+      "id": "break",
+      "term": "break",
+      "aliases": ["break", "跳出循环"],
+      "summary": "立刻结束当前这一层循环。",
+      "answer": "`break` 的意思是：不要再继续这一层循环了。在内层找到目标后写 `break`，内层会停，外层还可以走下一行。这是建议掌握，用来“找到就停”。",
+      "remember": "break 停的是当前这一层循环。",
+      "links": [
+        {
+          "title": "break 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/break"
+        }
+      ]
+    },
+    {
+      "id": "continue",
+      "term": "continue",
+      "aliases": ["continue", "继续下一轮"],
+      "summary": "跳过本轮剩下的语句，进入下一轮。",
+      "answer": "`continue` 不是结束整个循环，只是结束这一轮。内层遇到它会马上进入下一列。这是拓展，现在先会嵌套 for 和 break 就够，不要把它当硬门槛。",
+      "remember": "continue 是拓展：跳过本轮，不是停掉循环。",
+      "links": [
+        {
+          "title": "continue 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/continue"
+        }
+      ]
     }
   ]
 }

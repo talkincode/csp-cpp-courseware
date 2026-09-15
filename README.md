@@ -46,9 +46,12 @@ lessons/s1-05/
 lessons/s1-06/
 ├── index.html   # 循环、累加与死循环对照的互动学习与随机选择题小测
 └── lesson.json  # 本课的交付状态；视频明确为仓库外实现
+lessons/s1-07/
+├── index.html   # 嵌套循环、行列职责与 break 对照的互动学习与随机选择题小测
+└── lesson.json  # 本课的交付状态；视频明确为仓库外实现
 ```
 
-启动 `bun run dev` 后，打开 <http://localhost:4173/lessons/s1-01/>、<http://localhost:4173/lessons/s1-02/>、<http://localhost:4173/lessons/s1-03/>、<http://localhost:4173/lessons/s1-04/>、<http://localhost:4173/lessons/s1-05/> 或 <http://localhost:4173/lessons/s1-06/>。其余课程目录目前只保留元数据，尚未实现页面。
+启动 `bun run dev` 后，打开 <http://localhost:4173/lessons/s1-01/>、<http://localhost:4173/lessons/s1-02/>、<http://localhost:4173/lessons/s1-03/>、<http://localhost:4173/lessons/s1-04/>、<http://localhost:4173/lessons/s1-05/>、<http://localhost:4173/lessons/s1-06/> 或 <http://localhost:4173/lessons/s1-07/>。其余课程目录目前只保留元数据，尚未实现页面。
 
 课件里的陌生词（例如 `g++`）可点开 [`glossary/faq.json`](./glossary/faq.json) 中的基础解释。后续课件出现同类概念时，也必须引用同一份词条表。
 
