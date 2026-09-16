@@ -1329,6 +1329,62 @@
           "url": "https://zh.cppreference.com/w/cpp/algorithm/binary_search"
         }
       ]
+    },
+    {
+      "id": "prefix-sum",
+      "term": "前缀和",
+      "aliases": ["累计和", "prefix sum"],
+      "summary": "从第一个数一直加到当前位置的累计结果。",
+      "answer": "前缀和是从第一个数一直加到当前位置的累计和。先大约花 n 次把表算好，以后每次查一段只要一次减法。现在记住：sum[i] 表示前 i 个数的和。",
+      "remember": "sum[i] 表示前 i 个数加起来的结果。",
+      "links": [
+        {
+          "title": "前缀和（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/prefix-sum/"
+        }
+      ]
+    },
+    {
+      "id": "prefix-array",
+      "term": "前缀和数组",
+      "aliases": ["sum[]", "累计表"],
+      "summary": "把每个位置的前缀和存成一张表。",
+      "answer": "前缀和数组常写成 sum[]。约定 sum[0]=0，sum[i]=sum[i-1]+a[i]。从第一个元素开始也能用同一张表。现在只要会填这张表，不必写树状数组。",
+      "remember": "sum[0]=0，sum[i]=sum[i-1]+a[i]。",
+      "links": [
+        {
+          "title": "前缀和（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/prefix-sum/"
+        }
+      ]
+    },
+    {
+      "id": "range-sum",
+      "term": "区间和",
+      "aliases": ["区间查询", "连续一段的和"],
+      "summary": "把数组里连续一段加起来的结果。",
+      "answer": "区间和是连续一段 a[l] 到 a[r] 的和。有了前缀和，它等于 sum[r]-sum[l-1]。不要写成 sum[r]-sum[l]，那样会漏掉 a[l]。",
+      "remember": "查 [l, r] 用 sum[r] - sum[l - 1]。",
+      "links": [
+        {
+          "title": "前缀和（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/prefix-sum/"
+        }
+      ]
+    },
+    {
+      "id": "index-offset",
+      "term": "下标偏移",
+      "aliases": ["l-1", "减错一格"],
+      "summary": "查询时 l 和 l-1 差一格，减错就会漏掉左端点。",
+      "answer": "下标偏移是说 l 和 l-1 差一格。查询 [l,r] 要用 sum[r]-sum[l-1]，因为要减掉 l 前面那一段。l=1 时减的是 sum[0]，它等于 0。",
+      "remember": "减的是 l 前面那一段，也就是 sum[l-1]。",
+      "links": [
+        {
+          "title": "前缀和（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/prefix-sum/"
+        }
+      ]
     }
   ]
 }

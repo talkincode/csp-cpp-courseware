@@ -143,3 +143,7 @@ test("S3-02 wires recursion FAQ terms into the guided lesson", async () => {
 test("S3-03 wires binary-search FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s3-03", ["binary-search", "monotonicity", "left-right-bound"]);
 });
+
+test("S3-04 wires prefix-sum FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s3-04", ["prefix-sum", "prefix-array", "range-sum"]);
+});
