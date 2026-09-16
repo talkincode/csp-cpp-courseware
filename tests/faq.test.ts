@@ -139,3 +139,7 @@ test("S3-01 wires digit and GCD FAQ terms into the guided lesson", async () => {
 test("S3-02 wires recursion FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s3-02", ["recursion", "base-case", "call-stack"]);
 });
+
+test("S3-03 wires binary-search FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s3-03", ["binary-search", "monotonicity", "left-right-bound"]);
+});
