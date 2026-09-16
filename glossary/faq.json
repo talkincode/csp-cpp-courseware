@@ -1511,6 +1511,90 @@
           "url": "https://zh.cppreference.com/w/cpp/algorithm/sort"
         }
       ]
+    },
+    {
+      "id": "stack",
+      "term": "栈",
+      "aliases": ["stack", "stack<char>"],
+      "summary": "后进先出的容器，C++ 里写作 stack。",
+      "answer": "栈是后进先出的容器，C++ 名称是 `stack`。后放进去的先拿出来，像叠盘子。括号匹配时，后出现的左括号要先配上。现在记住进出顺序即可。",
+      "remember": "栈：后放进去的先拿出来。",
+      "links": [
+        {
+          "title": "std::stack（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/container/stack"
+        }
+      ]
+    },
+    {
+      "id": "queue",
+      "term": "队列",
+      "aliases": ["queue", "queue<int>"],
+      "summary": "先进先出的容器，C++ 里写作 queue。",
+      "answer": "队列是先进先出的容器，C++ 名称是 `queue`。先排进队的先出来，像排队买票。入队后出队顺序不变。现在只要说得出进出顺序。",
+      "remember": "队列：先排进队的先出来。",
+      "links": [
+        {
+          "title": "std::queue（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/container/queue"
+        }
+      ]
+    },
+    {
+      "id": "lifo",
+      "term": "后进先出",
+      "aliases": ["LIFO", "后进先出"],
+      "summary": "后放进去的先拿出来。",
+      "answer": "后进先出就是后放进去的先拿出来。栈按这个规则工作。不要和队列的先进先出搞混。括号匹配正是用这个顺序。",
+      "remember": "后进先出 = 后放进去的先拿出来。",
+      "links": [
+        {
+          "title": "栈（OI Wiki）",
+          "url": "https://oi-wiki.org/ds/stack/"
+        }
+      ]
+    },
+    {
+      "id": "fifo",
+      "term": "先进先出",
+      "aliases": ["FIFO", "先进先出"],
+      "summary": "先排进队的先出来。",
+      "answer": "先进先出就是先排进队的先出来。队列按这个规则工作。入队 1, 2, 3 后，出队仍是 1, 2, 3。一层一层看邻居也用这个顺序。",
+      "remember": "先进先出 = 先排进队的先出来。",
+      "links": [
+        {
+          "title": "队列（OI Wiki）",
+          "url": "https://oi-wiki.org/ds/queue/"
+        }
+      ]
+    },
+    {
+      "id": "bracket-matching",
+      "term": "括号匹配",
+      "aliases": ["括号配对", "合法括号"],
+      "summary": "检查每一对括号能不能配上。",
+      "answer": "括号匹配就是检查每一对括号能不能配上。看到左括号就推进栈，看到右括号就弹出栈顶来对。栈空了还弹，或最后栈没空，都不匹配。`([)]` 就是对不上的例子。",
+      "remember": "左括号进栈，右括号看栈顶能不能配上。",
+      "links": [
+        {
+          "title": "栈（OI Wiki）",
+          "url": "https://oi-wiki.org/ds/stack/"
+        }
+      ]
+    },
+    {
+      "id": "bfs-intuition",
+      "term": "广度优先直觉",
+      "aliases": ["BFS 直觉", "一层一层看"],
+      "summary": "用队列一层一层往外看邻居。",
+      "answer": "广度优先直觉就是：先看最近的一圈，再看更远的一圈。队列先进先出，正好适合这个顺序。现在只要知道“一层一层看用队列”。图上的完整 BFS 是拓展。",
+      "remember": "一层一层往外看，用队列。",
+      "links": [
+        {
+          "title": "BFS（OI Wiki）",
+          "url": "https://oi-wiki.org/graph/bfs/"
+        }
+      ]
     }
   ]
 }
