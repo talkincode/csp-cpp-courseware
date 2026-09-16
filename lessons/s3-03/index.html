@@ -1,0 +1,2122 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="S3-03 二分查找：面向 CSP-J 初学者的互动式 C++ 入门课。"
+    />
+    <title>S3-03 · 有序才能对半缩小</title>
+    <style>
+      :root {
+        --forest: #0c2620;
+        --forest-soft: #174137;
+        --forest-fog: #35665a;
+        --paper: #f3ead7;
+        --paper-bright: #fffaf0;
+        --paper-shadow: #ddcfb8;
+        --ink: #18372f;
+        --muted: #687a70;
+        --orange: #e6612c;
+        --orange-soft: #f3ba76;
+        --mint: #d7e6cd;
+        --gold: #f8c85f;
+        --success: #278057;
+        --danger: #ad4325;
+        --line: rgba(24, 55, 47, 0.2);
+        --shadow: 0 21px 54px rgba(1, 16, 12, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: var(--forest);
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 10% 0%, rgba(70, 126, 108, 0.56), transparent 42%),
+          radial-gradient(ellipse at 94% 100%, rgba(230, 97, 44, 0.23), transparent 43%),
+          var(--forest);
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 3px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 19px 0;
+        color: var(--paper);
+      }
+
+      .back-link {
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .back-link:hover {
+        color: var(--orange-soft);
+      }
+
+      .course-marker {
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.73rem;
+        letter-spacing: 0.08em;
+      }
+
+      .sound-toggle {
+        padding: 8px 11px;
+        color: var(--paper);
+        background: transparent;
+        border: 1px solid rgba(255, 250, 240, 0.44);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        transition: background 150ms ease, color 150ms ease;
+      }
+
+      .sound-toggle:hover {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .topbar-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .lesson-shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto 34px;
+        overflow: hidden;
+        background: var(--paper);
+        border: 1px solid rgba(255, 250, 240, 0.36);
+        border-radius: 17px;
+        box-shadow: var(--shadow);
+      }
+
+      .lesson-hero {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 252px;
+        gap: 34px;
+        padding: clamp(30px, 7vw, 70px) clamp(24px, 6vw, 68px);
+        background:
+          radial-gradient(circle at 93% 18%, rgba(230, 97, 44, 0.23), transparent 20%),
+          linear-gradient(130deg, var(--paper-bright), var(--paper-shadow));
+      }
+
+      .lesson-hero::after {
+        position: absolute;
+        right: -67px;
+        bottom: -105px;
+        width: 270px;
+        height: 270px;
+        border: 32px solid rgba(53, 102, 90, 0.16);
+        border-radius: 48% 52% 50% 50%;
+        content: "";
+      }
+
+      .lesson-hero h1 {
+        max-width: 690px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(2.35rem, 5.5vw, 5.1rem);
+        line-height: 0.99;
+        letter-spacing: -0.035em;
+      }
+
+      .lesson-hero h1 code {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.75em;
+        letter-spacing: -0.07em;
+      }
+
+      .lesson-hero p {
+        max-width: 580px;
+        margin: 20px 0 0;
+        color: #476056;
+        font-size: 0.98rem;
+        line-height: 1.78;
+      }
+
+      .primary-action,
+      .secondary-action,
+      .flow-action,
+      .answer-option,
+      .step-button {
+        border: 0;
+        border-radius: 5px;
+        transition: transform 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+      }
+
+      .primary-action {
+        margin-top: 25px;
+        padding: 12px 17px;
+        color: var(--forest);
+        background: var(--orange-soft);
+        box-shadow: 4px 5px 0 rgba(230, 97, 44, 0.31);
+        font-weight: 800;
+      }
+
+      .primary-action:hover {
+        background: var(--orange);
+        transform: translateY(-2px);
+      }
+
+      .primary-action:active,
+      .secondary-action:active,
+      .flow-action:active,
+      .answer-option:active {
+        transform: translateY(1px) scale(0.98);
+      }
+
+      .mission-slip {
+        z-index: 1;
+        align-self: end;
+        padding: 21px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 2px solid var(--orange);
+        border-radius: 7px;
+        box-shadow: 9px 10px 0 rgba(230, 97, 44, 0.25);
+        transform: rotate(2.2deg);
+      }
+
+      .mission-slip strong,
+      .mission-slip span {
+        display: block;
+      }
+
+      .mission-slip strong {
+        color: var(--orange-soft);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.3rem;
+      }
+
+      .mission-slip span {
+        margin-top: 10px;
+        color: var(--mint);
+        font-size: 0.78rem;
+        line-height: 1.63;
+      }
+
+      .learning-area {
+        display: grid;
+        grid-template-columns: 244px minmax(0, 1fr);
+        min-height: 750px;
+        background:
+          linear-gradient(rgba(24, 55, 47, 0.055) 1px, transparent 1px) 0 0 / 100% 34px,
+          var(--paper);
+      }
+
+      .task-rail {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+        padding: 31px 18px;
+        color: var(--paper);
+        background:
+          linear-gradient(155deg, rgba(215, 230, 205, 0.13), transparent 45%),
+          var(--forest);
+      }
+
+      .task-rail h2 {
+        margin: 0;
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.35rem;
+      }
+
+      .task-progress {
+        margin: 2px 0 6px;
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.77rem;
+      }
+
+      .step-list {
+        display: grid;
+        gap: 9px;
+      }
+
+      .step-button {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+        gap: 9px;
+        width: 100%;
+        padding: 11px 7px;
+        color: var(--mint);
+        background: transparent;
+        border: 1px solid transparent;
+        text-align: left;
+      }
+
+      .step-button:hover:not([aria-disabled="true"]) {
+        background: rgba(255, 250, 240, 0.08);
+        transform: translateX(2px);
+      }
+
+      .step-button[aria-current="step"] {
+        color: var(--paper);
+        background: rgba(230, 97, 44, 0.16);
+        border-color: rgba(230, 97, 44, 0.74);
+      }
+
+      .step-button[aria-disabled="true"] {
+        color: rgba(215, 230, 205, 0.43);
+      }
+
+      .step-number {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.69rem;
+        font-weight: 900;
+      }
+
+      .step-button[aria-current="step"] .step-number {
+        color: var(--paper);
+        background: var(--orange);
+      }
+
+      .step-button[aria-disabled="true"] .step-number {
+        color: rgba(12, 38, 32, 0.6);
+        background: rgba(215, 230, 205, 0.35);
+      }
+
+      .step-copy strong,
+      .step-copy span {
+        display: block;
+      }
+
+      .step-copy strong {
+        font-size: 0.82rem;
+      }
+
+      .step-copy span {
+        margin-top: 3px;
+        font-size: 0.66rem;
+        line-height: 1.35;
+        opacity: 0.83;
+      }
+
+      .rail-note {
+        margin: auto 2px 0;
+        padding-top: 17px;
+        border-top: 1px solid rgba(215, 230, 205, 0.27);
+        color: var(--mint);
+        font-size: 0.73rem;
+        line-height: 1.65;
+      }
+
+      .workbench {
+        min-width: 0;
+        padding: clamp(24px, 4vw, 48px);
+      }
+
+      .step-panel[hidden] {
+        display: none;
+      }
+
+      .step-panel {
+        max-width: 790px;
+        animation: arrive 240ms ease-out both;
+      }
+
+      @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateY(7px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .step-panel h2 {
+        max-width: 710px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(1.65rem, 3vw, 2.55rem);
+        line-height: 1.16;
+      }
+
+      .step-lead {
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: #52675d;
+        font-size: 0.93rem;
+        line-height: 1.75;
+      }
+
+      .guided-note {
+        max-width: 690px;
+        margin: 25px 0;
+        padding: 13px 15px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        font-size: 0.84rem;
+        line-height: 1.62;
+      }
+
+      .code-sheet {
+        position: relative;
+        max-width: 705px;
+        overflow: hidden;
+        margin: 26px 0;
+        padding: 21px 0 17px;
+        background:
+          linear-gradient(90deg, transparent 0 47px, rgba(230, 97, 44, 0.22) 47px 48px, transparent 48px),
+          repeating-linear-gradient(to bottom, transparent 0 29px, rgba(24, 55, 47, 0.09) 29px 30px),
+          var(--paper-bright);
+        border: 1px solid var(--line);
+        box-shadow: 6px 8px 0 rgba(24, 55, 47, 0.12);
+      }
+
+      .code-sheet::before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 5px;
+        background: var(--forest-fog);
+        content: "";
+      }
+
+      .code-sheet ol {
+        margin: 0;
+        padding: 0 22px 0 71px;
+      }
+
+      .code-sheet li {
+        min-height: 30px;
+        padding-left: 10px;
+        color: #28483e;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: clamp(0.75rem, 1.7vw, 0.88rem);
+        line-height: 30px;
+        white-space: pre-wrap;
+      }
+
+      .code-sheet li::marker {
+        color: #8f9d93;
+      }
+
+      .code-sheet .highlight {
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.36);
+      }
+
+      .code-sheet .focus-line {
+        color: var(--forest);
+        background: rgba(215, 230, 205, 0.68);
+        font-weight: 800;
+      }
+
+      .inline-code {
+        padding: 1px 4px;
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.26);
+        border-radius: 3px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.9em;
+      }
+
+      .callout-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 13px;
+        max-width: 705px;
+        margin: 22px 0;
+      }
+
+      .callout {
+        min-height: 124px;
+        padding: 15px;
+        background: rgba(255, 250, 240, 0.67);
+        border-top: 3px solid var(--forest-fog);
+      }
+
+      .callout strong,
+      .callout span {
+        display: block;
+      }
+
+      .callout strong {
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .callout span {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        line-height: 1.57;
+      }
+
+      .secondary-action {
+        padding: 10px 13px;
+        color: var(--forest);
+        background: transparent;
+        border: 1px solid var(--forest-fog);
+        font-weight: 800;
+      }
+
+      .secondary-action:hover {
+        color: var(--paper);
+        background: var(--forest);
+      }
+
+      .inline-feedback {
+        min-height: 1.8em;
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+
+      .inline-feedback[data-tone="error"] {
+        color: var(--danger);
+      }
+
+      .flow-line {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin: 30px 0 20px;
+      }
+
+      .flow-action {
+        position: relative;
+        min-height: 102px;
+        padding: 14px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .flow-action:not(:last-child)::after {
+        position: absolute;
+        top: 50%;
+        right: -13px;
+        z-index: 1;
+        color: var(--orange);
+        content: "→";
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        transform: translateY(-50%);
+      }
+
+      .flow-action:hover:not([aria-disabled="true"]) {
+        background: #fff0d5;
+        transform: translateY(-2px);
+      }
+
+      .flow-action[aria-disabled="true"] {
+        color: #9aa89f;
+        background: rgba(221, 207, 184, 0.53);
+      }
+
+      .flow-action.is-done {
+        color: var(--paper);
+        background: var(--forest-soft);
+        border-color: var(--forest-soft);
+      }
+
+      .flow-index,
+      .flow-action strong,
+      .flow-action span {
+        display: block;
+      }
+
+      .flow-index {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+      }
+
+      .flow-action.is-done .flow-index {
+        color: var(--orange-soft);
+      }
+
+      .flow-action strong {
+        margin-top: 9px;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .flow-action span {
+        margin-top: 7px;
+        font-size: 0.7rem;
+        line-height: 1.43;
+      }
+
+      .terminal {
+        max-width: 705px;
+        min-height: 156px;
+        margin: 19px 0 0;
+        padding: 16px 17px;
+        overflow: auto;
+        color: #d7e6cd;
+        background: #071b16;
+        border-top: 4px solid var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.81rem;
+        line-height: 1.65;
+        white-space: pre-wrap;
+      }
+
+      .terminal .terminal-success {
+        color: #a8e1bc;
+      }
+
+      .terminal .faq-term,
+      .terminal .faq-term:hover,
+      .terminal .faq-term[aria-expanded="true"] {
+        padding: 0 6px;
+        color: #0c2620;
+        background: #f8c85f;
+        border-bottom-color: #d9a63a;
+      }
+
+      .terminal .terminal-warm {
+        color: var(--orange-soft);
+      }
+
+      .fix-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 21px;
+      }
+
+      .fix-actions button {
+        min-height: 70px;
+        padding: 10px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .fix-actions button:hover {
+        background: #fff0d5;
+      }
+
+      .fix-actions button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .quiz-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin: 23px 0 18px;
+      }
+
+      .quiz-seed {
+        color: var(--muted);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.71rem;
+      }
+
+      .quiz-form {
+        display: grid;
+        gap: 19px;
+      }
+
+      .question {
+        padding: 20px 0 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .question h3 {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.12rem;
+        line-height: 1.5;
+      }
+
+      .question-objective {
+        margin: 7px 0 0;
+        color: var(--muted);
+        font-size: 0.73rem;
+        line-height: 1.45;
+      }
+
+      .answer-options {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .answer-option {
+        display: grid;
+        grid-template-columns: 20px 26px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding: 11px 12px;
+        color: var(--ink);
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .answer-option:hover:not(.is-locked) {
+        background: #fff0d5;
+      }
+
+      .answer-option input {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        accent-color: var(--forest-fog);
+      }
+
+      .answer-letter {
+        display: grid;
+        width: 24px;
+        height: 24px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+        font-weight: 900;
+      }
+
+      .answer-option.is-correct {
+        color: #174d35;
+        background: #e2f2e4;
+        border-color: rgba(39, 128, 87, 0.57);
+      }
+
+      .answer-option.is-incorrect {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .answer-option.is-locked {
+        cursor: default;
+      }
+
+      .explanation {
+        margin: 10px 0 0 56px;
+        color: #52675d;
+        font-size: 0.8rem;
+        line-height: 1.62;
+      }
+
+      .quiz-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 11px;
+        margin-top: 23px;
+      }
+
+      .quiz-result {
+        min-height: 1.8em;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 800;
+        line-height: 1.6;
+      }
+
+      .quiz-result[data-tone="warn"] {
+        color: #91501a;
+      }
+
+      .external-boundary {
+        max-width: 790px;
+        margin: 34px 0 0;
+        padding: 15px 17px;
+        color: #486057;
+        background: rgba(221, 207, 184, 0.55);
+        border-top: 2px solid var(--forest-fog);
+        font-size: 0.8rem;
+        line-height: 1.63;
+      }
+
+      .external-boundary strong {
+        color: var(--forest);
+      }
+
+      .completion-ribbon {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 10;
+        max-width: min(370px, calc(100vw - 40px));
+        padding: 13px 15px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 1px solid var(--orange-soft);
+        border-radius: 6px;
+        box-shadow: 7px 9px 0 rgba(230, 97, 44, 0.28);
+        font-size: 0.82rem;
+        line-height: 1.55;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(12px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .completion-ribbon.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .storage-notice {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 9;
+        max-width: min(370px, calc(100vw - 40px));
+        margin: 0;
+        padding: 11px 14px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        box-shadow: 5px 7px 0 rgba(24, 55, 47, 0.14);
+        font-size: 0.76rem;
+        line-height: 1.55;
+      }
+
+      .confetti-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 11;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .confetti {
+        position: absolute;
+        top: 34%;
+        left: 50%;
+        width: 10px;
+        height: 16px;
+        background: var(--confetti-color);
+        clip-path: polygon(50% 0, 100% 28%, 72% 100%, 0 71%, 11% 20%);
+        animation: burst 880ms cubic-bezier(0.14, 0.78, 0.32, 1) forwards;
+        transform: translate(-50%, -50%) rotate(var(--spin));
+      }
+
+      @keyframes burst {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) rotate(var(--spin));
+        }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--drift-x)), calc(-50% + var(--drift-y))) rotate(calc(var(--spin) + 250deg));
+        }
+      }
+
+      .level-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .level-chip {
+        padding: 5px 9px;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .level-chip.is-required {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .level-chip.is-recommended {
+        color: var(--forest);
+        background: var(--mint);
+      }
+
+      .level-chip.is-extra {
+        color: #476056;
+        background: rgba(24, 55, 47, 0.1);
+      }
+
+      .type-grid {
+        display: grid;
+        gap: 12px;
+        max-width: 705px;
+        margin: 22px 0;
+      }
+
+      .type-row {
+        display: grid;
+        grid-template-columns: minmax(140px, 1.3fr) repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        align-items: stretch;
+        padding: 12px;
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+      }
+
+      .type-label strong,
+      .type-label span {
+        display: block;
+      }
+
+      .type-label strong {
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+      }
+
+      .type-label span {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.72rem;
+        line-height: 1.45;
+      }
+
+      .type-row button {
+        min-height: 54px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-weight: 800;
+      }
+
+      .type-row button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .type-row button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .type-row button.is-wrong {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .formula-row {
+        display: grid;
+        grid-template-columns: minmax(140px, 1.1fr) repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        align-items: stretch;
+        padding: 12px;
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+      }
+
+      .formula-row button {
+        min-height: 58px;
+        padding: 8px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.72rem;
+        font-weight: 800;
+        line-height: 1.35;
+        white-space: normal;
+      }
+
+      .formula-row button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .formula-row button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .formula-row button.is-wrong {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .variable-box {
+        max-width: 360px;
+        margin: 22px 0;
+        padding: 18px 20px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 2px solid var(--orange);
+        border-radius: 7px;
+        box-shadow: 9px 10px 0 rgba(230, 97, 44, 0.25);
+      }
+
+      .variable-box .box-kicker {
+        color: var(--orange-soft);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.72rem;
+      }
+
+      .variable-box .box-value {
+        margin-top: 8px;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 2rem;
+        line-height: 1.1;
+      }
+
+      .variable-box .box-meta {
+        margin-top: 8px;
+        color: var(--mint);
+        font-size: 0.8rem;
+        line-height: 1.55;
+      }
+
+      .concept-actions {
+        display: grid;
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 18px;
+      }
+
+      .concept-actions button {
+        min-height: 58px;
+        padding: 10px 12px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.84rem;
+        font-weight: 800;
+        line-height: 1.45;
+        text-align: left;
+      }
+
+      .concept-actions button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .concept-actions button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      @media (max-width: 880px) {
+        .lesson-hero {
+          grid-template-columns: 1fr;
+        }
+
+        .mission-slip {
+          width: min(100%, 290px);
+          justify-self: end;
+        }
+
+        .learning-area {
+          grid-template-columns: 1fr;
+        }
+
+        .task-rail {
+          display: grid;
+          grid-template-columns: minmax(150px, 0.45fr) 1fr;
+          gap: 12px 23px;
+          padding: 22px;
+        }
+
+        .step-list {
+          grid-template-columns: repeat(4, minmax(135px, 1fr));
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .step-button {
+          min-width: 135px;
+        }
+
+        .rail-note {
+          grid-column: 1 / -1;
+          margin: 0;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .topbar,
+        .lesson-shell {
+          width: min(100% - 18px, 620px);
+        }
+
+        .topbar {
+          padding: 12px 0;
+        }
+
+        .course-marker {
+          display: none;
+        }
+
+        .lesson-hero {
+          padding: 34px 22px;
+        }
+
+        .lesson-hero h1 {
+          font-size: clamp(2.2rem, 13vw, 3.5rem);
+        }
+
+        .mission-slip {
+          justify-self: stretch;
+          width: auto;
+          transform: rotate(1deg);
+        }
+
+        .task-rail {
+          display: block;
+          padding: 21px 14px;
+        }
+
+        .step-list {
+          margin-top: 14px;
+        }
+
+        .rail-note {
+          display: none;
+        }
+
+        .workbench {
+          padding: 28px 19px;
+        }
+
+        .callout-row,
+        .flow-line,
+        .fix-actions,
+        .type-row,
+        .formula-row {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-action:not(:last-child)::after {
+          top: auto;
+          right: 50%;
+          bottom: -22px;
+          transform: translateX(50%) rotate(90deg);
+        }
+
+        .flow-line {
+          gap: 28px;
+        }
+
+        .code-sheet {
+          margin-right: -5px;
+          margin-left: -5px;
+        }
+
+        .code-sheet ol {
+          padding-right: 9px;
+          padding-left: 62px;
+        }
+
+        .code-sheet li {
+          padding-left: 6px;
+          font-size: 0.7rem;
+        }
+
+        .completion-ribbon,
+        .storage-notice {
+          right: 10px;
+          bottom: 10px;
+          max-width: calc(100vw - 20px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 1ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body data-faq-terms="binary-search monotonicity left-right-bound midpoint infinite-loop">
+    <header class="topbar">
+      <a class="back-link" href="../../index.html">← 返回课程路线</a>
+      <span class="course-marker">第三阶段 · S3-03 · 60 分钟</span>
+      <div class="topbar-tools">
+        <button id="faqCatalogButton" class="faq-open" type="button">常见问题</button>
+        <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">音效：开</button>
+      </div>
+    </header>
+
+    <main class="lesson-shell">
+      <section class="lesson-hero">
+        <div>
+          <h1>有序才能对半缩小</h1>
+          <p>
+            这一课只练一件事：在已经排好序、具有 <button type="button" class="faq-term" data-faq="monotonicity">单调性</button> 的区间里做 <button type="button" class="faq-term" data-faq="binary-search">二分查找</button>。先确认能不能二分，再维护 <button type="button" class="faq-term" data-faq="left-right-bound">左右边界</button>，每次看 <button type="button" class="faq-term" data-faq="midpoint">中点</button> 丢掉一半。用 <span class="inline-code">[1, 3, 5, 7, 9]</span> 找 7 走三步，再测首尾答案，并看区间不缩小会变成 <button type="button" class="faq-term" data-faq="infinite-loop">死循环</button>。对答案二分、<span class="inline-code">lower_bound</span> 细节和三分查找是拓展。这里不会在浏览器里运行 C++。
+          </p>
+          <div class="level-legend" aria-label="必会、建议掌握和拓展">
+            <span class="level-chip is-required">必会：判断有序/单调才能二分；维护 left/right，比较中点后丢掉一半</span>
+            <span class="level-chip is-recommended">建议掌握：测试目标在第一个或最后一个；说明区间不缩小会死循环</span>
+            <span class="level-chip is-extra">拓展：对答案二分、lower_bound 细节、三分查找，现在不用当硬门槛</span>
+          </div>
+          <button id="beginButton" class="primary-action" type="button">开始第一个任务</button>
+        </div>
+        <aside class="mission-slip" aria-label="本课任务">
+          <strong>本课任务</strong>
+          <span>能判断能否二分，能维护左右边界并丢掉一半，能测试首尾答案，能说明区间不缩小会死循环。</span>
+        </aside>
+      </section>
+
+      <section id="learningArea" class="learning-area" aria-label="互动学习区">
+        <nav class="task-rail" aria-label="本课任务步骤">
+          <div>
+            <h2>任务路线</h2>
+            <p id="taskProgress" class="task-progress">0 / 4 已推进</p>
+          </div>
+          <div class="step-list">
+            <button class="step-button" type="button" data-step="0" aria-current="step">
+              <span class="step-number">1</span>
+              <span class="step-copy"><strong>先选出前提</strong><span>有序才能二分</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="1" aria-disabled="true">
+              <span class="step-number">2</span>
+              <span class="step-copy"><strong>缩小区间</strong><span>找 7</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="2" aria-disabled="true">
+              <span class="step-number">3</span>
+              <span class="step-copy"><strong>首尾与死循环</strong><span>建议掌握</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="3" aria-disabled="true">
+              <span class="step-number">4</span>
+              <span class="step-copy"><strong>随机小测</strong><span>检查是否理解</span></span>
+            </button>
+          </div>
+          <p class="rail-note">没有真的卡住：每一步完成后，下一步会自动点亮。你也可以随时回看已经完成的任务。</p>
+        </nav>
+
+        <div class="workbench">
+          <section class="step-panel" data-panel="0">
+            <h2>任务 1：先选出什么时候才能二分</h2>
+            <p class="step-lead">
+              <button type="button" class="faq-term" data-faq="binary-search">二分查找</button> 不是随便对半切。必须先有 <button type="button" class="faq-term" data-faq="monotonicity">单调性</button>，再用 <button type="button" class="faq-term" data-faq="left-right-bound">左右边界</button> 夹住可能有答案的区间。点不认识的词可看基础解释。
+            </p>
+            <p class="guided-note"><strong>必会：</strong>能判断一道题是否适合二分。这里不会在浏览器里运行 C++，只练习选择和走过程。</p>
+            <div class="type-grid" aria-label="选择二分前提和左右边界含义">
+              <div class="formula-row" data-quantity="passFail">
+                <p class="type-label"><strong>在 [1, 3, 5, 7, 9] 里找 7，什么时候才能二分？</strong><span>单调性 · 必会</span></p>
+                <button type="button" data-choice="compare">数组已经从小到大排好，具有单调性</button>
+                <button type="button" data-choice="strict">没排序也能二分</button>
+                <button type="button" data-choice="assign">必须先写线段树才是 CSP-J 必会</button>
+              </div>
+              <div class="formula-row" data-quantity="grade">
+                <p class="type-label"><strong>left 和 right 表示什么？</strong><span>左右边界 · 必会</span></p>
+                <button type="button" data-choice="three-way">它们夹住还可能有答案的区间</button>
+                <button type="button" data-choice="many-if">只要看第一个元素</button>
+                <button type="button" data-choice="switch">中点可以随便写，区间不用变短</button>
+              </div>
+            </div>
+            <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="1" hidden>
+            <h2>任务 2：按顺序在 [1, 3, 5, 7, 9] 里找 7</h2>
+            <p class="step-lead">
+              最小示例：<span class="inline-code">left = 0</span>，<span class="inline-code">right = 4</span>，<span class="inline-code">mid = (left + right) / 2</span>。按顺序点三步，先看 <span class="inline-code">a[2] = 5</span>，再看 <span class="inline-code">a[3] = 7</span>，最后确认首尾也能测到。这里不会在浏览器里运行 C++。
+            </p>
+            <p class="guided-note"><strong>必会：</strong>能解释每次丢弃哪半边。边界：比较后区间必须变短；不要跳过 <span class="inline-code">left = 3</span> 这一步。</p>
+            <div class="code-sheet" aria-label="有序数组里找 7 的最小示例">
+              <ol>
+                <li>int a[5] = {1, 3, 5, 7, 9};</li>
+                <li class="highlight">int left = 0, right = 4;</li>
+                <li class="focus-line">int mid = (left + right) / 2;  // 先看中点</li>
+                <li>if (a[mid] &lt; 7) left = mid + 1;</li>
+              </ol>
+            </div>
+            <div class="flow-line" aria-label="按查找 7 缩小区间">
+              <button id="divideButton" class="flow-action" type="button">
+                <span class="flow-index">A</span>
+                <strong>看中点 a[2] = 5，5 &lt; 7，left 移到 3</strong>
+                <span>丢掉左半边</span>
+              </button>
+              <button id="remainderButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">B</span>
+                <strong>看中点 a[3] = 7，找到目标</strong>
+                <span>区间已经收到右半</span>
+              </button>
+              <button id="evenButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">C</span>
+                <strong>再测首尾：1 和 9 也必须能查到</strong>
+                <span>答案可能在端点</span>
+              </button>
+            </div>
+            <aside id="variableBox" class="variable-box" aria-live="polite">
+              <div class="box-kicker">当前对照：左右边界和中点</div>
+              <div class="box-value" id="variableValue">还没开始缩小</div>
+              <div class="box-meta" id="variableMeta">先点“看中点 a[2] = 5，5 &lt; 7，left 移到 3”。</div>
+            </aside>
+            <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="2" hidden>
+            <h2>任务 3：测首尾答案，并看区间不缩小会怎样</h2>
+            <p class="step-lead">
+              建议掌握：目标可能在第一个或最后一个，<button type="button" class="faq-term" data-faq="left-right-bound">左右边界</button> 收缩时不能把端点漏掉。比较后如果 <button type="button" class="faq-term" data-faq="midpoint">中点</button> 算完 left/right 仍不变，就会变成 <button type="button" class="faq-term" data-faq="infinite-loop">死循环</button>。
+            </p>
+            <p class="guided-note"><strong>必会 / 建议掌握 / 拓展：</strong>必会是判断能否二分、维护区间并丢掉一半。建议掌握是测试首尾答案，以及说明区间不缩小会死循环。对答案二分、<span class="inline-code">lower_bound</span> 细节和三分查找是拓展，现在不用当硬门槛。</p>
+            <div class="code-sheet" aria-label="会收缩区间的二分写法">
+              <ol>
+                <li>while (left &lt;= right) {</li>
+                <li class="highlight">int mid = (left + right) / 2;</li>
+                <li class="focus-line">if (a[mid] &lt; x) left = mid + 1;</li>
+                <li>else if (a[mid] &gt; x) right = mid - 1;</li>
+                <li>else return mid;</li>
+                <li>}</li>
+              </ol>
+            </div>
+            <p class="step-lead">先选出目标在端点时该怎么测：</p>
+            <div class="concept-actions" aria-label="选择首尾答案的测法">
+              <button type="button" data-concept="precedence" data-pick="divide-first">目标可能在 a[0] 或 a[n-1]，首尾都要能测到</button>
+              <button type="button" data-concept="precedence" data-pick="left-to-right">只要测中间三个就够了</button>
+              <button type="button" data-concept="precedence" data-pick="ignore">对答案二分才是 CSP-J 必会</button>
+            </div>
+            <p class="step-lead">再选出区间不缩小会发生什么：</p>
+            <div class="concept-actions" aria-label="选择死循环的原因">
+              <button type="button" data-concept="parens" data-pick="grouped">比较后 left 或 right 必须移动，否则会死循环</button>
+              <button type="button" data-concept="parens" data-pick="no-paren">编译器会自动缩小区间</button>
+              <button type="button" data-concept="parens" data-pick="product">三分查找能自动避免死循环</button>
+            </div>
+            <p id="debugFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="3" hidden>
+            <h2>任务 4：随机小测，看看你是否真的懂了</h2>
+            <p class="step-lead">
+              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+            </p>
+            <div class="quiz-tools">
+              <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
+              <span id="quizSeed" class="quiz-seed"></span>
+            </div>
+            <form id="quizForm" class="quiz-form" aria-describedby="quizResult"></form>
+            <div class="quiz-footer">
+              <button id="submitQuizButton" class="primary-action" type="button">提交并查看解析</button>
+              <p id="quizResult" class="quiz-result" role="status" aria-live="polite"></p>
+            </div>
+          </section>
+
+          <aside class="external-boundary">
+            <strong>视频交付边界：</strong>本课的视频课件由仓库外流程制作。本页面只实现互动学习、引导和随机小测，不加载、不生产也不渲染视频资产。
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <p id="storageNotice" class="storage-notice" hidden></p>
+    <div id="completionRibbon" class="completion-ribbon" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+    <script>
+      const storageKey = "csp-cpp-s3-03-progress-v1";
+      const correctFormulas = { passFail: "compare", grade: "three-way" };
+      const formulaErrorHelp = {
+        passFail: {
+          strict: "没排序就没有单调性，比较中点后不知道该丢哪一半。现在必会是：有序才能二分。",
+          assign: "线段树是拓展。CSP-J 现在必会是：有序数组里看中点、丢掉一半。",
+        },
+        grade: {
+          "many-if": "只看第一个元素会漏掉后面的答案。left 和 right 要夹住整段可能区间。",
+          switch: "中点乱写或区间不变短，就会死循环或漏解。比较后必须让 left 或 right 移动。",
+        },
+      };
+      const questionPool = [
+        {
+          id: "when-binary",
+          courseId: "S3-03",
+          objective: "判断能否二分",
+          difficulty: "required",
+          type: "choice",
+          prompt: "在数组里查找一个数，什么时候才能用二分？",
+          options: ["数组已经有序，具有单调性", "没排序也能二分", "必须先写线段树", "编译器会自动排序后再二分"],
+          answer: 0,
+          explanation: "二分靠单调性：比较中点后才知道该丢哪一半。没排序不能直接二分。线段树是拓展。本课不会在浏览器里运行 C++。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "bounds-mean",
+          courseId: "S3-03",
+          objective: "维护左右边界",
+          difficulty: "required",
+          type: "choice",
+          prompt: "二分里的 left 和 right 表示什么？",
+          options: ["还可能有答案的区间两端", "只表示第一个元素", "中点可以随便写", "它们永远不用移动"],
+          answer: 0,
+          explanation: "left 和 right 夹住还可能有答案的下标。比较中点后必须移动其中一个，让区间变短。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "trace-seven",
+          courseId: "S3-03",
+          objective: "解释每次丢弃哪半边",
+          difficulty: "required",
+          type: "choice",
+          prompt: "在 [1, 3, 5, 7, 9] 里找 7，第一步中点是？",
+          options: ["a[2] = 5，5 < 7，所以 left = 3", "直接看 a[0] = 1", "先看 a[4] = 9", "三步同时开始"],
+          answer: 0,
+          explanation: "left=0、right=4，mid=(0+4)/2=2，a[2]=5 < 7，丢掉左半，left 移到 3。下一步才看到 a[3]=7。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "end-points",
+          courseId: "S3-03",
+          objective: "测试首尾答案",
+          difficulty: "recommended",
+          type: "choice",
+          prompt: "目标可能在第一个或最后一个时，该怎么测？",
+          options: ["首尾都要能查到，例如 1 和 9", "只要测中间三个", "对答案二分才算测过", "端点可以不管"],
+          answer: 0,
+          explanation: "答案可能落在 a[0] 或 a[n-1]。建议掌握是专门测首尾。对答案二分是拓展，不是现在的硬门槛。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "no-shrink",
+          courseId: "S3-03",
+          objective: "说明死循环风险",
+          difficulty: "recommended",
+          type: "choice",
+          prompt: "比较中点后 left 和 right 都不动，会发生什么？",
+          options: ["区间不缩小，可能死循环", "编译器会自动缩小", "只会少看一个数", "三分查找能自动修好"],
+          answer: 0,
+          explanation: "二分能停，是因为每次比较后 left=mid+1 或 right=mid-1，区间变短。编译器和三分都不会自动补这一步。",
+          source: "course-plan / 自编",
+        },
+      ];
+
+      const defaultState = {
+        activeStep: 0,
+        formulaChoices: {},
+        formulasMatched: false,
+        divided: false,
+        remaindered: false,
+        evenChecked: false,
+        precedenceSolved: false,
+        parensSolved: false,
+        quizSeed: createSeed(),
+        answers: {},
+        quizSubmitted: false,
+        bestScore: 0,
+        soundEnabled: true,
+      };
+
+      let storageAvailable = true;
+      let state = loadState();
+      let notificationTimer;
+      let audioContext;
+
+      const panels = [...document.querySelectorAll(".step-panel")];
+      const stepButtons = [...document.querySelectorAll("[data-step]")];
+      const taskProgress = document.querySelector("#taskProgress");
+      const sourceFeedback = document.querySelector("#sourceFeedback");
+      const flowFeedback = document.querySelector("#flowFeedback");
+      const debugFeedback = document.querySelector("#debugFeedback");
+      const variableValue = document.querySelector("#variableValue");
+      const variableMeta = document.querySelector("#variableMeta");
+      const quizForm = document.querySelector("#quizForm");
+      const quizResult = document.querySelector("#quizResult");
+      const completionRibbon = document.querySelector("#completionRibbon");
+      const storageNotice = document.querySelector("#storageNotice");
+      const confettiLayer = document.querySelector("#confettiLayer");
+      const soundToggle = document.querySelector("#soundToggle");
+
+      function createSeed() {
+        const values = new Uint32Array(1);
+        crypto.getRandomValues(values);
+        return values[0];
+      }
+
+      function loadState() {
+        try {
+          const stored = JSON.parse(window.localStorage.getItem(storageKey) ?? "null");
+          if (!stored || typeof stored !== "object" || Array.isArray(stored)) return { ...defaultState };
+
+          return {
+            ...defaultState,
+            activeStep: Number.isInteger(stored.activeStep) ? stored.activeStep : 0,
+            formulaChoices:
+              stored.formulaChoices && typeof stored.formulaChoices === "object" && !Array.isArray(stored.formulaChoices)
+                ? stored.formulaChoices
+                : {},
+            formulasMatched: stored.formulasMatched === true,
+            divided: stored.divided === true,
+            remaindered: stored.remaindered === true,
+            evenChecked: stored.evenChecked === true,
+            precedenceSolved: stored.precedenceSolved === true,
+            parensSolved: stored.parensSolved === true,
+            quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
+            answers: stored.answers && typeof stored.answers === "object" && !Array.isArray(stored.answers) ? stored.answers : {},
+            quizSubmitted: stored.quizSubmitted === true,
+            bestScore: Number.isInteger(stored.bestScore) ? stored.bestScore : 0,
+            soundEnabled: stored.soundEnabled !== false,
+          };
+        } catch {
+          storageAvailable = false;
+          return { ...defaultState };
+        }
+      }
+
+      function saveState() {
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(state));
+          return true;
+        } catch {
+          storageAvailable = false;
+          return false;
+        }
+      }
+
+      function questionSetForSeed(seed) {
+        const random = seededRandom(seed);
+        const shuffled = [...questionPool];
+
+        for (let index = shuffled.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(random() * (index + 1));
+          [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+        }
+
+        return shuffled.slice(0, 3);
+      }
+
+      function currentQuestions() {
+        return questionSetForSeed(state.quizSeed);
+      }
+
+      function seededRandom(seed) {
+        let value = seed >>> 0;
+        return () => {
+          value += 0x6d2b79f5;
+          let result = value;
+          result = Math.imul(result ^ (result >>> 15), result | 1);
+          result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
+          return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, (character) => {
+          const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
+          return entities[character];
+        });
+      }
+
+      function conceptSolved() {
+        return state.precedenceSolved && state.parensSolved;
+      }
+
+      function unlockedStepCount() {
+        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+      }
+
+      function isStepUnlocked(step) {
+        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+      }
+
+      function clampActiveStep() {
+        while (state.activeStep > 0 && !isStepUnlocked(state.activeStep)) {
+          state.activeStep -= 1;
+        }
+      }
+
+      function showFeedback(element, message, tone = "success") {
+        element.textContent = message;
+        element.dataset.tone = tone === "error" ? "error" : "";
+      }
+
+      function announce(message) {
+        completionRibbon.textContent = message;
+        completionRibbon.classList.add("is-visible");
+        window.clearTimeout(notificationTimer);
+        notificationTimer = window.setTimeout(() => {
+          completionRibbon.classList.remove("is-visible");
+        }, 3200);
+      }
+
+      function updateStorageNotice() {
+        storageNotice.hidden = storageAvailable;
+        storageNotice.textContent = "浏览器没有允许保存学习记录：本次互动仍可继续，但刷新页面后不会恢复进度。";
+      }
+
+      function playSound(kind) {
+        if (!state.soundEnabled) return;
+
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextConstructor) {
+          state.soundEnabled = false;
+          renderSoundToggle();
+          announce("当前浏览器不支持音效，已自动关闭音效。");
+          return;
+        }
+
+        audioContext ??= new AudioContextConstructor();
+        const context = audioContext;
+        const notes = kind === "reward" ? [523.25, 659.25, 783.99] : kind === "error" ? [180] : [392];
+
+        if (context.state === "suspended") {
+          void context.resume().catch(() => {
+            announce("浏览器暂未允许播放音效；你仍可以继续学习。");
+          });
+        }
+
+        notes.forEach((frequency, index) => {
+          const oscillator = context.createOscillator();
+          const gain = context.createGain();
+          const startAt = context.currentTime + index * 0.08;
+
+          oscillator.type = kind === "reward" ? "triangle" : "sine";
+          oscillator.frequency.setValueAtTime(frequency, startAt);
+          gain.gain.setValueAtTime(0.0001, startAt);
+          gain.gain.exponentialRampToValueAtTime(0.08, startAt + 0.012);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.14);
+          oscillator.connect(gain).connect(context.destination);
+          oscillator.start(startAt);
+          oscillator.stop(startAt + 0.15);
+        });
+      }
+
+      function reward(message) {
+        announce(message);
+        playSound("reward");
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        const colors = ["#e6612c", "#f8c85f", "#d7e6cd", "#35665a"];
+        for (let index = 0; index < 20; index += 1) {
+          const particle = document.createElement("span");
+          particle.className = "confetti";
+          particle.style.setProperty("--confetti-color", colors[index % colors.length]);
+          particle.style.setProperty("--drift-x", `${Math.round((Math.random() - 0.5) * 360)}px`);
+          particle.style.setProperty("--drift-y", `${Math.round((Math.random() - 0.2) * 300)}px`);
+          particle.style.setProperty("--spin", `${Math.round(Math.random() * 240)}deg`);
+          confettiLayer.append(particle);
+          particle.addEventListener("animationend", () => particle.remove(), { once: true });
+        }
+      }
+
+      function renderSoundToggle() {
+        soundToggle.textContent = state.soundEnabled ? "音效：开" : "音效：关";
+        soundToggle.setAttribute("aria-pressed", String(state.soundEnabled));
+      }
+
+      function renderSteps() {
+        clampActiveStep();
+        taskProgress.textContent = `${unlockedStepCount()} / 4 已推进`;
+
+        stepButtons.forEach((button) => {
+          const step = Number(button.dataset.step);
+          button.setAttribute("aria-disabled", String(!isStepUnlocked(step)));
+          if (step === state.activeStep) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+        });
+
+        panels.forEach((panel) => {
+          panel.hidden = Number(panel.dataset.panel) !== state.activeStep;
+        });
+      }
+
+      function renderSourceTask() {
+        document.querySelectorAll("[data-quantity]").forEach((row) => {
+          const quantity = row.dataset.quantity;
+          const selected = state.formulaChoices[quantity];
+          row.querySelectorAll("[data-choice]").forEach((button) => {
+            const choice = button.dataset.choice;
+            button.disabled = state.formulasMatched;
+            button.classList.toggle("is-correct", selected === choice && choice === correctFormulas[quantity]);
+            button.classList.toggle("is-wrong", selected === choice && choice !== correctFormulas[quantity]);
+          });
+        });
+
+        if (state.formulasMatched) {
+          showFeedback(sourceFeedback, "两项都选对了。有序才能二分；left 和 right 夹住可能有答案的区间。下一步已经点亮。");
+        }
+      }
+
+      function renderFlowTask() {
+        const divideButton = document.querySelector("#divideButton");
+        const remainderButton = document.querySelector("#remainderButton");
+        const evenButton = document.querySelector("#evenButton");
+
+        divideButton.setAttribute("aria-disabled", String(state.divided));
+        remainderButton.setAttribute("aria-disabled", String(!state.divided || state.remaindered));
+        evenButton.setAttribute("aria-disabled", String(!state.remaindered || state.evenChecked));
+        divideButton.classList.toggle("is-done", state.divided);
+        remainderButton.classList.toggle("is-done", state.remaindered);
+        evenButton.classList.toggle("is-done", state.evenChecked);
+
+        if (state.evenChecked) {
+          variableValue.textContent = "找到 7，并确认 1 和 9 也要能测到";
+          variableMeta.textContent = "left=3 后看到 a[3]=7；首尾答案不能漏。";
+          showFeedback(flowFeedback, "你已经按顺序缩小区间。下一步测首尾，并看区间不缩小会怎样。");
+        } else if (state.remaindered) {
+          variableValue.textContent = "left = 3，right = 4，a[3] = 7";
+          variableMeta.textContent = "已经找到 7。下一步确认首尾 1 和 9 也必须能查到。";
+          showFeedback(flowFeedback, "第二步走完。下一步点“再测首尾：1 和 9 也必须能查到”，不要跳过。");
+        } else if (state.divided) {
+          variableValue.textContent = "left = 3，right = 4，丢掉了 1、3、5";
+          variableMeta.textContent = "因为 a[2] = 5 < 7。不要跳到首尾测试。";
+          showFeedback(flowFeedback, "第一步走完。下一步点“看中点 a[3] = 7，找到目标”，不要跳到结束。");
+        } else {
+          variableValue.textContent = "还没开始缩小";
+          variableMeta.textContent = "先点“看中点 a[2] = 5，5 < 7，left 移到 3”。";
+          flowFeedback.textContent = "";
+        }
+      }
+
+      function renderDebugTask() {
+        document.querySelectorAll("[data-concept='precedence']").forEach((button) => {
+          button.disabled = state.precedenceSolved;
+          button.classList.toggle("is-correct", state.precedenceSolved && button.dataset.pick === "divide-first");
+        });
+        document.querySelectorAll("[data-concept='parens']").forEach((button) => {
+          button.disabled = state.parensSolved;
+          button.classList.toggle("is-correct", state.parensSolved && button.dataset.pick === "grouped");
+        });
+
+        if (conceptSolved()) {
+          showFeedback(debugFeedback, "对：首尾都要能测到；比较后 left 或 right 必须移动，否则会死循环。对答案二分和三分是拓展。下一步去做随机小测吧。");
+        } else if (state.precedenceSolved) {
+          showFeedback(debugFeedback, "首尾测法选对了。继续选出区间不缩小会发生什么。");
+        } else {
+          debugFeedback.textContent = "";
+          debugFeedback.dataset.tone = "";
+        }
+      }
+
+      function questionsAreValid(questions) {
+        return (
+          Array.isArray(questions) &&
+          questions.length > 0 &&
+          questions.every(
+            (question) =>
+              question &&
+              typeof question.prompt === "string" &&
+              question.type === "choice" &&
+              Array.isArray(question.options) &&
+              question.options.length >= 2 &&
+              Number.isInteger(question.answer) &&
+              question.options[question.answer] != null,
+          )
+        );
+      }
+
+      function renderQuiz() {
+        const questions = currentQuestions();
+        const letters = ["A", "B", "C", "D"];
+        document.querySelector("#quizSeed").textContent = `本次试卷标识：${state.quizSeed}`;
+        const submitButton = document.querySelector("#submitQuizButton");
+
+        if (questionPool.length === 0 || !questionsAreValid(questions)) {
+          quizForm.innerHTML =
+            '<p class="inline-feedback" data-tone="error">题库暂时不可用或题目无效。本次学习进度仍保留，请稍后重试或换一套题。</p>';
+          submitButton.disabled = true;
+          quizResult.dataset.tone = "warn";
+          quizResult.textContent = "无法组卷：请检查题库后重试。进度没有丢失。";
+          return;
+        }
+
+        quizForm.innerHTML = questions
+          .map((question, questionIndex) => {
+            const selected = Number(state.answers[question.id]);
+            const options = question.options
+              .map((option, optionIndex) => {
+                const isCorrect = state.quizSubmitted && optionIndex === question.answer;
+                const isIncorrect = state.quizSubmitted && selected === optionIndex && optionIndex !== question.answer;
+                const classes = [
+                  "answer-option",
+                  state.quizSubmitted ? "is-locked" : "",
+                  isCorrect ? "is-correct" : "",
+                  isIncorrect ? "is-incorrect" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+
+                return `
+                  <label class="${classes}">
+                    <input
+                      type="radio"
+                      name="${question.id}"
+                      value="${optionIndex}"
+                      ${selected === optionIndex ? "checked" : ""}
+                      ${state.quizSubmitted ? "disabled" : ""}
+                    />
+                    <span class="answer-letter">${letters[optionIndex]}</span>
+                    <span>${escapeHtml(option)}</span>
+                  </label>
+                `;
+              })
+              .join("");
+
+            return `
+              <section class="question">
+                <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
+                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <div class="answer-options">${options}</div>
+                ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
+              </section>
+            `;
+          })
+          .join("");
+
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+        submitButton.disabled = state.quizSubmitted || unanswered > 0;
+        submitButton.textContent = state.quizSubmitted ? "本套题已提交" : unanswered > 0 ? `还差 ${unanswered} 题` : "提交并查看解析";
+
+        if (state.quizSubmitted) {
+          const score = quizScore(questions);
+          const passed = score >= 2;
+          quizResult.dataset.tone = passed ? "" : "warn";
+          quizResult.textContent = passed
+            ? `本次答对 ${score}/3。很好，已经能判断能否二分，并维护左右边界。`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+        } else {
+          quizResult.textContent = "";
+          quizResult.dataset.tone = "";
+        }
+      }
+
+      function quizScore(questions = currentQuestions()) {
+        return questions.reduce((score, question) => score + (Number(state.answers[question.id]) === question.answer ? 1 : 0), 0);
+      }
+
+      function render() {
+        renderSteps();
+        renderSourceTask();
+        renderFlowTask();
+        renderDebugTask();
+        renderQuiz();
+        renderSoundToggle();
+        updateStorageNotice();
+      }
+
+      function selectStep(step) {
+        if (!isStepUnlocked(step)) {
+          announce("先完成前一个任务，下一步就会自动点亮。");
+          playSound("error");
+          return;
+        }
+
+        state.activeStep = step;
+        saveState();
+        render();
+        document.querySelector(`[data-panel="${step}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function refreshQuiz() {
+        const currentIds = currentQuestions()
+          .map((question) => question.id)
+          .sort()
+          .join(",");
+        let nextSeed = createSeed();
+
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          const nextIds = questionSetForSeed(nextSeed)
+            .map((question) => question.id)
+            .sort()
+            .join(",");
+          if (nextIds !== currentIds) break;
+          nextSeed = (nextSeed + 0x9e3779b9) >>> 0;
+        }
+
+        state.quizSeed = nextSeed;
+        state.answers = {};
+        state.quizSubmitted = false;
+        saveState();
+        renderQuiz();
+        announce("已换一套随机题。请先独立作答，再查看解析。");
+        playSound("calm");
+      }
+
+      document.querySelector("#beginButton").addEventListener("click", () => {
+        document.querySelector("#learningArea").scrollIntoView({ behavior: "smooth", block: "start" });
+        announce("从任务 1 开始：先选出有序/单调前提和左右边界含义，再按顺序找 7。");
+      });
+
+      stepButtons.forEach((button) => {
+        button.addEventListener("click", () => selectStep(Number(button.dataset.step)));
+      });
+
+      document.querySelectorAll("[data-quantity] [data-choice]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (state.formulasMatched) return;
+
+          const row = button.closest("[data-quantity]");
+          const quantity = row?.dataset.quantity;
+          const choice = button.dataset.choice;
+          if (!quantity || !choice) return;
+
+          state.formulaChoices[quantity] = choice;
+          const expected = correctFormulas[quantity];
+
+          if (choice !== expected) {
+            showFeedback(sourceFeedback, formulaErrorHelp[quantity][choice], "error");
+            announce(formulaErrorHelp[quantity][choice]);
+            playSound("error");
+            saveState();
+            renderSourceTask();
+            return;
+          }
+
+          const complete = Object.keys(correctFormulas).every((key) => state.formulaChoices[key] === correctFormulas[key]);
+          if (complete) {
+            state.formulasMatched = true;
+            state.activeStep = 1;
+            saveState();
+            render();
+            reward("任务 1 完成：有序才能二分；left 和 right 夹住可能区间。下一步按顺序找 7。");
+            return;
+          }
+
+          saveState();
+          renderSourceTask();
+          showFeedback(sourceFeedback, "这一项选对了。继续给剩下的现象做选择。");
+          playSound("calm");
+        });
+      });
+
+      document.querySelector("#divideButton").addEventListener("click", () => {
+        if (state.divided) {
+          announce("第一步已经把 left 移到 3，下一步看 a[3] = 7。");
+          return;
+        }
+
+        state.divided = true;
+        saveState();
+        renderFlowTask();
+        announce("left = 3。下一步必须看中点 a[3] = 7。");
+        playSound("calm");
+      });
+
+      document.querySelector("#remainderButton").addEventListener("click", () => {
+        if (!state.divided) {
+          announce("先看 a[2] = 5 并把 left 移到 3，再看 a[3] = 7。不要跳步。");
+          playSound("error");
+          return;
+        }
+        if (state.remaindered) {
+          announce("第二步已经找到 7，下一步再测首尾 1 和 9。");
+          return;
+        }
+
+        state.remaindered = true;
+        saveState();
+        renderFlowTask();
+        announce("已经看到 a[3] = 7。下一步确认 1 和 9 也必须能查到。");
+        playSound("calm");
+      });
+
+      document.querySelector("#evenButton").addEventListener("click", () => {
+        if (!state.remaindered) {
+          announce("先找到 7，再测首尾。不要跳过中间步。");
+          playSound("error");
+          return;
+        }
+        if (state.evenChecked) {
+          announce("这三步已经走完，可以进入下一任务。");
+          return;
+        }
+
+        state.evenChecked = true;
+        state.activeStep = 2;
+        saveState();
+        render();
+        reward("任务 2 完成：a[2] = 5 后 left = 3，再看到 a[3] = 7。下一步测首尾并看死循环。");
+      });
+
+      document.querySelectorAll("[data-concept]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const concept = button.dataset.concept;
+          const pick = button.dataset.pick;
+
+          if (concept === "precedence") {
+            if (state.precedenceSolved) return;
+            if (pick === "divide-first") {
+              state.precedenceSolved = true;
+              saveState();
+              render();
+              if (conceptSolved()) {
+                state.activeStep = 3;
+                saveState();
+                render();
+                reward("任务 3 完成：你会测首尾答案，也知道区间不缩小会死循环。现在去做随机小测吧。");
+              } else {
+                announce("首尾测法选对了。继续选出区间不缩小会发生什么。");
+                playSound("calm");
+              }
+              return;
+            }
+
+            const message =
+              pick === "left-to-right"
+                ? "只测中间会漏掉端点。建议掌握是：a[0] 和 a[n-1] 都要能查到。"
+                : "对答案二分是拓展。现在建议掌握的是测首尾答案。";
+            showFeedback(debugFeedback, message, "error");
+            announce(message);
+            playSound("error");
+            return;
+          }
+
+          if (concept === "parens") {
+            if (state.parensSolved) return;
+            if (pick === "grouped") {
+              state.parensSolved = true;
+              if (conceptSolved()) state.activeStep = 3;
+              saveState();
+              render();
+              if (conceptSolved()) {
+                reward("任务 3 完成：你会测首尾答案，也知道区间不缩小会死循环。现在去做随机小测吧。");
+              } else {
+                announce("死循环的原因选对了。再把首尾测法那一题选对。");
+                playSound("calm");
+              }
+              return;
+            }
+
+            const message =
+              pick === "no-paren" ? "编译器不会自动缩小区间。比较后必须移动 left 或 right。" : "三分查找是拓展，它也不会自动避免死循环。";
+            showFeedback(debugFeedback, message, "error");
+            announce(message);
+            playSound("error");
+          }
+        });
+      });
+
+      quizForm.addEventListener("change", (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== "radio") return;
+
+        state.answers[input.name] = Number(input.value);
+        saveState();
+        renderQuiz();
+        announce("答案已记录。三题都选完后可以提交查看解析。");
+        playSound("calm");
+      });
+
+      document.querySelector("#submitQuizButton").addEventListener("click", () => {
+        const questions = currentQuestions();
+        if (questionPool.length === 0 || !questionsAreValid(questions)) {
+          announce("题库暂时不可用或题目无效。本次作答仍保留，请稍后重试。");
+          playSound("error");
+          renderQuiz();
+          return;
+        }
+
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+
+        if (unanswered > 0) {
+          announce(`还有 ${unanswered} 题未选择答案。`);
+          playSound("error");
+          return;
+        }
+
+        state.quizSubmitted = true;
+        const score = quizScore(questions);
+        state.bestScore = Math.max(state.bestScore, score);
+        saveState();
+        render();
+
+        if (score === questions.length) {
+          reward("三题全对！你已经能判断能否二分，并维护左右边界。");
+        } else if (score >= 2) {
+          reward(`答对 ${score}/3，任务完成。回看解析会让记忆更牢。`);
+        } else {
+          announce(`答对 ${score}/3。先看每题解析，再换一套题巩固。`);
+          playSound("error");
+        }
+      });
+
+      document.querySelector("#newQuizButton").addEventListener("click", refreshQuiz);
+
+      soundToggle.addEventListener("click", () => {
+        state.soundEnabled = !state.soundEnabled;
+        saveState();
+        renderSoundToggle();
+        announce(state.soundEnabled ? "音效已开启：之后的操作会有轻提示音。" : "音效已关闭：仍会保留所有视觉反馈。");
+        if (state.soundEnabled) playSound("calm");
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return;
+        if (event.key === "ArrowRight") selectStep(Math.min(3, state.activeStep + 1));
+        if (event.key === "ArrowLeft") selectStep(Math.max(0, state.activeStep - 1));
+      });
+
+      render();
+    </script>
+    <script src="/glossary/faq-panel.js"></script>
+  </body>
+</html>

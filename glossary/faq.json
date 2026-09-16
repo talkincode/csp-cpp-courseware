@@ -1273,6 +1273,62 @@
           "url": "https://zh.wikipedia.org/wiki/%E9%98%B6%E4%B9%98"
         }
       ]
+    },
+    {
+      "id": "binary-search",
+      "term": "二分查找",
+      "aliases": ["折半查找", "binary search"],
+      "summary": "在已经排好序的区间里，每次看中点、丢掉一半。",
+      "answer": "二分查找是在有序或单调的区间里找答案。每次看中点，比较后丢掉不可能的那一半，左右边界往中间收。没排好序时不能直接二分。现在先记住：每次丢掉一半。",
+      "remember": "有序才能二分；每次看中点，丢掉一半。",
+      "links": [
+        {
+          "title": "std::binary_search（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/binary_search"
+        }
+      ]
+    },
+    {
+      "id": "monotonicity",
+      "term": "单调性",
+      "aliases": ["单调", "有序", "monotonic"],
+      "summary": "往一个方向走时，值只会变大或只会变小。",
+      "answer": "单调性是说往一个方向走时，值只会变大或只会变小。有了它，比较中点后才知道答案在左半还是右半。忽大忽小的数组没有单调性，不能直接二分。",
+      "remember": "一直变大或一直变小，才能根据中点丢掉一半。",
+      "links": [
+        {
+          "title": "std::binary_search（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/binary_search"
+        }
+      ]
+    },
+    {
+      "id": "left-right-bound",
+      "term": "左右边界",
+      "aliases": ["left", "right", "搜索区间"],
+      "summary": "left 和 right 夹住还可能有答案的那段区间。",
+      "answer": "左右边界是 left 和 right，它们夹住还可能有答案的下标。比较中点后，要么 left 右移，要么 right 左移，区间必须变短。不要把边界理解成只看第一个元素。",
+      "remember": "left 和 right 夹住可能有答案的区间，比较后必须让区间变短。",
+      "links": [
+        {
+          "title": "std::binary_search（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/binary_search"
+        }
+      ]
+    },
+    {
+      "id": "midpoint",
+      "term": "中点",
+      "aliases": ["mid", "中间下标"],
+      "summary": "当前左右边界中间那个下标。",
+      "answer": "中点 mid 通常写成 (left + right) / 2，表示当前这一段的中间下标。先看 a[mid]，再决定丢掉左半还是右半。现在只要会算中间下标，不必背防止溢出的写法。",
+      "remember": "mid = (left + right) / 2，先看 a[mid] 再决定丢哪半边。",
+      "links": [
+        {
+          "title": "std::binary_search（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/binary_search"
+        }
+      ]
     }
   ]
 }
