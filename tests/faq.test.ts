@@ -155,3 +155,7 @@ test("S3-05 wires two-pointer and sliding-window FAQ terms into the guided lesso
 test("S3-06 wires greedy-choice FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s3-06", ["greedy", "selection-criterion", "counterexample"]);
 });
+
+test("S3-07 wires stack-and-queue FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s3-07", ["stack", "queue", "bracket-matching"]);
+});
