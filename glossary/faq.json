@@ -1595,6 +1595,76 @@
           "url": "https://oi-wiki.org/graph/bfs/"
         }
       ]
+    },
+    {
+      "id": "dynamic-programming",
+      "term": "动态规划",
+      "aliases": ["DP", "dynamic programming", "动态规划"],
+      "summary": "用已经算好的小问题，推出更大的问题。",
+      "answer": "动态规划就是先把更小的同类问题算清楚，再推出更大的问题。C++ 里常用数组 `dp` 记下这些答案。现在只要会填表。状态压缩和二维背包是拓展。",
+      "remember": "小问题先算清，再推出大问题。",
+      "links": [
+        {
+          "title": "动态规划基础（OI Wiki）",
+          "url": "https://oi-wiki.org/dp/basic/"
+        }
+      ]
+    },
+    {
+      "id": "dp-state",
+      "term": "状态",
+      "aliases": ["dp[i]", "状态含义"],
+      "summary": "表格里一格到底代表什么意思。",
+      "answer": "状态就是 `dp[i]` 这一格到底表示什么。爬楼梯时，`dp[i]` 表示走到第 i 级的方法数。先用一句话写清含义，后面的转移才站得住。",
+      "remember": "先用一句话说清 dp[i] 是什么。",
+      "links": [
+        {
+          "title": "动态规划基础（OI Wiki）",
+          "url": "https://oi-wiki.org/dp/basic/"
+        }
+      ]
+    },
+    {
+      "id": "dp-transition",
+      "term": "转移",
+      "aliases": ["状态转移", "递推"],
+      "summary": "用已经填好的格子推出下一格。",
+      "answer": "转移就是用已经填好的格子推出下一格。爬楼梯每次走 1 或 2 级，所以 `dp[i] = dp[i-1] + dp[i-2]`。先手算前三步，再写成循环。",
+      "remember": "下一格由已经算好的格子推出来。",
+      "links": [
+        {
+          "title": "动态规划基础（OI Wiki）",
+          "url": "https://oi-wiki.org/dp/basic/"
+        }
+      ]
+    },
+    {
+      "id": "dp-init",
+      "term": "初始化",
+      "aliases": ["初值", "dp 初值"],
+      "summary": "最先填进表里、不用再推的格子。",
+      "answer": "初始化就是最先填进表里、不用再推的格子。爬楼梯常写 `dp[1] = 1`、`dp[2] = 2`。忘了初值，后面的转移会从空格子开始，答案会错。",
+      "remember": "先写初值，再开始转移。",
+      "links": [
+        {
+          "title": "动态规划基础（OI Wiki）",
+          "url": "https://oi-wiki.org/dp/basic/"
+        }
+      ]
+    },
+    {
+      "id": "one-dim-dp",
+      "term": "一维 DP",
+      "aliases": ["一维动态规划", "dp 数组"],
+      "summary": "用一排格子记下每个小问题的答案。",
+      "answer": "一维 DP 就是用一排格子 `dp[1..n]` 记下每个小问题的答案。填满大约 n 格，每格常数时间，总共大约 O(n)，常见测试点能通过。二维背包和状态压缩是拓展。",
+      "remember": "一排格子记下小问题，再推出大问题。",
+      "links": [
+        {
+          "title": "动态规划基础（OI Wiki）",
+          "url": "https://oi-wiki.org/dp/basic/"
+        }
+      ]
     }
   ]
 }
