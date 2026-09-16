@@ -135,3 +135,7 @@ test("S2-08 wires complexity and test-point FAQ terms into the guided lesson", a
 test("S3-01 wires digit and GCD FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s3-01", ["digit", "gcd", "loop-invariant"]);
 });
+
+test("S3-02 wires recursion FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s3-02", ["recursion", "base-case", "call-stack"]);
+});
