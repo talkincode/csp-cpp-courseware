@@ -1385,6 +1385,76 @@
           "url": "https://oi-wiki.org/basic/prefix-sum/"
         }
       ]
+    },
+    {
+      "id": "two-pointers",
+      "term": "双指针",
+      "aliases": ["two pointers", "左右指针"],
+      "summary": "用两个下标一起盯着一段连续区间。",
+      "answer": "双指针就是两个下标，常见名字是 `left` 和 `right`。它们一起圈出当前这段。一个往右扩，一个往右收，不要理解成随便两个无关的变量。",
+      "remember": "双指针 = 左端点 + 右端点，一起维护一段。",
+      "links": [
+        {
+          "title": "双指针（OI Wiki）",
+          "url": "https://oi-wiki.org/misc/two-pointer/"
+        }
+      ]
+    },
+    {
+      "id": "sliding-window",
+      "term": "滑动窗口",
+      "aliases": ["sliding window", "窗口"],
+      "summary": "一段会左右滑动的连续区间。",
+      "answer": "滑动窗口是双指针圈出来的那一段连续元素。右指针前进一步，窗口变长；左指针前进一步，窗口变短。它像一扇窗户在数组上滑动，而不是跳着选不相邻的格子。",
+      "remember": "窗口是连续的一段，只能伸缩两端，不能挖中间。",
+      "links": [
+        {
+          "title": "滑动窗口（OI Wiki）",
+          "url": "https://oi-wiki.org/misc/sliding-window/"
+        }
+      ]
+    },
+    {
+      "id": "left-pointer",
+      "term": "左指针",
+      "aliases": ["left", "L"],
+      "summary": "当前窗口的左端点下标。",
+      "answer": "左指针常写成 `left` 或 `L`，表示当前这段的左端。窗口太大或条件被破坏时，才把左指针往右移，丢掉左端那个数。现在先记住：左指针管“从哪开始”。",
+      "remember": "左指针是窗口左端；条件不满足时才右移它。",
+      "links": [
+        {
+          "title": "双指针（OI Wiki）",
+          "url": "https://oi-wiki.org/misc/two-pointer/"
+        }
+      ]
+    },
+    {
+      "id": "right-pointer",
+      "term": "右指针",
+      "aliases": ["right", "R"],
+      "summary": "当前窗口的右端点下标。",
+      "answer": "右指针常写成 `right` 或 `R`，表示当前这段的右端。想让窗口覆盖更多数，就先把右指针往右移，把新数加进来。现在先记住：右指针管“到哪结束”。",
+      "remember": "右指针是窗口右端；想扩大窗口就先右移它。",
+      "links": [
+        {
+          "title": "双指针（OI Wiki）",
+          "url": "https://oi-wiki.org/misc/two-pointer/"
+        }
+      ]
+    },
+    {
+      "id": "window-condition",
+      "term": "窗口条件",
+      "aliases": ["合法窗口", "约束"],
+      "summary": "这段窗口现在还算不算合法。",
+      "answer": "窗口条件是题目给这段连续区间的要求，例如和不超过 3。右指针扩进去后如果破坏条件，就移动左指针，直到条件重新成立。空窗口和满窗口都要单独想一想。",
+      "remember": "先问窗口合不合法，再决定移动左指针还是右指针。",
+      "links": [
+        {
+          "title": "滑动窗口（OI Wiki）",
+          "url": "https://oi-wiki.org/misc/sliding-window/"
+        }
+      ]
     }
   ]
 }
