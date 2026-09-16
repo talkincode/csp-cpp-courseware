@@ -1455,6 +1455,62 @@
           "url": "https://oi-wiki.org/misc/sliding-window/"
         }
       ]
+    },
+    {
+      "id": "greedy",
+      "term": "贪心选择",
+      "aliases": ["greedy", "贪心"],
+      "summary": "按一条明确规则，每次选当前看起来最好的那一步。",
+      "answer": "贪心选择就是先定一条规则，再每一步都按它取当前最好的。它不是凭感觉碰运气。现在必会是：能把规则说清楚，并用小例子走一遍。哈夫曼树、最短路是拓展。",
+      "remember": "先说出规则，再每一步都按它选。",
+      "links": [
+        {
+          "title": "贪心（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/greedy/"
+        }
+      ]
+    },
+    {
+      "id": "selection-criterion",
+      "term": "选择标准",
+      "aliases": ["贪心规则", "优先选什么"],
+      "summary": "决定这一步到底选哪一个的那条规则。",
+      "answer": "选择标准就是“优先选什么”。选不重叠活动时，常用“结束最早的先选”。规则要能写进程序，例如比较结束时间。换一条标准，结果可能完全不同。",
+      "remember": "选择标准 = 优先选什么，要能说出口。",
+      "links": [
+        {
+          "title": "贪心（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/greedy/"
+        }
+      ]
+    },
+    {
+      "id": "counterexample",
+      "term": "反例",
+      "aliases": ["counterexample", "证伪例子"],
+      "summary": "一个能让错误规则选错的小例子。",
+      "answer": "反例是专门用来推翻一条规则的小数据。如果按“时长最长先选”，活动 [1,4]、[1,2]、[2,5] 只会拿到 1 个；按结束最早能拿到 2 个。找到反例，就不要再用那条规则。",
+      "remember": "规则对不对，先用一个小反例检查。",
+      "links": [
+        {
+          "title": "贪心（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/greedy/"
+        }
+      ]
+    },
+    {
+      "id": "sort-then-decide",
+      "term": "排序后决策",
+      "aliases": ["先排序再选择", "sort then greedy"],
+      "summary": "先按标准排好，再从左到右做选择。",
+      "answer": "很多贪心题会先 sort，把选择标准变成数组顺序，再扫一遍做决定。选活动时常按结束时间排序。n 到 1e5 时，排序大约 n log n，再加一次扫描，通常能过。证明正确性是拓展。",
+      "remember": "先按标准 sort，再从左到右选。",
+      "links": [
+        {
+          "title": "std::sort（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/sort"
+        }
+      ]
     }
   ]
 }
