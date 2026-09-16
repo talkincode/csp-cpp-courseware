@@ -1203,6 +1203,76 @@
           "url": "https://zh.cppreference.com/w/cpp/language/statements#Iteration_statements"
         }
       ]
+    },
+    {
+      "id": "recursion",
+      "term": "递归",
+      "aliases": ["递归函数", "recursion"],
+      "summary": "把当前问题说成一个更小的同类问题。",
+      "answer": "递归就是用更小的同类问题解释当前问题。函数可以再调用自己，但每次都要更靠近能直接回答的情况。现在先记住：问题变小一点，再问自己一次。",
+      "remember": "递归 = 更小的同类问题 + 必须能停下来。",
+      "links": [
+        {
+          "title": "递归函数（Microsoft Learn）",
+          "url": "https://learn.microsoft.com/zh-cn/cpp/cpp/recursive-functions"
+        }
+      ]
+    },
+    {
+      "id": "base-case",
+      "term": "递归边界",
+      "aliases": ["终止条件", "边界条件", "base case"],
+      "summary": "不再往下调用、可以直接回答的那一句。",
+      "answer": "递归边界是不再往下调用的那一句。比如 n==1 时直接返回。没有边界，调用会一直进行下去。先写停的条件，再写处理 n 然后处理 n-1。",
+      "remember": "先写停的条件，再写更小的那一次调用。",
+      "links": [
+        {
+          "title": "递归函数（Microsoft Learn）",
+          "url": "https://learn.microsoft.com/zh-cn/cpp/cpp/recursive-functions"
+        }
+      ]
+    },
+    {
+      "id": "recursive-call",
+      "term": "递归调用",
+      "aliases": ["自己调用自己", "recursive call"],
+      "summary": "函数在自己内部再喊自己一次，参数通常更小。",
+      "answer": "递归调用是函数在自己内部再喊自己一次，参数通常更小。countdown(3) 里再调用 countdown(2)，就是一次递归调用。现在只要看清参数变小了。",
+      "remember": "递归调用时，参数必须比现在更靠近边界。",
+      "links": [
+        {
+          "title": "函数（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/functions"
+        }
+      ]
+    },
+    {
+      "id": "call-stack",
+      "term": "调用栈",
+      "aliases": ["栈的直觉", "call stack", "任务卡"],
+      "summary": "一叠还没做完的函数任务卡。",
+      "answer": "调用栈可以想成一叠任务卡。每进入一层就压一张卡，返回时拿掉最上面那张。追踪三层时，从上往下看这叠卡，就知道现在走到哪。不必背栈的实现细节。",
+      "remember": "进入一层就压一张卡，返回就拿掉最上面那张。",
+      "links": [
+        {
+          "title": "递归函数（Microsoft Learn）",
+          "url": "https://learn.microsoft.com/zh-cn/cpp/cpp/recursive-functions"
+        }
+      ]
+    },
+    {
+      "id": "factorial",
+      "term": "阶乘",
+      "aliases": ["n!", "factorial"],
+      "summary": "从 1 乘到 n 的结果。",
+      "answer": "n 的阶乘 n! 表示 1 到 n 连乘。递归写法是 n! = n * (n-1)!，并且规定 1! = 1。现在只要能写出边界和这一步缩小，不必背更复杂公式。",
+      "remember": "n! = n * (n-1)!，并且 1! = 1。",
+      "links": [
+        {
+          "title": "阶乘（维基百科）",
+          "url": "https://zh.wikipedia.org/wiki/%E9%98%B6%E4%B9%98"
+        }
+      ]
     }
   ]
 }
