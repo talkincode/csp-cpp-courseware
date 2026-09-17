@@ -1917,6 +1917,34 @@
           "url": "https://oi-wiki.org/search/opt/"
         }
       ]
+    },
+    {
+      "id": "counting-array",
+      "term": "计数数组",
+      "aliases": ["频次数组", "counting array", "桶计数"],
+      "summary": "开一个和取值范围一样大的数组，下标就是值，格子里存出现次数。",
+      "answer": "计数数组是开一个数组 cnt，用分数当下标，cnt[分数]++ 表示这个分数又出现了一次。取值范围要够小（比如 0~100）才适合直接当下标；范围很大、是负数或小数就不适合。本课只用小范围整数分数做计数，哈希表细节是拓展。",
+      "remember": "范围小的整数才适合直接当数组下标计数。",
+      "links": [
+        {
+          "title": "计数排序（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/counting-sort/"
+        }
+      ]
+    },
+    {
+      "id": "duplicate-value",
+      "term": "重复元素",
+      "aliases": ["重复值", "并列", "duplicate"],
+      "summary": "同一个值出现不止一次，要单独想清楚怎么处理。",
+      "answer": "重复元素是指同一个分数、同一个数出现了两次或更多。排序后重复值会挨在一起，计数数组里对应下标的次数会大于 1。写代码前先想清楚：是要去重、统计次数，还是保留每一次出现。本课只处理统计次数这一种。",
+      "remember": "先想清楚重复要去重、计数还是保留，再写代码。",
+      "links": [
+        {
+          "title": "std::unique（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/algorithm/unique"
+        }
+      ]
     }
   ]
 }

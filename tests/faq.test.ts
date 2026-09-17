@@ -179,3 +179,7 @@ test("S4-03 wires simulation FAQ terms into the guided lesson", async () => {
 test("S4-04 wires search-and-pruning FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s4-04", ["dfs", "search-tree", "backtrack", "pruning"]);
 });
+
+test("S4-05 wires sorting-search-and-mapping FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s4-05", ["data-range", "sort", "binary-search", "counting-array", "duplicate-value"]);
+});
