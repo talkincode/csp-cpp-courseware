@@ -163,3 +163,7 @@ test("S3-07 wires stack-and-queue FAQ terms into the guided lesson", async () =>
 test("S3-08 wires dynamic-programming FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s3-08", ["dynamic-programming", "dp-state", "dp-transition"]);
 });
+
+test("S4-01 wires contest-statement FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s4-01", ["contest-program", "data-range", "sample-io"]);
+});

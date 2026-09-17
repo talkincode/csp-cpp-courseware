@@ -1665,6 +1665,76 @@
           "url": "https://oi-wiki.org/dp/basic/"
         }
       ]
+    },
+    {
+      "id": "contest-program",
+      "term": "竞赛程序",
+      "aliases": ["提交程序", "OJ 程序", "干净程序"],
+      "summary": "按题面读入、按题面输出的程序。",
+      "answer": "竞赛程序就是按题面读入、按题面输出的程序。C++ 里通常用 `cin` 读、`cout` 写，不要多打印“请输入”。现在只要交一份干净程序。`freopen` 是拓展。",
+      "remember": "按题面读，按题面写，不要多说话。",
+      "links": [
+        {
+          "title": "cin（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/cin"
+        }
+      ]
+    },
+    {
+      "id": "data-range",
+      "term": "数据范围",
+      "aliases": ["规模", "n 的范围", "约束"],
+      "summary": "题面告诉你数据能有多大。",
+      "answer": "数据范围写在题面上，例如 `1 <= n <= 1000`。先把它圈出来，再判断数组和循环够不够。现在只要会圈范围。评测机内部是拓展。",
+      "remember": "先圈出范围，再决定怎么写。",
+      "links": [
+        {
+          "title": "复杂度基础（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/complexity/"
+        }
+      ]
+    },
+    {
+      "id": "sample-io",
+      "term": "样例",
+      "aliases": ["样例输入", "样例输出", "sample"],
+      "summary": "题目给的一组输入和对应输出。",
+      "answer": "样例是题目给的一组输入和对应输出。先自己对照：输入 3，输出只要 4。现在用样例检查程序，不要只看自己的想法。",
+      "remember": "先按样例独立跑一遍。",
+      "links": [
+        {
+          "title": "cout（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/cout"
+        }
+      ]
+    },
+    {
+      "id": "standard-io",
+      "term": "标准输入输出",
+      "aliases": ["stdin", "stdout", "标准输入", "标准输出"],
+      "summary": "程序默认的读入和写出通道。",
+      "answer": "标准输入输出就是程序默认的读入和写出通道。C++ 里 `cin` 读标准输入，`cout` 写标准输出。现在记住：竞赛程序接到这两头。文件读写是拓展。",
+      "remember": "cin 读进来，cout 写出去。",
+      "links": [
+        {
+          "title": "iostream（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/basic_iostream"
+        }
+      ]
+    },
+    {
+      "id": "clean-output",
+      "term": "干净输出",
+      "aliases": ["无提示语", "删除调试输出", "不要请输入"],
+      "summary": "答案里只有题目要求的内容。",
+      "answer": "干净输出就是答案里只有题目要求的内容。多写“请输入”或调试文字，评测机会判错。现在先删掉提示语。评测机内部是拓展。",
+      "remember": "输出只要答案，不要请输入。",
+      "links": [
+        {
+          "title": "cout（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/cout"
+        }
+      ]
     }
   ]
 }
