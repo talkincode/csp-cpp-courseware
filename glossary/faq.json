@@ -1945,6 +1945,48 @@
           "url": "https://zh.cppreference.com/w/cpp/algorithm/unique"
         }
       ]
+    },
+    {
+      "id": "pick-or-skip",
+      "term": "选或不选",
+      "aliases": ["取或不取", "pick or skip", "0/1 决策"],
+      "summary": "每处理一个位置，只考虑“选它”或“跳过它”这两种情况。",
+      "answer": "选或不选是很多线性 DP 的基本模型：处理到第 i 个位置时，只比较两种结果——选中它（拿到它的贡献，但可能因此不能选相邻的上一个）和跳过它（保留 dp[i-1] 已经算好的最优值），取较大的那个当 dp[i]。写代码前先确认这两种情况分别对应哪个式子。",
+      "remember": "每一步只问一次：选它，还是跳过它？",
+      "links": [
+        {
+          "title": "动态规划基础（OI Wiki）",
+          "url": "https://oi-wiki.org/dp/basic/"
+        }
+      ]
+    },
+    {
+      "id": "optimal-substructure",
+      "term": "最优子结构",
+      "aliases": ["optimal substructure", "子问题最优"],
+      "summary": "大问题的最优解，可以直接由子问题的最优解拼出来。",
+      "answer": "最优子结构是说：如果前 i-1 个位置的最优答案已经算清楚了，那么前 i 个位置的最优答案，就能直接由这些已经算好的子问题答案推出来，不用重新枚举所有可能。这是能写出 dp 转移式子的前提，也是 DP 比蛮力枚举快的原因。",
+      "remember": "子问题先算对，大问题的答案就能直接拼出来。",
+      "links": [
+        {
+          "title": "动态规划基础（OI Wiki）",
+          "url": "https://oi-wiki.org/dp/basic/"
+        }
+      ]
+    },
+    {
+      "id": "state-compression",
+      "term": "状态压缩",
+      "aliases": ["滚动数组", "state compression"],
+      "summary": "转移只用到最近几个状态时，只留这几个变量，不存整张表。",
+      "answer": "状态压缩是拓展内容：如果 dp[i] 只依赖 dp[i-1] 和 dp[i-2]，就可以只用两个变量滚动更新，不用开一整个 dp 数组，能省内存。现在只需要认识这个概念、知道它用在哪种场景，不要求现在就会写。",
+      "remember": "只留用得到的最近几个状态，其余的不用存。",
+      "links": [
+        {
+          "title": "动态规划基础（OI Wiki）",
+          "url": "https://oi-wiki.org/dp/basic/"
+        }
+      ]
     }
   ]
 }

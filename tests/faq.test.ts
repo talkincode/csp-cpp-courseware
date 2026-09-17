@@ -183,3 +183,7 @@ test("S4-04 wires search-and-pruning FAQ terms into the guided lesson", async ()
 test("S4-05 wires sorting-search-and-mapping FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s4-05", ["data-range", "sort", "binary-search", "counting-array", "duplicate-value"]);
 });
+
+test("S4-06 wires DP-classic-model FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s4-06", ["dp-state", "dp-transition", "dp-init", "pick-or-skip", "optimal-substructure", "state-compression"]);
+});

@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="S4-05 排序、查找与映射：面向 CSP-J 初学者的互动式 C++ 入门课。"
+      content="S4-06 DP 经典模型：面向 CSP-J 初学者的互动式 C++ 入门课。"
     />
-    <title>S4-05 · 排好序，再选对工具去查找和计数</title>
+    <title>S4-06 · 选或不选，推出最优子结构</title>
     <style>
       :root {
         --forest: #0c2620;
@@ -1205,10 +1205,10 @@
       }
     </style>
   </head>
-  <body data-faq-terms="data-range sort binary-search counting-array duplicate-value">
+  <body data-faq-terms="dp-state dp-transition dp-init pick-or-skip optimal-substructure state-compression">
     <header class="topbar">
       <a class="back-link" href="../../index.html">← 返回课程路线</a>
-      <span class="course-marker">第四阶段 · S4-05 · 60 分钟</span>
+      <span class="course-marker">第四阶段 · S4-06 · 60 分钟</span>
       <div class="topbar-tools">
         <button id="faqCatalogButton" class="faq-open" type="button">常见问题</button>
         <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">音效：开</button>
@@ -1218,20 +1218,20 @@
     <main class="lesson-shell">
       <section class="lesson-hero">
         <div>
-          <h1>排好序，再选对工具去查找和计数</h1>
+          <h1>选或不选，推出最优子结构</h1>
           <p>
-            这一课只练一件事：拿到一批数据后，先看清 <button type="button" class="faq-term" data-faq="data-range">数据范围</button>，再决定用<button type="button" class="faq-term" data-faq="counting-array">计数数组</button>、先<button type="button" class="faq-term" data-faq="sort">排序</button>后扫描，还是复用<button type="button" class="faq-term" data-faq="binary-search">二分查找</button>。必会：判断何时该用排序、处理好<button type="button" class="faq-term" data-faq="duplicate-value">重复元素</button>、按取值范围选出数组或映射方案。最小示例：6 名学生的成绩 <span class="inline-code">90 78 85 90 85 90</span>，分数范围 <span class="inline-code">0 &lt;= 分数 &lt;= 100</span>，<span class="inline-code">1 &lt;= n &lt;= 1000</span>，要求统计每个分数出现次数，并输出出现次数最多的分数。样例追踪：排序后是 <span class="inline-code">78 85 85 90 90 90</span>，扫描一遍数出 78 出现 1 次、85 出现 2 次、90 出现 3 次，最高频分数是 90。边界是 n=1（这唯一一个分数本身就是最高频，次数为 1），以及多个分数并列最高频时按“取数值更小的分数”统一规则。建议掌握：分数范围很小（0~100）时可以直接开计数数组，比排序更省事。范围变得很大（比如到 10 的 9 次方）时改用映射结构是拓展。这里不会在浏览器里运行 C++。
+            这一课只练一件事：遇到“不能选相邻两个位置、要最大化总和”这类问题时，用<button type="button" class="faq-term" data-faq="dp-state">状态</button> dp[i] 表示到第 i 个位置为止能拿到的最大总和，用<button type="button" class="faq-term" data-faq="pick-or-skip">选或不选</button>写出转移式子，并确认这是<button type="button" class="faq-term" data-faq="optimal-substructure">最优子结构</button>而不是靠感觉贪心。必会：能列出状态表、能写出转移式子、能检查不可达状态（比如 i-2 不存在时不能越界读取，要按已给的初值处理）。最小示例：4 个位置的金额 <span class="inline-code">3 7 4 6</span>，规则是不能选相邻两个位置，求能拿到的最大总和，<span class="inline-code">1 &lt;= n &lt;= 1000</span>。样例追踪：dp[0] = 3，dp[1] = max(3, 7) = 7，dp[2] = max(dp[1], dp[0]+4) = max(7, 7) = 7，dp[3] = max(dp[2], dp[1]+6) = max(7, 13) = 13，所以 dp[3] = 13。边界是 n=1（只有一个位置，直接选它）和不可达状态（i-2 越界时不能凭空访问，要靠 dp[0]、dp[1] 的初值兜底）。建议掌握：这比枚举所有选法（2 的 n 次方种）快得多，n 变大时只有枚举才会超时。拓展：如果 dp[i] 只依赖前两个状态，可以用<button type="button" class="faq-term" data-faq="state-compression">状态压缩</button>把整个数组换成两个变量，现在只需要认识这个概念，不强制要求会写。这里不会在浏览器里运行 C++。
           </p>
           <div class="level-legend" aria-label="必会、建议掌握和拓展">
-            <span class="level-chip is-required">必会：能说明何时用排序；能处理重复元素；能按范围选择数组或映射方案</span>
-            <span class="level-chip is-recommended">建议掌握：范围很小时直接用计数数组比排序更省事</span>
-            <span class="level-chip is-extra">拓展：范围很大时改用映射结构（如 map），现在不用当硬门槛</span>
+            <span class="level-chip is-required">必会：能列状态表；能写转移式子；能检查不可达状态（i-2 越界时靠初值兜底）</span>
+            <span class="level-chip is-recommended">建议掌握：DP 比枚举所有选法快得多，n 变大时枚举会超时</span>
+            <span class="level-chip is-extra">拓展：状态压缩——只用两个变量代替整个 dp 数组，现在先认识概念，不当硬门槛</span>
           </div>
           <button id="beginButton" class="primary-action" type="button">开始第一个任务</button>
         </div>
         <aside class="mission-slip" aria-label="本课任务">
           <strong>本课任务</strong>
-          <span>能判断分数该用计数数组还是排序后扫描，能追踪 90 78 85 90 85 90 排序后数出出现次数最多的分数，能写出两个边界。</span>
+          <span>能判断该用“选或不选”定义状态，能手算 3 7 4 6 的 dp 表推出 dp[3] = 13，能写出两个边界。</span>
         </aside>
       </section>
 
@@ -1244,11 +1244,11 @@
           <div class="step-list">
             <button class="step-button" type="button" data-step="0" aria-current="step">
               <span class="step-number">1</span>
-              <span class="step-copy"><strong>先选出处理工具</strong><span>计数数组和排序</span></span>
+              <span class="step-copy"><strong>先选出状态定义</strong><span>选或不选 vs 枚举</span></span>
             </button>
             <button class="step-button" type="button" data-step="1" aria-disabled="true">
               <span class="step-number">2</span>
-              <span class="step-copy"><strong>排序后扫描统计</strong><span>排序、扫描、记录</span></span>
+              <span class="step-copy"><strong>手算 DP 表推出答案</strong><span>状态、初始化、转移</span></span>
             </button>
             <button class="step-button" type="button" data-step="2" aria-disabled="true">
               <span class="step-number">3</span>
@@ -1264,63 +1264,63 @@
 
         <div class="workbench">
           <section class="step-panel" data-panel="0">
-            <h2>任务 1：先选出该用计数数组还是排序后扫描</h2>
+            <h2>任务 1：先选出该怎么定义状态</h2>
             <p class="step-lead">
-              <button type="button" class="faq-term" data-faq="data-range">数据范围</button> 决定了工具选择：范围小的整数适合直接开 <button type="button" class="faq-term" data-faq="counting-array">计数数组</button>；范围较大或不是整数下标时，先 <button type="button" class="faq-term" data-faq="sort">排序</button> 再扫描更通用。点不认识的词可看基础解释。
+              先用一句话确定<button type="button" class="faq-term" data-faq="dp-state">状态</button> dp[i] 的含义，再确定第 i 个位置该怎么<button type="button" class="faq-term" data-faq="pick-or-skip">选或不选</button>。点不认识的词可看基础解释。
             </p>
-            <p class="guided-note"><strong>必会：</strong>能说出分数范围 0~100 时可以直接用计数数组统计次数；不方便用计数数组时要先排序，让相同的分数挨在一起。这里不会在浏览器里运行 C++，只练习选择和走过程。</p>
-            <div class="type-grid" aria-label="选择统计工具">
-              <div class="formula-row" data-quantity="rangeTool">
-                <p class="type-label"><strong>分数范围是 0~100，要统计每个分数出现次数，该怎么做最省事？</strong><span>数据范围 · 必会</span></p>
-                <button type="button" data-choice="counting">开一个大小 101 的计数数组 cnt，读入时 cnt[分数]++</button>
-                <button type="button" data-choice="always-array">不管范围多大，都必须用计数数组</button>
-                <button type="button" data-choice="string-compare">只能把每个分数转成字符串逐个比较</button>
+            <p class="guided-note"><strong>必会：</strong>能说出 dp[i] 表示前 i 个位置（不选相邻）能拿到的最大金额；能说出第 i 个位置只有“选它”和“跳过它”两种情况，取较大值。这里不会在浏览器里运行 C++，只练习选择和走过程。</p>
+            <div class="type-grid" aria-label="选择状态定义">
+              <div class="formula-row" data-quantity="stateTool">
+                <p class="type-label"><strong>4 个位置的金额 3 7 4 6，不能选相邻两个位置，要求最大总和，该怎么定义状态最合适？</strong><span>状态定义 · 必会</span></p>
+                <button type="button" data-choice="define-dp">定义 dp[i] 为考虑前 i 个位置（不选相邻）能拿到的最大金额</button>
+                <button type="button" data-choice="brute-subset">只能枚举所有选法（2 的 n 次方种），n 变大也必须这样做</button>
+                <button type="button" data-choice="no-state">不用定义状态，直接从左到右贪心选更大的数字就行</button>
               </div>
-              <div class="formula-row" data-quantity="dupTool">
-                <p class="type-label"><strong>如果不方便开计数数组，想找出现次数最多的分数，还能怎么做？</strong><span>处理重复 · 必会</span></p>
-                <button type="button" data-choice="sortScan">先排序，让相同分数挨在一起，再顺序扫描统计连续相同的段长度</button>
-                <button type="button" data-choice="assume-first">不排序，直接假设第一个分数出现次数最多</button>
-                <button type="button" data-choice="one-binary-search">只要二分查找一次就能直接找到出现次数最多的分数</button>
+              <div class="formula-row" data-quantity="pickTool">
+                <p class="type-label"><strong>确定用 dp[i] 表示前 i 个位置的最优解后，第 i 个位置该怎么决策？</strong><span>选或不选 · 必会</span></p>
+                <button type="button" data-choice="pick-or-skip">选或不选：选它就是 dp[i-2]+nums[i]，不选就是 dp[i-1]，取较大值</button>
+                <button type="button" data-choice="always-pick">只要数字是正数就必须选，不用比较</button>
+                <button type="button" data-choice="only-skip">为了保险，永远跳过当前位置，只看前一个状态</button>
               </div>
             </div>
             <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
           <section class="step-panel" data-panel="1" hidden>
-            <h2>任务 2：按排序、扫描、记录三步统计出现次数</h2>
+            <h2>任务 2：按状态、初始化、转移三步推出 dp 表</h2>
             <p class="step-lead">
-              最小示例：6 名学生成绩 <span class="inline-code">90 78 85 90 85 90</span>，要统计出现次数最多的分数。按顺序点三步：先 <button type="button" class="faq-term" data-faq="sort">排序</button> 把分数排好，再顺序扫描，累计连续相同的次数（这一步在处理 <button type="button" class="faq-term" data-faq="duplicate-value">重复元素</button>），最后记录当前出现次数最多的分数。这里不会在浏览器里运行 C++。
+              最小示例：4 个位置的金额 <span class="inline-code">3 7 4 6</span>，不能选相邻两个位置。按顺序点三步：先写<button type="button" class="faq-term" data-faq="dp-state">状态</button>定义，再写<button type="button" class="faq-term" data-faq="dp-init">初始化</button>，最后用<button type="button" class="faq-term" data-faq="dp-transition">转移</button>推到 dp[3]。这里不会在浏览器里运行 C++。
             </p>
-            <p class="guided-note"><strong>必会：</strong>能解释每一步为什么这样做。边界：不要跳过“扫描”直接猜答案。排序后如果还要按分数查某个具体值是否存在，可以直接复用 <button type="button" class="faq-term" data-faq="binary-search">二分查找</button>，不用重新写一遍扫描逻辑。</p>
-            <div class="code-sheet" aria-label="排序、扫描、记录三步对照">
+            <p class="guided-note"><strong>必会：</strong>能解释每一步为什么这样做。边界：不要跳过“转移”直接猜答案；转移时 i-2 越界（比如 i=0、i=1）不能凭空读取，要靠 dp[0]、dp[1] 的初值兜底，不能读到不存在的格子。</p>
+            <div class="code-sheet" aria-label="状态、初始化、转移三步对照">
               <ol>
-                <li>// 排序：90 78 85 90 85 90 → 78 85 85 90 90 90</li>
-                <li class="highlight">// 扫描：78(1 次) 85(2 次) 90(3 次)，相邻相同就累加，不同就重新计数</li>
-                <li class="focus-line">// 记录：90 的连续次数 3 大于已记录的最高频，更新最高频分数为 90</li>
-                <li>// 若需查某个具体分数是否存在，可复用二分查找</li>
+                <li>// 状态：dp[i] 表示考虑前 i 个位置（不选相邻）能拿到的最大金额</li>
+                <li class="highlight">// 初始化：dp[0] = 3，dp[1] = max(3, 7) = 7</li>
+                <li class="focus-line">// 转移：dp[i] = max(dp[i-1], dp[i-2] + nums[i])</li>
+                <li>// dp[2] = max(7, 3+4) = 7；dp[3] = max(7, 7+6) = 13</li>
               </ol>
             </div>
             <div class="flow-line" aria-label="按顺序走完三步">
               <button id="divideButton" class="flow-action" type="button">
                 <span class="flow-index">A</span>
-                <strong>排序：把成绩从小到大排列</strong>
-                <span>78 85 85 90 90 90</span>
+                <strong>状态：先写出 dp[i] 的含义</strong>
+                <span>考虑前 i 个位置的最大金额</span>
               </button>
               <button id="remainderButton" class="flow-action" type="button" aria-disabled="true">
                 <span class="flow-index">B</span>
-                <strong>扫描：数出每一段连续相同的次数</strong>
-                <span>78(1) 85(2) 90(3)</span>
+                <strong>初始化：填 dp[0] 和 dp[1]</strong>
+                <span>dp[0] = 3，dp[1] = 7</span>
               </button>
               <button id="evenButton" class="flow-action" type="button" aria-disabled="true">
                 <span class="flow-index">C</span>
-                <strong>记录：更新出现次数最多的分数</strong>
-                <span>90 出现 3 次，最高频</span>
+                <strong>转移：推到 dp[3]</strong>
+                <span>dp[2] = 7，dp[3] = 13</span>
               </button>
             </div>
             <aside id="variableBox" class="variable-box" aria-live="polite">
-              <div class="box-kicker">当前对照：分数统计</div>
-              <div class="box-value" id="variableValue">还没开始排序</div>
-              <div class="box-meta" id="variableMeta">先点“排序：把成绩从小到大排列”。</div>
+              <div class="box-kicker">当前对照：dp 表</div>
+              <div class="box-value" id="variableValue">还没开始定义状态</div>
+              <div class="box-meta" id="variableMeta">先点“状态：先写出 dp[i] 的含义”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
@@ -1328,28 +1328,28 @@
           <section class="step-panel" data-panel="2" hidden>
             <h2>任务 3：确定处理思路，并认出两个边界</h2>
             <p class="step-lead">
-              建议掌握：分数范围很小（0~100）时，可以在读入时同步用计数数组统计，比先排序再扫描更省事；最后遍历计数数组找出现次数最多的下标即可。范围变得很大（比如到 10 的 9 次方）时，计数数组开不下，需要改用映射结构（如 map），这是拓展内容。
+              建议掌握：这题也能枚举所有选法（每个位置选或不选，共 2 的 n 次方种），但 n 变大时枚举会超时；用 dp 表按状态推导，复杂度大约是 O(n)，能覆盖常见测试点。拓展：如果 dp[i] 只依赖 dp[i-1] 和 dp[i-2]，可以用状态压缩把数组换成两个变量，现在只用认识这个概念。
             </p>
-            <p class="guided-note"><strong>必会 / 建议掌握 / 拓展：</strong>必会是判断何时用排序、处理重复元素、按范围选择数组或映射方案。建议掌握是范围很小时优先用计数数组。改用 map 等映射结构是拓展，现在不用当硬门槛。</p>
+            <p class="guided-note"><strong>必会 / 建议掌握 / 拓展：</strong>必会是列出状态表、写出转移式子、检查不可达状态。建议掌握是 DP 比枚举所有选法快得多。状态压缩是拓展，现在不用当硬门槛。</p>
             <div class="code-sheet" aria-label="处理思路与边界对照">
               <ol>
-                <li>// 思路：读入时同步 cnt[分数]++，最后遍历 cnt 找次数最大的下标</li>
-                <li class="highlight">// 边界 1：n=1 时，这唯一一个分数就是最高频，次数为 1</li>
-                <li class="focus-line">// 边界 2：多个分数并列最高频时，统一取数值更小的分数</li>
-                <li>// 范围很大时改用 map 等映射结构是拓展</li>
+                <li>// 思路：dp[i] = max(dp[i-1], dp[i-2] + nums[i])，从小到大递推</li>
+                <li class="highlight">// 边界 1：n=1 时只有一个位置，dp[0] = nums[0] 就是答案</li>
+                <li class="focus-line">// 边界 2：i-2 越界（i=0、i=1）时不能凭空访问，靠 dp[0]、dp[1] 的初值兜底</li>
+                <li>// 状态压缩（只用两个变量代替整个数组）是拓展</li>
               </ol>
             </div>
             <p class="step-lead">先选出这题该用什么处理思路：</p>
             <div class="concept-actions" aria-label="选择处理思路">
-              <button type="button" data-concept="method" data-pick="counting-scan">读入时同步用计数数组 cnt[分数]++，最后遍历 cnt 找次数最大的下标</button>
-              <button type="button" data-concept="method" data-pick="sort-required">必须先排序才能统计次数，计数数组是拓展内容不用管</button>
-              <button type="button" data-concept="method" data-pick="ignore-range">数据范围很大时也应该直接开数组，不用考虑范围够不够</button>
+              <button type="button" data-concept="method" data-pick="dp-linear">按 dp[i] = max(dp[i-1], dp[i-2]+nums[i]) 从小到大递推，复杂度大约 O(n)</button>
+              <button type="button" data-concept="method" data-pick="must-enumerate">必须枚举所有选法（2 的 n 次方种），DP 只是拓展内容不用管</button>
+              <button type="button" data-concept="method" data-pick="ignore-scale">不用管 n 有多大，枚举所有选法总能算完</button>
             </div>
             <p class="step-lead">再选出两个边界：</p>
             <div class="concept-actions" aria-label="选择边界结论">
-              <button type="button" data-concept="tieRule" data-pick="grouped">n=1 时这唯一一个分数就是最高频，次数为 1；并列最高频时统一取数值更小的分数</button>
-              <button type="button" data-concept="tieRule" data-pick="random-pick">并列最高频时随便选一个输出就行，不用写规则</button>
-              <button type="button" data-concept="tieRule" data-pick="skip-single">n=1 时数据太少，不用统计，直接跳过</button>
+              <button type="button" data-concept="tieRule" data-pick="grouped">n=1 时 dp[0] = nums[0] 就是答案；i-2 越界时不能凭空访问，要靠 dp[0]、dp[1] 的初值兜底</button>
+              <button type="button" data-concept="tieRule" data-pick="random-pick">i-2 越界时随便代入一个数字就行，不用管初值</button>
+              <button type="button" data-concept="tieRule" data-pick="skip-single">n=1 时数据太少，不用算，直接跳过</button>
             </div>
             <p id="debugFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
@@ -1382,77 +1382,77 @@
     <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
 
     <script>
-      const storageKey = "csp-cpp-s4-05-progress-v1";
-      const correctTools = { rangeTool: "counting", dupTool: "sortScan" };
+      const storageKey = "csp-cpp-s4-06-progress-v1";
+      const correctTools = { stateTool: "define-dp", pickTool: "pick-or-skip" };
       const toolErrorHelp = {
-        rangeTool: {
-          "always-array": "范围很大时数组开不下，才需要改用映射结构。现在必会是：先看范围，再决定要不要开数组。",
-          "string-compare": "分数是范围很小的整数，可以直接当数组下标，不用转成字符串逐个比较。",
+        stateTool: {
+          "brute-subset": "枚举所有选法是指数级 O(2^n)，n 变大会跑不完；DP 用状态表能把复杂度降到大约线性。",
+          "no-state": "贪心每次选更大的数字未必最优：先选 7 之后就不能再选相邻位置，可能错过更好的组合。必须按位置定义状态，再逐格比较。",
         },
-        dupTool: {
-          "assume-first": "不排序就假设第一个分数出现次数最多是不可靠的。先排序，再顺序扫描才能数清楚。",
-          "one-binary-search": "二分查找只能判断某个值在不在，不能一次直接找出出现次数最多的分数，还是要先排序再扫描统计。",
+        pickTool: {
+          "always-pick": "选它未必最优：选了当前位置就一定不能选上一个位置，可能比跳过它损失更多，要比较两种情况取较大值。",
+          "only-skip": "永远跳过会漏掉选中当前位置更优的情况，比如示例中要选第 4 个位置（值 6）才能拿到最大值 13。",
         },
       };
       const questionPool = [
         {
-          id: "why-range-decides-tool",
-          courseId: "S4-05",
-          objective: "能按范围选择数组或映射方案",
+          id: "why-state-first",
+          courseId: "S4-06",
+          objective: "能列状态表",
           difficulty: "required",
           type: "choice",
-          prompt: "分数范围是 0~100，共 n 个分数，要统计每个分数出现次数，为什么可以直接用计数数组？",
-          options: ["分数范围小且是整数，能直接当数组下标，开 101 个格子够用", "分数范围大小从来不影响选择", "计数数组只能存 0 或 1，不能存次数", "计数数组必须先排序才能用"],
+          prompt: "4 个位置的金额 3 7 4 6，不能选相邻两个位置，要求最大总和，为什么要先定义 dp[i] 表示前 i 个位置的最优解？",
+          options: ["有了状态含义，才能写出下一步的转移式子，不用重新枚举所有选法", "状态只是为了好看，不影响解题", "不用定义状态，直接背结果就行", "状态只用于打印，不影响计算过程"],
           answer: 0,
-          explanation: "范围小的整数分数可以直接当数组下标：cnt[分数]++ 就能统计次数，不用额外排序。",
+          explanation: "先用一句话确定 dp[i] 的含义，后面写转移式子才有依据；这是能推广到任意 n 的关键，也是最优子结构成立的前提。",
           source: "course-plan / 自编",
         },
         {
-          id: "why-sort-before-scan",
-          courseId: "S4-05",
-          objective: "能说明何时用排序",
+          id: "pick-or-skip-formula",
+          courseId: "S4-06",
+          objective: "能写转移",
           difficulty: "required",
           type: "choice",
-          prompt: "如果不用计数数组，想统计每个数出现的次数，为什么要先排序？",
-          options: ["排序后相同的数会挨在一起，扫描一遍就能数出连续相同的段长度", "排序只是为了好看，不影响统计", "不排序也能保证相同的数挨在一起", "排序会打乱数据，不该在统计前排序"],
+          prompt: "确定 dp[i] 表示前 i 个位置（不选相邻）的最大金额后，第 i 个位置该怎么转移？",
+          options: ["dp[i] = max(dp[i-1], dp[i-2] + nums[i])，选或不选取较大值", "dp[i] = dp[i-1] + nums[i]，永远都选", "dp[i] = nums[i]，忽略之前的状态", "dp[i] = dp[i-1] * nums[i]"],
           answer: 0,
-          explanation: "排序后相同的值会连续排列，顺序扫描时只要比较相邻元素，就能数出每一段的长度，即出现次数。",
+          explanation: "跳过第 i 个位置就是 dp[i-1]；选中第 i 个位置就是 dp[i-2] + nums[i]（因为选它就不能再选相邻的第 i-1 个）。取较大值就是转移式子。",
           source: "course-plan / 自编",
         },
         {
-          id: "duplicate-tie-rule",
-          courseId: "S4-05",
-          objective: "能处理重复元素",
+          id: "trace-dp-3746",
+          courseId: "S4-06",
+          objective: "能写转移",
           difficulty: "required",
           type: "choice",
-          prompt: "6 个分数 90 78 85 90 85 90 排序后是 78 85 85 90 90 90，出现次数最多的分数是？",
-          options: ["90，出现 3 次", "78，出现 3 次", "85，出现 3 次", "所有分数出现次数一样多"],
+          prompt: "用 dp[i] = max(dp[i-1], dp[i-2]+nums[i]) 手算 3 7 4 6，已知 dp[0]=3，dp[1]=7，dp[2]=7，那么 dp[3] 是多少？",
+          options: ["13，因为 max(dp[2], dp[1]+6) = max(7, 13) = 13", "7，和 dp[2] 一样", "10，因为 4+6", "6，只取最后一个数字"],
           answer: 0,
-          explanation: "排序后 90 连续出现 3 次，比 78（1 次）和 85（2 次）都多，所以 90 是出现次数最多的分数。",
+          explanation: "dp[3] = max(dp[2], dp[1]+nums[3]) = max(7, 7+6) = 13，对应选中下标 1 和下标 3 这两个不相邻的位置。",
           source: "course-plan / 自编",
         },
         {
-          id: "tie-break-rule",
-          courseId: "S4-05",
-          objective: "能处理重复元素",
+          id: "boundary-i-minus-2",
+          courseId: "S4-06",
+          objective: "能检查不可达状态",
+          difficulty: "required",
+          type: "choice",
+          prompt: "转移式子里用到 dp[i-2]，当 i=0 或 i=1 时 dp[i-2] 并不存在，这题打算怎么处理？",
+          options: ["不直接访问不存在的格子，靠手写的 dp[0]、dp[1] 初值兜底", "让程序去读数组越界的位置，得到什么算什么", "把 dp[i-2] 当作等于 dp[i-1]", "跳过 i=0 和 i=1，不计算"],
+          answer: 0,
+          explanation: "i-2 越界时不能凭空读取内存；提前手动给出 dp[0]、dp[1] 的初值，转移只在 i>=2 时才用到 dp[i-2]，就能避免越界。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "why-dp-faster",
+          courseId: "S4-06",
+          objective: "能列状态表",
           difficulty: "recommended",
           type: "choice",
-          prompt: "如果统计后有两个分数出现次数一样多，都是最高频，这题打算怎么处理？",
-          options: ["按约定并列时取数值更小的分数，而不是随便选一个", "谁先输入就选谁，不用写规则", "两个都不输出", "把出现次数减一，直到不并列为止"],
+          prompt: "这题也能枚举每个位置选或不选（共 2 的 n 次方种组合）。当 n 变大时，为什么还要用 DP 表来做？",
+          options: ["DP 表按状态递推，复杂度大约 O(n)，枚举 2 的 n 次方种会随 n 增大迅速超时", "枚举更省内存，DP 反而更慢", "枚举和 DP 复杂度完全一样，选哪个都行", "DP 只是为了好看，实际比赛不会考"],
           answer: 0,
-          explanation: "出现并列时必须有明确规则，比如统一取数值更小的分数，不能随便选，否则同样的输入会得到不同答案。",
-          source: "course-plan / 自编",
-        },
-        {
-          id: "range-vs-hashmap",
-          courseId: "S4-05",
-          objective: "能按范围选择数组或映射方案",
-          difficulty: "recommended",
-          type: "choice",
-          prompt: "如果分数范围变成 0~1,000,000,000（很大），还能直接开计数数组吗？",
-          options: ["不能，数组开不下这么大，需要用映射（如 map）等其他方式，这是拓展内容", "能，数组大小不影响内存", "能，只要把数组开到 10 的 9 次方就行，本课要求手写", "不能，此时只能放弃统计次数"],
-          answer: 0,
-          explanation: "计数数组大小等于取值范围，范围太大时开不下，需要改用映射结构（如 map），这属于本课的拓展内容，不是必会。",
+          explanation: "枚举所有选法是指数级 O(2^n)，n 稍大就会超时；DP 表利用最优子结构，每个位置只需常数时间转移，总复杂度大约 O(n)。",
           source: "course-plan / 自编",
         },
       ];
@@ -1461,9 +1461,9 @@
         activeStep: 0,
         toolChoices: {},
         toolsMatched: false,
-        sorted: false,
-        scanned: false,
-        recorded: false,
+        stateDefined: false,
+        initialized: false,
+        transitioned: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1512,9 +1512,9 @@
                 ? stored.toolChoices
                 : {},
             toolsMatched: stored.toolsMatched === true,
-            sorted: stored.sorted === true,
-            scanned: stored.scanned === true,
-            recorded: stored.recorded === true,
+            stateDefined: stored.stateDefined === true,
+            initialized: stored.initialized === true,
+            transitioned: stored.transitioned === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1578,11 +1578,11 @@
       }
 
       function unlockedStepCount() {
-        return [state.toolsMatched, state.recorded, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.recorded, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1700,7 +1700,7 @@
         });
 
         if (state.toolsMatched) {
-          showFeedback(sourceFeedback, "两项都选对了：范围小就用计数数组，不方便用计数数组就先排序再扫描。下一步已经点亮。");
+          showFeedback(sourceFeedback, "两项都选对了：dp[i] 表示前 i 个位置能拿到的最大金额，第 i 个位置按“选或不选”取较大值。下一步已经点亮。");
         }
       }
 
@@ -1709,28 +1709,28 @@
         const remainderButton = document.querySelector("#remainderButton");
         const evenButton = document.querySelector("#evenButton");
 
-        divideButton.setAttribute("aria-disabled", String(state.sorted));
-        remainderButton.setAttribute("aria-disabled", String(!state.sorted || state.scanned));
-        evenButton.setAttribute("aria-disabled", String(!state.scanned || state.recorded));
-        divideButton.classList.toggle("is-done", state.sorted);
-        remainderButton.classList.toggle("is-done", state.scanned);
-        evenButton.classList.toggle("is-done", state.recorded);
+        divideButton.setAttribute("aria-disabled", String(state.stateDefined));
+        remainderButton.setAttribute("aria-disabled", String(!state.stateDefined || state.initialized));
+        evenButton.setAttribute("aria-disabled", String(!state.initialized || state.transitioned));
+        divideButton.classList.toggle("is-done", state.stateDefined);
+        remainderButton.classList.toggle("is-done", state.initialized);
+        evenButton.classList.toggle("is-done", state.transitioned);
 
-        if (state.recorded) {
-          variableValue.textContent = "78 85 85 90 90 90；90 出现 3 次，最高频";
-          variableMeta.textContent = "三步走完。不要跳过“记录”这一步。";
+        if (state.transitioned) {
+          variableValue.textContent = "dp = [3, 7, 7, 13]；dp[3] = 13";
+          variableMeta.textContent = "三步走完。不要跳过“转移”这一步。";
           showFeedback(flowFeedback, "你已经按顺序走完。下一步确定处理思路和两个边界。");
-        } else if (state.scanned) {
-          variableValue.textContent = "已数出 78(1) 85(2) 90(3)";
-          variableMeta.textContent = "扫描统计写清了。下一步点“记录：更新出现次数最多的分数”。";
-          showFeedback(flowFeedback, "第二步走完。下一步点“记录：更新出现次数最多的分数”，不要跳过。");
-        } else if (state.sorted) {
-          variableValue.textContent = "已排序：78 85 85 90 90 90";
-          variableMeta.textContent = "排序好了。不要跳到最后一步。";
-          showFeedback(flowFeedback, "第一步走完。下一步点“扫描：数出每一段连续相同的次数”，不要跳到结束。");
+        } else if (state.initialized) {
+          variableValue.textContent = "已初始化：dp[0] = 3，dp[1] = 7";
+          variableMeta.textContent = "初值写清了。下一步点“转移：推到 dp[3]”。";
+          showFeedback(flowFeedback, "第二步走完。下一步点“转移：推到 dp[3]”，不要跳过。");
+        } else if (state.stateDefined) {
+          variableValue.textContent = "已定义：dp[i] = 前 i 个位置能拿到的最大金额";
+          variableMeta.textContent = "状态定义好了。不要跳到最后一步。";
+          showFeedback(flowFeedback, "第一步走完。下一步点“初始化：填 dp[0] 和 dp[1]”，不要跳到结束。");
         } else {
-          variableValue.textContent = "还没开始排序";
-          variableMeta.textContent = "先点“排序：把成绩从小到大排列”。";
+          variableValue.textContent = "还没开始定义状态";
+          variableMeta.textContent = "先点“状态：先写出 dp[i] 的含义”。";
           flowFeedback.textContent = "";
         }
       }
@@ -1738,7 +1738,7 @@
       function renderDebugTask() {
         document.querySelectorAll("[data-concept='method']").forEach((button) => {
           button.disabled = state.methodSolved;
-          button.classList.toggle("is-correct", state.methodSolved && button.dataset.pick === "counting-scan");
+          button.classList.toggle("is-correct", state.methodSolved && button.dataset.pick === "dp-linear");
         });
         document.querySelectorAll("[data-concept='tieRule']").forEach((button) => {
           button.disabled = state.tieRuleSolved;
@@ -1746,9 +1746,9 @@
         });
 
         if (conceptSolved()) {
-          showFeedback(debugFeedback, "对：读入时同步计数、最后遍历找最大值；n=1 就是唯一的最高频，并列时取数值更小的分数。下一步去做随机小测吧。");
+          showFeedback(debugFeedback, "对：按 dp[i] = max(dp[i-1], dp[i-2]+nums[i]) 从小到大递推；n=1 时 dp[0] 就是答案，i-2 越界时靠初值兜底。下一步去做随机小测吧。");
         } else if (state.methodSolved) {
-          showFeedback(debugFeedback, "处理思路选对了。继续选出 n=1 和并列取更小分数两个边界。");
+          showFeedback(debugFeedback, "处理思路选对了。继续选出 n=1 和 i-2 越界兜底两个边界。");
         } else {
           debugFeedback.textContent = "";
           debugFeedback.dataset.tone = "";
@@ -1839,7 +1839,7 @@
           const passed = score >= 2;
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能按数据范围选工具，并追踪出 90 78 85 90 85 90 排序后的最高频分数。`
+            ? `本次答对 ${score}/3。很好，已经能定义状态、写出转移式子，并推出 3 7 4 6 这组数据的 dp[3] = 13。`
             : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
         } else {
           quizResult.textContent = "";
@@ -1901,7 +1901,7 @@
 
       document.querySelector("#beginButton").addEventListener("click", () => {
         document.querySelector("#learningArea").scrollIntoView({ behavior: "smooth", block: "start" });
-        announce("从任务 1 开始：先选出该用计数数组还是排序，再按顺序扫描统计。");
+        announce("从任务 1 开始：先定义 dp[i] 的含义，再确定第 i 个位置该选还是不选。");
       });
 
       stepButtons.forEach((button) => {
@@ -1935,7 +1935,7 @@
             state.activeStep = 1;
             saveState();
             render();
-            reward("任务 1 完成：范围小就用计数数组，不方便用计数数组就先排序再扫描。下一步排序后扫描统计。");
+            reward("任务 1 完成：dp[i] 表示前 i 个位置能拿到的最大金额，第 i 个位置按“选或不选”取较大值。下一步手算 DP 表推出答案。");
             return;
           }
 
@@ -1947,52 +1947,52 @@
       });
 
       document.querySelector("#divideButton").addEventListener("click", () => {
-        if (state.sorted) {
-          announce("第一步已经排好序，下一步扫描统计。");
+        if (state.stateDefined) {
+          announce("第一步已经写好状态定义，下一步初始化。");
           return;
         }
 
-        state.sorted = true;
+        state.stateDefined = true;
         saveState();
         renderFlowTask();
-        announce("已排序：78 85 85 90 90 90。下一步必须扫描统计连续相同的次数。");
+        announce("已定义：dp[i] = 前 i 个位置能拿到的最大金额。下一步必须先写出 dp[0]、dp[1] 的初值。");
         playSound("calm");
       });
 
       document.querySelector("#remainderButton").addEventListener("click", () => {
-        if (!state.sorted) {
-          announce("先排序，再扫描统计。不要跳步。");
+        if (!state.stateDefined) {
+          announce("先定义状态，再写初始化。不要跳步。");
           playSound("error");
           return;
         }
-        if (state.scanned) {
-          announce("第二步已经扫描统计，下一步记录最高频分数。");
+        if (state.initialized) {
+          announce("第二步已经写好初始化，下一步转移推出 dp[3]。");
           return;
         }
 
-        state.scanned = true;
+        state.initialized = true;
         saveState();
         renderFlowTask();
-        announce("已数出 78(1) 85(2) 90(3)。下一步记录出现次数最多的分数。");
+        announce("已初始化：dp[0] = 3，dp[1] = 7。下一步用转移式子推到 dp[3]。");
         playSound("calm");
       });
 
       document.querySelector("#evenButton").addEventListener("click", () => {
-        if (!state.scanned) {
-          announce("先扫描统计，再记录最高频分数。不要跳过中间步。");
+        if (!state.initialized) {
+          announce("先写初始化，再做转移。不要跳过中间步。");
           playSound("error");
           return;
         }
-        if (state.recorded) {
+        if (state.transitioned) {
           announce("这三步已经走完，可以进入下一任务。");
           return;
         }
 
-        state.recorded = true;
+        state.transitioned = true;
         state.activeStep = 2;
         saveState();
         render();
-        reward("任务 2 完成：排序、扫描、记录都走完了。下一步看处理思路和边界。");
+        reward("任务 2 完成：状态、初始化、转移都走完了，dp[3] = 13。下一步看处理思路和边界。");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
@@ -2002,7 +2002,7 @@
 
           if (concept === "method") {
             if (state.methodSolved) return;
-            if (pick === "counting-scan") {
+            if (pick === "dp-linear") {
               state.methodSolved = true;
               saveState();
               render();
@@ -2010,18 +2010,18 @@
                 state.activeStep = 3;
                 saveState();
                 render();
-                reward("任务 3 完成：你会读入时同步计数、遍历找最大值，也知道 n=1 就是唯一最高频、并列时取更小的分数。现在去做随机小测吧。");
+                reward("任务 3 完成：你会按 dp[i] = max(dp[i-1], dp[i-2]+nums[i]) 递推，也知道 n=1 时 dp[0] 就是答案、i-2 越界要靠初值兜底。现在去做随机小测吧。");
               } else {
-                announce("处理思路选对了。继续选出 n=1 和并列取更小分数两个边界。");
+                announce("处理思路选对了。继续选出 n=1 和 i-2 越界兜底两个边界。");
                 playSound("calm");
               }
               return;
             }
 
             const message =
-              pick === "sort-required"
-                ? "范围小的整数其实不用先排序，计数数组更省事，不是拓展内容。"
-                : "范围很大时数组会开不下，要先看范围再决定用不用数组。";
+              pick === "must-enumerate"
+                ? "枚举所有选法是指数级 O(2^n)，n 变大会跑不完；DP 递推才是通用做法，不是拓展内容。"
+                : "n 变大时枚举所有选法会指数级增长，跑不完，要先看规模再决定用不用枚举。";
             showFeedback(debugFeedback, message, "error");
             announce(message);
             playSound("error");
@@ -2036,7 +2036,7 @@
               saveState();
               render();
               if (conceptSolved()) {
-                reward("任务 3 完成：你会读入时同步计数、遍历找最大值，也知道 n=1 就是唯一最高频、并列时取更小的分数。现在去做随机小测吧。");
+                reward("任务 3 完成：你会按 dp[i] = max(dp[i-1], dp[i-2]+nums[i]) 递推，也知道 n=1 时 dp[0] 就是答案、i-2 越界要靠初值兜底。现在去做随机小测吧。");
               } else {
                 announce("边界选对了。再把处理思路那一题选对。");
                 playSound("calm");
@@ -2045,7 +2045,7 @@
             }
 
             const message =
-              pick === "random-pick" ? "并列时必须有明确规则，比如统一取数值更小的分数，不能随便选。" : "n=1 时数据虽然少，也要统计：这唯一一个分数就是最高频。";
+              pick === "random-pick" ? "i-2 越界时不能随便代入数字，必须靠手写的 dp[0]、dp[1] 初值兜底，否则会读到不存在的格子。" : "n=1 时数据虽然少，也要算：dp[0] = nums[0] 就是这题的答案。";
             showFeedback(debugFeedback, message, "error");
             announce(message);
             playSound("error");
@@ -2088,7 +2088,7 @@
         render();
 
         if (score === questions.length) {
-          reward("三题全对！你已经能按数据范围选工具，并追踪出 90 78 85 90 85 90 排序后的最高频分数。");
+          reward("三题全对！你已经能定义 dp[i]、写出转移式子，并推出 3 7 4 6 这组数据的 dp[3] = 13。");
         } else if (score >= 2) {
           reward(`答对 ${score}/3，任务完成。回看解析会让记忆更牢。`);
         } else {
