@@ -1805,6 +1805,62 @@
           "url": "https://oi-wiki.org/basic/enumerate/"
         }
       ]
+    },
+    {
+      "id": "state-table",
+      "term": "状态表",
+      "aliases": ["状态记录表", "过程状态表", "state table"],
+      "summary": "用表格记录每处理完一步之后系统处于什么状态。",
+      "answer": "状态表是一张表格，记录每处理完一个事件后系统的状态，例如余额、位置或次数。模拟题先画状态表，再一步步更新，不要凭记忆心算全过程。现在先学会画表，不必优化成状态压缩。",
+      "remember": "先画状态表，再一步步更新状态。",
+      "links": [
+        {
+          "title": "模拟（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/simulate/"
+        }
+      ]
+    },
+    {
+      "id": "event-order",
+      "term": "事件顺序",
+      "aliases": ["按顺序处理", "输入顺序", "event order"],
+      "summary": "按题目给出的先后顺序逐个处理事件，不能打乱。",
+      "answer": "事件顺序是指按题目给出的先后顺序逐个处理每一步操作，不能提前算好结果再补顺序，也不能跳过某一步。现在先按输入顺序逐条处理，不要一次性合并计算。",
+      "remember": "一步一步来，不要打乱顺序。",
+      "links": [
+        {
+          "title": "模拟（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/simulate/"
+        }
+      ]
+    },
+    {
+      "id": "condition-branch",
+      "term": "条件分支",
+      "aliases": ["分支判断", "if 分支", "条件判断"],
+      "summary": "每处理一步都要判断走哪个 if 分支，不能默认都成功。",
+      "answer": "条件分支是指每处理一个事件都要判断走哪个分支，例如余额够不够、位置越不越界。模拟题最容易漏掉某个分支导致结果错误。现在先把每种情况都写成一个 if，不要假设默认成功。",
+      "remember": "每一步都要判断分支，别漏情况。",
+      "links": [
+        {
+          "title": "if 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/if"
+        }
+      ]
+    },
+    {
+      "id": "sample-trace",
+      "term": "样例追踪",
+      "aliases": ["手动模拟样例", "样例过一遍", "trace"],
+      "summary": "拿样例数据在纸上或注释里手动走一遍每一步。",
+      "answer": "样例追踪是拿题目给的样例，在纸上或注释里手动走一遍每一步，记录每步之后的状态，最后核对是否等于样例输出。现在先手动追踪，再动手写代码，能避免逻辑漏洞。",
+      "remember": "先手动追踪样例，再写代码。",
+      "links": [
+        {
+          "title": "模拟（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/simulate/"
+        }
+      ]
     }
   ]
 }
