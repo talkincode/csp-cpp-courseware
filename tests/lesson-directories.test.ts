@@ -622,10 +622,33 @@ test("S4-01 supplies a guided contest-statement lesson and randomized choice qui
   expect(source).toContain("freopen");
 });
 
+test("S4-02 supplies a guided modeling-card lesson and randomized choice quiz", async () => {
+  const { source, manifest } = await expectImplementedInteractiveLesson("s4-02");
+
+  expect(manifest.faqTermIds).toContain("modeling-card");
+  expect(manifest.faqTermIds).toContain("known-unknown");
+  expect(manifest.faqTermIds).toContain("sample-reverse");
+  expect(manifest.faqTermIds).toContain("constraint");
+  expect(manifest.faqTermIds).toContain("algorithm-candidate");
+  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(source).toContain("必会");
+  expect(source).toContain("建议掌握");
+  expect(source).toContain("拓展");
+  expect(source).toContain('courseId: "S4-02"');
+  expect(source).toContain('type: "choice"');
+  expect(source).toContain("不会在浏览器里运行 C++");
+  expect(source).toContain("csp-cpp-s4-02-progress-v1");
+  expect(source).toContain("course-plan / 自编");
+  expect(source).toContain("题库暂时不可用");
+  expect(source).toContain("1 2 3");
+  expect(source).toContain("1+2+3=6");
+  expect(source).toContain("建模卡");
+});
+
 test("the dashboard only exposes an interactive entry for implemented lessons", async () => {
   const dashboard = await Bun.file(`${import.meta.dir}/../index.html`).text();
 
-  expect(dashboard).toContain('const implementedInteractiveLessons = ["S1-01", "S1-02", "S1-03", "S1-04", "S1-05", "S1-06", "S1-07", "S1-08", "S2-01", "S2-02", "S2-03", "S2-04", "S2-05", "S2-06", "S2-07", "S2-08", "S3-01", "S3-02", "S3-03", "S3-04", "S3-05", "S3-06", "S3-07", "S3-08", "S4-01"]');
+  expect(dashboard).toContain('const implementedInteractiveLessons = ["S1-01", "S1-02", "S1-03", "S1-04", "S1-05", "S1-06", "S1-07", "S1-08", "S2-01", "S2-02", "S2-03", "S2-04", "S2-05", "S2-06", "S2-07", "S2-08", "S3-01", "S3-02", "S3-03", "S3-04", "S3-05", "S3-06", "S3-07", "S3-08", "S4-01", "S4-02"]');
   expect(dashboard).toContain(".lesson-entry[hidden] {");
   expect(dashboard).toContain("display: none;");
   expect(dashboard).toContain("互动课件正在制作");

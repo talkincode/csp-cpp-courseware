@@ -167,3 +167,7 @@ test("S3-08 wires dynamic-programming FAQ terms into the guided lesson", async (
 test("S4-01 wires contest-statement FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s4-01", ["contest-program", "data-range", "sample-io"]);
 });
+
+test("S4-02 wires modeling-card FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s4-02", ["modeling-card", "known-unknown", "sample-reverse"]);
+});
