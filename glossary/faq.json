@@ -2043,6 +2043,76 @@
           "url": "https://oi-wiki.org/graph/concept/"
         }
       ]
+    },
+    {
+      "id": "subtask",
+      "term": "子任务",
+      "aliases": ["subtask", "测试点组"],
+      "summary": "题目按数据范围拆成的若干组测试点，每组单独判分。",
+      "answer": "子任务（subtask）是评测机把一道题的测试点按数据范围分成的若干组，例如“子任务 1：n<=1000”“子任务 2：n<=100000”。每组子任务单独判分，程序只要能正确处理某个子任务的数据范围，就能拿到那部分分数，不要求一次写出覆盖所有子任务的满分算法。",
+      "remember": "先圈出每个子任务的数据范围，再决定先做哪个。",
+      "links": [
+        {
+          "title": "子任务与部分分（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "partial-score",
+      "term": "部分分",
+      "aliases": ["partial score", "部分得分"],
+      "summary": "程序只做对部分子任务时，能拿到的那一部分分数。",
+      "answer": "部分分（partial score）是指程序哪怕拿不到满分，只要正确处理了某几个子任务的数据范围，就能拿到那几个子任务对应的分数。竞赛评测通常按子任务分别给分，所以“先保证部分分”比“空手冲满分”更稳妥。",
+      "remember": "做对一部分，也能拿到一部分分。",
+      "links": [
+        {
+          "title": "子任务与部分分（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "fallback-solution",
+      "term": "保底方案",
+      "aliases": ["safety net", "暴力保底"],
+      "summary": "一份实现简单、正确性有把握、至少能覆盖小数据子任务的程序。",
+      "answer": "保底方案（fallback solution）通常是一份写法简单的暴力程序：它复杂度可能不够高，覆盖不了全部数据范围，但足以正确处理小数据的子任务。先写好保底方案再去冲刺更优算法，即使优化没有调通，也不会一分都拿不到。",
+      "remember": "先写能跑的，再想更好的。",
+      "links": [
+        {
+          "title": "暴力法与部分分（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "easy-first-order",
+      "term": "先易后难",
+      "aliases": ["easy first", "做题顺序"],
+      "summary": "先完成有把握的部分，再挑战更难的部分。",
+      "answer": "先易后难是指做题时先完成自己有把握、能确定拿到分数的子任务，再去挑战更难、更花时间的子任务。这样即使时间不够，也已经保住了简单部分的分数，而不是因为死磕难题导致连简单部分都来不及写完。",
+      "remember": "先做稳的，再啃难的。",
+      "links": [
+        {
+          "title": "限时策略（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "complexity-downgrade",
+      "term": "复杂度降级",
+      "aliases": ["complexity downgrade", "降级实现"],
+      "summary": "暂时写不出最优算法时，先用更简单但正确的实现拿小数据的分。",
+      "answer": "复杂度降级是指当最优算法（比如 O(n log n)）暂时写不出来时，主动选择一个复杂度更高、但实现更简单、正确性有把握的算法（比如 O(n²)），先去覆盖数据范围较小的子任务。这是一种拓展技巧，不要求现在就必须掌握，但可以帮你在写不出满分算法时也保住部分分。",
+      "remember": "写不出最优解，先用简单实现保住能拿的分。",
+      "links": [
+        {
+          "title": "复杂度基础（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/complexity/"
+        }
+      ]
     }
   ]
 }

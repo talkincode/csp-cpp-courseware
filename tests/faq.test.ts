@@ -191,3 +191,7 @@ test("S4-06 wires DP-classic-model FAQ terms into the guided lesson", async () =
 test("S4-07 wires graph-traversal FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s4-07", ["graph", "adjacency-list", "visited-marker", "dfs", "bfs-intuition", "connected-component"]);
 });
+
+test("S4-08 wires subtask-and-scoring-strategy FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s4-08", ["subtask", "partial-score", "fallback-solution", "easy-first-order", "complexity-downgrade"]);
+});
