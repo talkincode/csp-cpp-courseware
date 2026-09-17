@@ -1987,6 +1987,62 @@
           "url": "https://oi-wiki.org/dp/basic/"
         }
       ]
+    },
+    {
+      "id": "graph",
+      "term": "图",
+      "aliases": ["graph", "点和边"],
+      "summary": "由点（节点）和边组成的关系结构。",
+      "answer": "图（graph）由若干个点（也叫节点、顶点）和连接点的边组成，用来表示“谁和谁有关系”。C++ 里常用邻接表或邻接矩阵存图，本课只练邻接表的直觉，不要求现在就会写完整的图算法模板。",
+      "remember": "图 = 点 + 边，用来表示关系。",
+      "links": [
+        {
+          "title": "图论基础（OI Wiki）",
+          "url": "https://oi-wiki.org/graph/basic/"
+        }
+      ]
+    },
+    {
+      "id": "adjacency-list",
+      "term": "邻接表",
+      "aliases": ["adjacency list", "adj"],
+      "summary": "给每个点保存一份和它直接相连的点的列表。",
+      "answer": "邻接表（adjacency list）给每个点开一个列表，保存和它直接相连的点，比如 adj[0] = {1} 表示 0 号点只连着 1 号点。查某点的邻居时直接看它的列表，不用扫描所有边。",
+      "remember": "邻接表：每个点自己保存邻居列表。",
+      "links": [
+        {
+          "title": "图的存储（OI Wiki）",
+          "url": "https://oi-wiki.org/graph/save/"
+        }
+      ]
+    },
+    {
+      "id": "visited-marker",
+      "term": "访问标记",
+      "aliases": ["visited", "visited array", "已访问标记"],
+      "summary": "记录每个点是否已经走过，防止重复访问。",
+      "answer": "访问标记（常用 visited 数组）记录每个点有没有被走过。DFS 或 BFS 每访问一个新点就把它标记为已访问，之后遇到同一个点就跳过，防止死循环或重复计数。",
+      "remember": "访问过的点要标记，别再走第二遍。",
+      "links": [
+        {
+          "title": "DFS（搜索，OI Wiki）",
+          "url": "https://oi-wiki.org/search/dfs/"
+        }
+      ]
+    },
+    {
+      "id": "connected-component",
+      "term": "连通块",
+      "aliases": ["connected component", "连通分量"],
+      "summary": "一张图里彼此可达的一组点。",
+      "answer": "连通块（connected component）是图中一组彼此都能通过边互相到达的点。统计连通块数量时，要对每个还没访问过的点都发起一次 DFS 或 BFS，每发起一次计数加一。",
+      "remember": "还没访问过的点，就是新连通块的起点。",
+      "links": [
+        {
+          "title": "连通性（OI Wiki）",
+          "url": "https://oi-wiki.org/graph/concept/"
+        }
+      ]
     }
   ]
 }

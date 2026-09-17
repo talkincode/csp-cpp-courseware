@@ -187,3 +187,7 @@ test("S4-05 wires sorting-search-and-mapping FAQ terms into the guided lesson", 
 test("S4-06 wires DP-classic-model FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s4-06", ["dp-state", "dp-transition", "dp-init", "pick-or-skip", "optimal-substructure", "state-compression"]);
 });
+
+test("S4-07 wires graph-traversal FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s4-07", ["graph", "adjacency-list", "visited-marker", "dfs", "bfs-intuition", "connected-component"]);
+});

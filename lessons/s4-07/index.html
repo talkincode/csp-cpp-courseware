@@ -1,0 +1,2122 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="S4-07 图与遍历基础：面向 CSP-J 初学者的互动式 C++ 入门课。"
+    />
+    <title>S4-07 · 用邻接表和访问标记数连通块</title>
+    <style>
+      :root {
+        --forest: #0c2620;
+        --forest-soft: #174137;
+        --forest-fog: #35665a;
+        --paper: #f3ead7;
+        --paper-bright: #fffaf0;
+        --paper-shadow: #ddcfb8;
+        --ink: #18372f;
+        --muted: #687a70;
+        --orange: #e6612c;
+        --orange-soft: #f3ba76;
+        --mint: #d7e6cd;
+        --gold: #f8c85f;
+        --success: #278057;
+        --danger: #ad4325;
+        --line: rgba(24, 55, 47, 0.2);
+        --shadow: 0 21px 54px rgba(1, 16, 12, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: var(--forest);
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 10% 0%, rgba(70, 126, 108, 0.56), transparent 42%),
+          radial-gradient(ellipse at 94% 100%, rgba(230, 97, 44, 0.23), transparent 43%),
+          var(--forest);
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 3px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 19px 0;
+        color: var(--paper);
+      }
+
+      .back-link {
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .back-link:hover {
+        color: var(--orange-soft);
+      }
+
+      .course-marker {
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.73rem;
+        letter-spacing: 0.08em;
+      }
+
+      .sound-toggle {
+        padding: 8px 11px;
+        color: var(--paper);
+        background: transparent;
+        border: 1px solid rgba(255, 250, 240, 0.44);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        transition: background 150ms ease, color 150ms ease;
+      }
+
+      .sound-toggle:hover {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .topbar-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .lesson-shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto 34px;
+        overflow: hidden;
+        background: var(--paper);
+        border: 1px solid rgba(255, 250, 240, 0.36);
+        border-radius: 17px;
+        box-shadow: var(--shadow);
+      }
+
+      .lesson-hero {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 252px;
+        gap: 34px;
+        padding: clamp(30px, 7vw, 70px) clamp(24px, 6vw, 68px);
+        background:
+          radial-gradient(circle at 93% 18%, rgba(230, 97, 44, 0.23), transparent 20%),
+          linear-gradient(130deg, var(--paper-bright), var(--paper-shadow));
+      }
+
+      .lesson-hero::after {
+        position: absolute;
+        right: -67px;
+        bottom: -105px;
+        width: 270px;
+        height: 270px;
+        border: 32px solid rgba(53, 102, 90, 0.16);
+        border-radius: 48% 52% 50% 50%;
+        content: "";
+      }
+
+      .lesson-hero h1 {
+        max-width: 690px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(2.35rem, 5.5vw, 5.1rem);
+        line-height: 0.99;
+        letter-spacing: -0.035em;
+      }
+
+      .lesson-hero h1 code {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.75em;
+        letter-spacing: -0.07em;
+      }
+
+      .lesson-hero p {
+        max-width: 580px;
+        margin: 20px 0 0;
+        color: #476056;
+        font-size: 0.98rem;
+        line-height: 1.78;
+      }
+
+      .primary-action,
+      .secondary-action,
+      .flow-action,
+      .answer-option,
+      .step-button {
+        border: 0;
+        border-radius: 5px;
+        transition: transform 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+      }
+
+      .primary-action {
+        margin-top: 25px;
+        padding: 12px 17px;
+        color: var(--forest);
+        background: var(--orange-soft);
+        box-shadow: 4px 5px 0 rgba(230, 97, 44, 0.31);
+        font-weight: 800;
+      }
+
+      .primary-action:hover {
+        background: var(--orange);
+        transform: translateY(-2px);
+      }
+
+      .primary-action:active,
+      .secondary-action:active,
+      .flow-action:active,
+      .answer-option:active {
+        transform: translateY(1px) scale(0.98);
+      }
+
+      .mission-slip {
+        z-index: 1;
+        align-self: end;
+        padding: 21px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 2px solid var(--orange);
+        border-radius: 7px;
+        box-shadow: 9px 10px 0 rgba(230, 97, 44, 0.25);
+        transform: rotate(2.2deg);
+      }
+
+      .mission-slip strong,
+      .mission-slip span {
+        display: block;
+      }
+
+      .mission-slip strong {
+        color: var(--orange-soft);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.3rem;
+      }
+
+      .mission-slip span {
+        margin-top: 10px;
+        color: var(--mint);
+        font-size: 0.78rem;
+        line-height: 1.63;
+      }
+
+      .learning-area {
+        display: grid;
+        grid-template-columns: 244px minmax(0, 1fr);
+        min-height: 750px;
+        background:
+          linear-gradient(rgba(24, 55, 47, 0.055) 1px, transparent 1px) 0 0 / 100% 34px,
+          var(--paper);
+      }
+
+      .task-rail {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+        padding: 31px 18px;
+        color: var(--paper);
+        background:
+          linear-gradient(155deg, rgba(215, 230, 205, 0.13), transparent 45%),
+          var(--forest);
+      }
+
+      .task-rail h2 {
+        margin: 0;
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.35rem;
+      }
+
+      .task-progress {
+        margin: 2px 0 6px;
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.77rem;
+      }
+
+      .step-list {
+        display: grid;
+        gap: 9px;
+      }
+
+      .step-button {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+        gap: 9px;
+        width: 100%;
+        padding: 11px 7px;
+        color: var(--mint);
+        background: transparent;
+        border: 1px solid transparent;
+        text-align: left;
+      }
+
+      .step-button:hover:not([aria-disabled="true"]) {
+        background: rgba(255, 250, 240, 0.08);
+        transform: translateX(2px);
+      }
+
+      .step-button[aria-current="step"] {
+        color: var(--paper);
+        background: rgba(230, 97, 44, 0.16);
+        border-color: rgba(230, 97, 44, 0.74);
+      }
+
+      .step-button[aria-disabled="true"] {
+        color: rgba(215, 230, 205, 0.43);
+      }
+
+      .step-number {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.69rem;
+        font-weight: 900;
+      }
+
+      .step-button[aria-current="step"] .step-number {
+        color: var(--paper);
+        background: var(--orange);
+      }
+
+      .step-button[aria-disabled="true"] .step-number {
+        color: rgba(12, 38, 32, 0.6);
+        background: rgba(215, 230, 205, 0.35);
+      }
+
+      .step-copy strong,
+      .step-copy span {
+        display: block;
+      }
+
+      .step-copy strong {
+        font-size: 0.82rem;
+      }
+
+      .step-copy span {
+        margin-top: 3px;
+        font-size: 0.66rem;
+        line-height: 1.35;
+        opacity: 0.83;
+      }
+
+      .rail-note {
+        margin: auto 2px 0;
+        padding-top: 17px;
+        border-top: 1px solid rgba(215, 230, 205, 0.27);
+        color: var(--mint);
+        font-size: 0.73rem;
+        line-height: 1.65;
+      }
+
+      .workbench {
+        min-width: 0;
+        padding: clamp(24px, 4vw, 48px);
+      }
+
+      .step-panel[hidden] {
+        display: none;
+      }
+
+      .step-panel {
+        max-width: 790px;
+        animation: arrive 240ms ease-out both;
+      }
+
+      @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateY(7px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .step-panel h2 {
+        max-width: 710px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(1.65rem, 3vw, 2.55rem);
+        line-height: 1.16;
+      }
+
+      .step-lead {
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: #52675d;
+        font-size: 0.93rem;
+        line-height: 1.75;
+      }
+
+      .guided-note {
+        max-width: 690px;
+        margin: 25px 0;
+        padding: 13px 15px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        font-size: 0.84rem;
+        line-height: 1.62;
+      }
+
+      .code-sheet {
+        position: relative;
+        max-width: 705px;
+        overflow: hidden;
+        margin: 26px 0;
+        padding: 21px 0 17px;
+        background:
+          linear-gradient(90deg, transparent 0 47px, rgba(230, 97, 44, 0.22) 47px 48px, transparent 48px),
+          repeating-linear-gradient(to bottom, transparent 0 29px, rgba(24, 55, 47, 0.09) 29px 30px),
+          var(--paper-bright);
+        border: 1px solid var(--line);
+        box-shadow: 6px 8px 0 rgba(24, 55, 47, 0.12);
+      }
+
+      .code-sheet::before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 5px;
+        background: var(--forest-fog);
+        content: "";
+      }
+
+      .code-sheet ol {
+        margin: 0;
+        padding: 0 22px 0 71px;
+      }
+
+      .code-sheet li {
+        min-height: 30px;
+        padding-left: 10px;
+        color: #28483e;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: clamp(0.75rem, 1.7vw, 0.88rem);
+        line-height: 30px;
+        white-space: pre-wrap;
+      }
+
+      .code-sheet li::marker {
+        color: #8f9d93;
+      }
+
+      .code-sheet .highlight {
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.36);
+      }
+
+      .code-sheet .focus-line {
+        color: var(--forest);
+        background: rgba(215, 230, 205, 0.68);
+        font-weight: 800;
+      }
+
+      .inline-code {
+        padding: 1px 4px;
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.26);
+        border-radius: 3px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.9em;
+      }
+
+      .callout-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 13px;
+        max-width: 705px;
+        margin: 22px 0;
+      }
+
+      .callout {
+        min-height: 124px;
+        padding: 15px;
+        background: rgba(255, 250, 240, 0.67);
+        border-top: 3px solid var(--forest-fog);
+      }
+
+      .callout strong,
+      .callout span {
+        display: block;
+      }
+
+      .callout strong {
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .callout span {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        line-height: 1.57;
+      }
+
+      .secondary-action {
+        padding: 10px 13px;
+        color: var(--forest);
+        background: transparent;
+        border: 1px solid var(--forest-fog);
+        font-weight: 800;
+      }
+
+      .secondary-action:hover {
+        color: var(--paper);
+        background: var(--forest);
+      }
+
+      .inline-feedback {
+        min-height: 1.8em;
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+
+      .inline-feedback[data-tone="error"] {
+        color: var(--danger);
+      }
+
+      .flow-line {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin: 30px 0 20px;
+      }
+
+      .flow-action {
+        position: relative;
+        min-height: 102px;
+        padding: 14px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .flow-action:not(:last-child)::after {
+        position: absolute;
+        top: 50%;
+        right: -13px;
+        z-index: 1;
+        color: var(--orange);
+        content: "→";
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        transform: translateY(-50%);
+      }
+
+      .flow-action:hover:not([aria-disabled="true"]) {
+        background: #fff0d5;
+        transform: translateY(-2px);
+      }
+
+      .flow-action[aria-disabled="true"] {
+        color: #9aa89f;
+        background: rgba(221, 207, 184, 0.53);
+      }
+
+      .flow-action.is-done {
+        color: var(--paper);
+        background: var(--forest-soft);
+        border-color: var(--forest-soft);
+      }
+
+      .flow-index,
+      .flow-action strong,
+      .flow-action span {
+        display: block;
+      }
+
+      .flow-index {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+      }
+
+      .flow-action.is-done .flow-index {
+        color: var(--orange-soft);
+      }
+
+      .flow-action strong {
+        margin-top: 9px;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .flow-action span {
+        margin-top: 7px;
+        font-size: 0.7rem;
+        line-height: 1.43;
+      }
+
+      .terminal {
+        max-width: 705px;
+        min-height: 156px;
+        margin: 19px 0 0;
+        padding: 16px 17px;
+        overflow: auto;
+        color: #d7e6cd;
+        background: #071b16;
+        border-top: 4px solid var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.81rem;
+        line-height: 1.65;
+        white-space: pre-wrap;
+      }
+
+      .terminal .terminal-success {
+        color: #a8e1bc;
+      }
+
+      .terminal .faq-term,
+      .terminal .faq-term:hover,
+      .terminal .faq-term[aria-expanded="true"] {
+        padding: 0 6px;
+        color: #0c2620;
+        background: #f8c85f;
+        border-bottom-color: #d9a63a;
+      }
+
+      .terminal .terminal-warm {
+        color: var(--orange-soft);
+      }
+
+      .fix-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 21px;
+      }
+
+      .fix-actions button {
+        min-height: 70px;
+        padding: 10px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .fix-actions button:hover {
+        background: #fff0d5;
+      }
+
+      .fix-actions button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .quiz-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin: 23px 0 18px;
+      }
+
+      .quiz-seed {
+        color: var(--muted);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.71rem;
+      }
+
+      .quiz-form {
+        display: grid;
+        gap: 19px;
+      }
+
+      .question {
+        padding: 20px 0 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .question h3 {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.12rem;
+        line-height: 1.5;
+      }
+
+      .question-objective {
+        margin: 7px 0 0;
+        color: var(--muted);
+        font-size: 0.73rem;
+        line-height: 1.45;
+      }
+
+      .answer-options {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .answer-option {
+        display: grid;
+        grid-template-columns: 20px 26px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding: 11px 12px;
+        color: var(--ink);
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .answer-option:hover:not(.is-locked) {
+        background: #fff0d5;
+      }
+
+      .answer-option input {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        accent-color: var(--forest-fog);
+      }
+
+      .answer-letter {
+        display: grid;
+        width: 24px;
+        height: 24px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+        font-weight: 900;
+      }
+
+      .answer-option.is-correct {
+        color: #174d35;
+        background: #e2f2e4;
+        border-color: rgba(39, 128, 87, 0.57);
+      }
+
+      .answer-option.is-incorrect {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .answer-option.is-locked {
+        cursor: default;
+      }
+
+      .explanation {
+        margin: 10px 0 0 56px;
+        color: #52675d;
+        font-size: 0.8rem;
+        line-height: 1.62;
+      }
+
+      .quiz-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 11px;
+        margin-top: 23px;
+      }
+
+      .quiz-result {
+        min-height: 1.8em;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 800;
+        line-height: 1.6;
+      }
+
+      .quiz-result[data-tone="warn"] {
+        color: #91501a;
+      }
+
+      .external-boundary {
+        max-width: 790px;
+        margin: 34px 0 0;
+        padding: 15px 17px;
+        color: #486057;
+        background: rgba(221, 207, 184, 0.55);
+        border-top: 2px solid var(--forest-fog);
+        font-size: 0.8rem;
+        line-height: 1.63;
+      }
+
+      .external-boundary strong {
+        color: var(--forest);
+      }
+
+      .completion-ribbon {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 10;
+        max-width: min(370px, calc(100vw - 40px));
+        padding: 13px 15px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 1px solid var(--orange-soft);
+        border-radius: 6px;
+        box-shadow: 7px 9px 0 rgba(230, 97, 44, 0.28);
+        font-size: 0.82rem;
+        line-height: 1.55;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(12px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .completion-ribbon.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .storage-notice {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 9;
+        max-width: min(370px, calc(100vw - 40px));
+        margin: 0;
+        padding: 11px 14px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        box-shadow: 5px 7px 0 rgba(24, 55, 47, 0.14);
+        font-size: 0.76rem;
+        line-height: 1.55;
+      }
+
+      .confetti-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 11;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .confetti {
+        position: absolute;
+        top: 34%;
+        left: 50%;
+        width: 10px;
+        height: 16px;
+        background: var(--confetti-color);
+        clip-path: polygon(50% 0, 100% 28%, 72% 100%, 0 71%, 11% 20%);
+        animation: burst 880ms cubic-bezier(0.14, 0.78, 0.32, 1) forwards;
+        transform: translate(-50%, -50%) rotate(var(--spin));
+      }
+
+      @keyframes burst {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) rotate(var(--spin));
+        }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--drift-x)), calc(-50% + var(--drift-y))) rotate(calc(var(--spin) + 250deg));
+        }
+      }
+
+      .level-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .level-chip {
+        padding: 5px 9px;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .level-chip.is-required {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .level-chip.is-recommended {
+        color: var(--forest);
+        background: var(--mint);
+      }
+
+      .level-chip.is-extra {
+        color: #476056;
+        background: rgba(24, 55, 47, 0.1);
+      }
+
+      .type-grid {
+        display: grid;
+        gap: 12px;
+        max-width: 705px;
+        margin: 22px 0;
+      }
+
+      .type-row {
+        display: grid;
+        grid-template-columns: minmax(140px, 1.3fr) repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        align-items: stretch;
+        padding: 12px;
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+      }
+
+      .type-label strong,
+      .type-label span {
+        display: block;
+      }
+
+      .type-label strong {
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+      }
+
+      .type-label span {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.72rem;
+        line-height: 1.45;
+      }
+
+      .type-row button {
+        min-height: 54px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-weight: 800;
+      }
+
+      .type-row button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .type-row button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .type-row button.is-wrong {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .formula-row {
+        display: grid;
+        grid-template-columns: minmax(140px, 1.1fr) repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        align-items: stretch;
+        padding: 12px;
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+      }
+
+      .formula-row button {
+        min-height: 58px;
+        padding: 8px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.72rem;
+        font-weight: 800;
+        line-height: 1.35;
+        white-space: normal;
+      }
+
+      .formula-row button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .formula-row button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .formula-row button.is-wrong {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .variable-box {
+        max-width: 360px;
+        margin: 22px 0;
+        padding: 18px 20px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 2px solid var(--orange);
+        border-radius: 7px;
+        box-shadow: 9px 10px 0 rgba(230, 97, 44, 0.25);
+      }
+
+      .variable-box .box-kicker {
+        color: var(--orange-soft);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.72rem;
+      }
+
+      .variable-box .box-value {
+        margin-top: 8px;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 2rem;
+        line-height: 1.1;
+      }
+
+      .variable-box .box-meta {
+        margin-top: 8px;
+        color: var(--mint);
+        font-size: 0.8rem;
+        line-height: 1.55;
+      }
+
+      .concept-actions {
+        display: grid;
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 18px;
+      }
+
+      .concept-actions button {
+        min-height: 58px;
+        padding: 10px 12px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.84rem;
+        font-weight: 800;
+        line-height: 1.45;
+        text-align: left;
+      }
+
+      .concept-actions button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .concept-actions button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      @media (max-width: 880px) {
+        .lesson-hero {
+          grid-template-columns: 1fr;
+        }
+
+        .mission-slip {
+          width: min(100%, 290px);
+          justify-self: end;
+        }
+
+        .learning-area {
+          grid-template-columns: 1fr;
+        }
+
+        .task-rail {
+          display: grid;
+          grid-template-columns: minmax(150px, 0.45fr) 1fr;
+          gap: 12px 23px;
+          padding: 22px;
+        }
+
+        .step-list {
+          grid-template-columns: repeat(4, minmax(135px, 1fr));
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .step-button {
+          min-width: 135px;
+        }
+
+        .rail-note {
+          grid-column: 1 / -1;
+          margin: 0;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .topbar,
+        .lesson-shell {
+          width: min(100% - 18px, 620px);
+        }
+
+        .topbar {
+          padding: 12px 0;
+        }
+
+        .course-marker {
+          display: none;
+        }
+
+        .lesson-hero {
+          padding: 34px 22px;
+        }
+
+        .lesson-hero h1 {
+          font-size: clamp(2.2rem, 13vw, 3.5rem);
+        }
+
+        .mission-slip {
+          justify-self: stretch;
+          width: auto;
+          transform: rotate(1deg);
+        }
+
+        .task-rail {
+          display: block;
+          padding: 21px 14px;
+        }
+
+        .step-list {
+          margin-top: 14px;
+        }
+
+        .rail-note {
+          display: none;
+        }
+
+        .workbench {
+          padding: 28px 19px;
+        }
+
+        .callout-row,
+        .flow-line,
+        .fix-actions,
+        .type-row,
+        .formula-row {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-action:not(:last-child)::after {
+          top: auto;
+          right: 50%;
+          bottom: -22px;
+          transform: translateX(50%) rotate(90deg);
+        }
+
+        .flow-line {
+          gap: 28px;
+        }
+
+        .code-sheet {
+          margin-right: -5px;
+          margin-left: -5px;
+        }
+
+        .code-sheet ol {
+          padding-right: 9px;
+          padding-left: 62px;
+        }
+
+        .code-sheet li {
+          padding-left: 6px;
+          font-size: 0.7rem;
+        }
+
+        .completion-ribbon,
+        .storage-notice {
+          right: 10px;
+          bottom: 10px;
+          max-width: calc(100vw - 20px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 1ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body data-faq-terms="graph adjacency-list visited-marker dfs bfs-intuition connected-component">
+    <header class="topbar">
+      <a class="back-link" href="../../index.html">← 返回课程路线</a>
+      <span class="course-marker">第四阶段 · S4-07 · 60 分钟</span>
+      <div class="topbar-tools">
+        <button id="faqCatalogButton" class="faq-open" type="button">常见问题</button>
+        <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">音效：开</button>
+      </div>
+    </header>
+
+    <main class="lesson-shell">
+      <section class="lesson-hero">
+        <div>
+          <h1>用邻接表和访问标记，数出连通块</h1>
+          <p>
+            这一课只练一件事：遇到“若干个点、若干条边，问一共分成几组互相连通”这类问题时，用<button type="button" class="faq-term" data-faq="graph">图</button>把点和边画出来，用<button type="button" class="faq-term" data-faq="adjacency-list">邻接表</button>记录每个点连着谁，再用<button type="button" class="faq-term" data-faq="visited-marker">访问标记</button>防止重复访问，跑一次<button type="button" class="faq-term" data-faq="dfs">DFS</button>或<button type="button" class="faq-term" data-faq="bfs-intuition">BFS</button>数出<button type="button" class="faq-term" data-faq="connected-component">连通块</button>数量。必会：能画出小图和邻接关系、能写访问标记、能说明 DFS 与 BFS 的顺序差异。最小示例：5 个点（编号 0~4），边为 <span class="inline-code">(0,1) (1,2) (3,4)</span>，这是无向图，<span class="inline-code">1 &lt;= n &lt;= 1000</span>。样例追踪：邻接表 adj[0]={1}, adj[1]={0,2}, adj[2]={1}, adj[3]={4}, adj[4]={3}；访问标记 visited 全部初始化为 false；从 0 出发 DFS 访问到 {0,1,2}，再从还没访问过的 3 出发 DFS 访问到 {3,4}，连通块数 = 2。边界是没有边的孤立点（自己就是一个连通块）和已经访问过的点（不能再重复计数）。建议掌握：DFS 沿一条路径尽量走到底再回头，BFS 按“一层一层”向外扩展，得到的是离起点的最短步数层级，这两种顺序本质不同。拓展：BFS 求出的层数可以直接当作“最短步数”的初步认识，现在只需要知道概念，不强制要求现在就写完整的最短路模板。这里不会在浏览器里运行 C++。
+          </p>
+          <div class="level-legend" aria-label="必会、建议掌握和拓展">
+            <span class="level-chip is-required">必会：能画邻接关系；能写访问标记；能说明 DFS 与 BFS 的顺序差异</span>
+            <span class="level-chip is-recommended">建议掌握：DFS 走到底再回头，BFS 一层一层扩展，两者顺序本质不同</span>
+            <span class="level-chip is-extra">拓展：BFS 的层数就是最短步数的初步认识，现在先认识概念，不当硬门槛</span>
+          </div>
+          <button id="beginButton" class="primary-action" type="button">开始第一个任务</button>
+        </div>
+        <aside class="mission-slip" aria-label="本课任务">
+          <strong>本课任务</strong>
+          <span>能判断该用邻接表存图并加访问标记，能手动跑一次 DFS 数出 (0,1)(1,2)(3,4) 这张图的连通块数 = 2。</span>
+        </aside>
+      </section>
+
+      <section id="learningArea" class="learning-area" aria-label="互动学习区">
+        <nav class="task-rail" aria-label="本课任务步骤">
+          <div>
+            <h2>任务路线</h2>
+            <p id="taskProgress" class="task-progress">0 / 4 已推进</p>
+          </div>
+          <div class="step-list">
+            <button class="step-button" type="button" data-step="0" aria-current="step">
+              <span class="step-number">1</span>
+              <span class="step-copy"><strong>先选出该怎么表示图</strong><span>邻接表 vs 访问标记</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="1" aria-disabled="true">
+              <span class="step-number">2</span>
+              <span class="step-copy"><strong>手动数出连通块</strong><span>邻接表、访问标记、DFS</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="2" aria-disabled="true">
+              <span class="step-number">3</span>
+              <span class="step-copy"><strong>顺序与边界</strong><span>建议掌握</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="3" aria-disabled="true">
+              <span class="step-number">4</span>
+              <span class="step-copy"><strong>随机小测</strong><span>检查是否理解</span></span>
+            </button>
+          </div>
+          <p class="rail-note">没有真的卡住：每一步完成后，下一步会自动点亮。你也可以随时回看已经完成的任务。</p>
+        </nav>
+
+        <div class="workbench">
+          <section class="step-panel" data-panel="0">
+            <h2>任务 1：先选出该怎么表示图，怎么防止重复访问</h2>
+            <p class="step-lead">
+              先确定用什么方式记录<button type="button" class="faq-term" data-faq="graph">图</button>里“谁和谁相连”，再确定怎么防止 DFS/BFS 重复访问同一个点。点不认识的词可看基础解释。
+            </p>
+            <p class="guided-note"><strong>必会：</strong>能说出邻接表怎么保存每个点的邻居；能说出为什么需要<button type="button" class="faq-term" data-faq="visited-marker">访问标记</button>。这里不会在浏览器里运行 C++，只练习选择和走过程。</p>
+            <div class="type-grid" aria-label="选择图的表示方式">
+              <div class="formula-row" data-quantity="graphTool">
+                <p class="type-label"><strong>5 个点（0~4），边为 (0,1) (1,2) (3,4)，要频繁查询某点直接相连的点，最合适的表示方式是？</strong><span>图的表示 · 必会</span></p>
+                <button type="button" data-choice="adjacency-list">邻接表：给每个点保存一份相邻点列表，比如 adj[0] = {1}</button>
+                <button type="button" data-choice="edge-count-only">只记录边的总数（这里是 3 条边），不保存具体连接关系</button>
+                <button type="button" data-choice="string-dump">把所有点编号拼成一个字符串，用字符串表示图</button>
+              </div>
+              <div class="formula-row" data-quantity="visitedTool">
+                <p class="type-label"><strong>DFS 从 0 出发会经过 0→1→2，如果不记录“谁已经访问过”，可能会发生什么？</strong><span>访问标记 · 必会</span></p>
+                <button type="button" data-choice="visited-array">可能沿着边来回访问同一个点，导致死循环或重复计数连通块</button>
+                <button type="button" data-choice="auto-skip">程序会自动跳过已经访问过的点，不用手动处理</button>
+                <button type="button" data-choice="assume-sorted">只要点的编号是从小到大排序，就不会重复访问</button>
+              </div>
+            </div>
+            <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="1" hidden>
+            <h2>任务 2：按邻接表、访问标记、DFS 三步数出连通块</h2>
+            <p class="step-lead">
+              最小示例：5 个点（0~4），边为 <span class="inline-code">(0,1) (1,2) (3,4)</span>，这是无向图。按顺序点三步：先写<button type="button" class="faq-term" data-faq="adjacency-list">邻接表</button>，再写<button type="button" class="faq-term" data-faq="visited-marker">访问标记</button>的初值，最后跑<button type="button" class="faq-term" data-faq="dfs">DFS</button>数出<button type="button" class="faq-term" data-faq="connected-component">连通块</button>。这里不会在浏览器里运行 C++。
+            </p>
+            <p class="guided-note"><strong>必会：</strong>能解释每一步为什么这样做。边界：不要跳过“访问标记”直接跑 DFS；从 0 出发只能访问到 {0,1,2}，还要检查有没有未访问的点（比如 3），有就再发起一次 DFS，连通块数才不会漏算。</p>
+            <div class="code-sheet" aria-label="邻接表、访问标记、DFS 三步对照">
+              <ol>
+                <li>// 图：5 个点，边 (0,1) (1,2) (3,4)（无向图）</li>
+                <li class="highlight">// 邻接表：adj[0]={1}, adj[1]={0,2}, adj[2]={1}, adj[3]={4}, adj[4]={3}</li>
+                <li class="focus-line">// 访问标记：visited[5] 全部初始化为 false</li>
+                <li>// DFS：从 0 出发访问 {0,1,2}；从未访问的 3 出发访问 {3,4} → 连通块数 = 2</li>
+              </ol>
+            </div>
+            <div class="flow-line" aria-label="按顺序走完三步">
+              <button id="divideButton" class="flow-action" type="button">
+                <span class="flow-index">A</span>
+                <strong>邻接表：先写出每个点的邻居</strong>
+                <span>adj[0]={1}, adj[1]={0,2}...</span>
+              </button>
+              <button id="remainderButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">B</span>
+                <strong>访问标记：全部设为 false</strong>
+                <span>visited = [false, false, false, false, false]</span>
+              </button>
+              <button id="evenButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">C</span>
+                <strong>DFS：从未访问的点数连通块</strong>
+                <span>{0,1,2} 一块，{3,4} 一块，共 2 块</span>
+              </button>
+            </div>
+            <aside id="variableBox" class="variable-box" aria-live="polite">
+              <div class="box-kicker">当前对照：连通块</div>
+              <div class="box-value" id="variableValue">还没开始写邻接表</div>
+              <div class="box-meta" id="variableMeta">先点“邻接表：先写出每个点的邻居”。</div>
+            </aside>
+            <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="2" hidden>
+            <h2>任务 3：确定 DFS/BFS 的顺序差异，并认出两个边界</h2>
+            <p class="step-lead">
+              建议掌握：DFS 沿一条路径尽量走到底再回头（用递归或栈），BFS 按“一层一层”向外扩展（用队列），得到的是离起点的最短步数层级；这两种顺序本质不同，不能混为一谈。拓展：BFS 的层数可以当作“最短步数”的初步认识，现在只用认识这个概念。
+            </p>
+            <p class="guided-note"><strong>必会 / 建议掌握 / 拓展：</strong>必会是画出邻接关系、写访问标记、说明 DFS 与 BFS 的顺序差异。建议掌握是理解两种顺序为什么不同。BFS 层数当最短步数是拓展，现在不用当硬门槛。</p>
+            <div class="code-sheet" aria-label="遍历顺序与边界对照">
+              <ol>
+                <li>// 顺序：DFS 沿一条路径走到底再回头；BFS 按队列一层一层向外扩展</li>
+                <li class="highlight">// 边界 1：从 0 出发的 DFS 只能访问到 {0,1,2}，图里还有未访问的 3、4</li>
+                <li class="focus-line">// 边界 2：遍历所有点，若某点还没访问过，就再发起一次 DFS，连通块数加一</li>
+                <li>// BFS 层数当作最短步数（拓展）</li>
+              </ol>
+            </div>
+            <p class="step-lead">先选出 DFS 和 BFS 顺序上的本质差异：</p>
+            <div class="concept-actions" aria-label="选择顺序差异">
+              <button type="button" data-concept="method" data-pick="dfs-then-bfs">DFS 沿一条路径尽量走到底再回头；BFS 用队列一层一层向外扩展，得到最短步数层级</button>
+              <button type="button" data-concept="method" data-pick="same-order">两者遍历顺序完全一样，只是代码写法不同</button>
+              <button type="button" data-concept="method" data-pick="dfs-always-faster">DFS 一定比 BFS 更快，因为代码通常更短</button>
+            </div>
+            <p class="step-lead">再选出怎么把 2 个连通块都数到：</p>
+            <div class="concept-actions" aria-label="选择边界结论">
+              <button type="button" data-concept="tieRule" data-pick="grouped">从 0 出发只能访问到 {0,1,2}；遍历所有点，若某点还没访问过就再发起一次 DFS，连通块数加一</button>
+              <button type="button" data-concept="tieRule" data-pick="single-run">只要从编号 0 出发做一次 DFS，就一定能访问到图里所有的点</button>
+              <button type="button" data-concept="tieRule" data-pick="assume-one">没访问到的点直接当成连通块数 = 1，不用再跑一次</button>
+            </div>
+            <p id="debugFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="3" hidden>
+            <h2>任务 4：随机小测，看看你是否真的懂了</h2>
+            <p class="step-lead">
+              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+            </p>
+            <div class="quiz-tools">
+              <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
+              <span id="quizSeed" class="quiz-seed"></span>
+            </div>
+            <form id="quizForm" class="quiz-form" aria-describedby="quizResult"></form>
+            <div class="quiz-footer">
+              <button id="submitQuizButton" class="primary-action" type="button">提交并查看解析</button>
+              <p id="quizResult" class="quiz-result" role="status" aria-live="polite"></p>
+            </div>
+          </section>
+
+          <aside class="external-boundary">
+            <strong>视频交付边界：</strong>本课的视频课件由仓库外流程制作。本页面只实现互动学习、引导和随机小测，不加载、不生产也不渲染视频资产。
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <p id="storageNotice" class="storage-notice" hidden></p>
+    <div id="completionRibbon" class="completion-ribbon" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+    <script>
+      const storageKey = "csp-cpp-s4-07-progress-v1";
+      const correctTools = { graphTool: "adjacency-list", visitedTool: "visited-array" };
+      const toolErrorHelp = {
+        graphTool: {
+          "edge-count-only": "只记录边的总数不够：查某点的邻居时需要知道具体连着哪些点，邻接表能让每个点直接给出自己的邻居列表。",
+          "string-dump": "拼字符串不便于查询和更新：邻接表用列表结构，查邻居、加边都更直接，也是竞赛里最常用的存图方式。",
+        },
+        visitedTool: {
+          "auto-skip": "程序不会自动跳过已访问的点：必须手动开一个 visited 数组，每访问一个点就标记，之后检查时才会跳过它。",
+          "assume-sorted": "编号顺序和是否重复访问无关：不加访问标记时，DFS 仍可能沿着边回到已经走过的点，导致死循环或重复计数。",
+        },
+      };
+      const questionPool = [
+        {
+          id: "why-adjacency-list",
+          courseId: "S4-07",
+          objective: "能画邻接关系",
+          difficulty: "required",
+          type: "choice",
+          prompt: "5 个点（0~4），边为 (0,1) (1,2) (3,4)，要频繁查询某点直接相连的点，为什么邻接表比只记录边总数更合适？",
+          options: ["邻接表给每个点保存邻居列表，查邻居时直接看列表，不用重新扫描所有边", "邻接表只是为了好看，不影响解题", "只记录边的总数也能立刻查出某点连着谁", "邻接表和边总数没有区别"],
+          answer: 0,
+          explanation: "邻接表（adj[i]）给每个点保存一份邻居列表，查某点的邻居时直接看它自己的列表，不用重新扫描全部边；这是能推广到大规模图的关键。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "why-visited-array",
+          courseId: "S4-07",
+          objective: "能写访问标记",
+          difficulty: "required",
+          type: "choice",
+          prompt: "DFS 从 0 出发经过 0→1→2，如果不加访问标记，可能会发生什么？",
+          options: ["可能沿着边回到已经走过的点，造成死循环或重复计数连通块", "程序会自动跳过已访问的点，不用手动处理", "只要点的编号递增，就不会重复访问", "访问标记只影响输出格式，不影响正确性"],
+          answer: 0,
+          explanation: "不加 visited 标记时，DFS 可能沿着边反复回到已经访问过的点，导致死循环或把同一个连通块的点重复计数。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "count-components-sample",
+          courseId: "S4-07",
+          objective: "能写访问标记",
+          difficulty: "required",
+          type: "choice",
+          prompt: "边为 (0,1) (1,2) (3,4) 的图，从 0 出发的 DFS 只访问到 {0,1,2}。要统计整张图的连通块数，下一步该怎么做？",
+          options: ["检查还有没有未访问的点（比如 3），如果有就再发起一次 DFS，连通块数加一", "已经从 0 出发跑过 DFS，直接认为连通块数 = 1", "把 3 和 4 忽略，因为它们没有和 0 相连", "重新从 1 出发再跑一次 DFS 就够了"],
+          answer: 0,
+          explanation: "从 0 出发只能访问到它所在的连通块 {0,1,2}；要数出全部连通块，必须遍历所有点，对每个还没访问过的点都再发起一次 DFS，每发起一次连通块数加一。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "dfs-vs-bfs-order",
+          courseId: "S4-07",
+          objective: "能说明DFS与BFS顺序差异",
+          difficulty: "recommended",
+          type: "choice",
+          prompt: "DFS 和 BFS 遍历同一张图时，顺序上最本质的差异是什么？",
+          options: ["DFS 沿一条路径尽量走到底再回头；BFS 按队列一层一层向外扩展", "两者遍历顺序完全一样，只是写法不同", "DFS 一定比 BFS 更快，因为代码通常更短", "BFS 只能用于有向图，DFS 只能用于无向图"],
+          answer: 0,
+          explanation: "DFS（常用递归或栈）沿一条路径尽量走到底，走不通再回头换选法；BFS（用队列）先看最近的一圈邻居，再看更远的一圈，得到的是离起点的最短步数层级。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "isolated-point-component",
+          courseId: "S4-07",
+          objective: "能画邻接关系",
+          difficulty: "recommended",
+          type: "choice",
+          prompt: "如果一张图有 5 个点，但一条边都没有，连通块数量是多少？",
+          options: ["5，因为每个孤立点自己就是一个连通块", "1，因为只有一张图", "0，因为没有边就不算图", "2，随便选一个数就行"],
+          answer: 0,
+          explanation: "连通块是彼此可达的一组点；没有边时，任何两个点都不能互相到达，所以每个点自己单独构成一个连通块，5 个点就是 5 个连通块。",
+          source: "course-plan / 自编",
+        },
+      ];
+
+      const defaultState = {
+        activeStep: 0,
+        toolChoices: {},
+        toolsMatched: false,
+        stateDefined: false,
+        initialized: false,
+        transitioned: false,
+        methodSolved: false,
+        tieRuleSolved: false,
+        quizSeed: createSeed(),
+        answers: {},
+        quizSubmitted: false,
+        bestScore: 0,
+        soundEnabled: true,
+      };
+
+      let storageAvailable = true;
+      let state = loadState();
+      let notificationTimer;
+      let audioContext;
+
+      const panels = [...document.querySelectorAll(".step-panel")];
+      const stepButtons = [...document.querySelectorAll("[data-step]")];
+      const taskProgress = document.querySelector("#taskProgress");
+      const sourceFeedback = document.querySelector("#sourceFeedback");
+      const flowFeedback = document.querySelector("#flowFeedback");
+      const debugFeedback = document.querySelector("#debugFeedback");
+      const variableValue = document.querySelector("#variableValue");
+      const variableMeta = document.querySelector("#variableMeta");
+      const quizForm = document.querySelector("#quizForm");
+      const quizResult = document.querySelector("#quizResult");
+      const completionRibbon = document.querySelector("#completionRibbon");
+      const storageNotice = document.querySelector("#storageNotice");
+      const confettiLayer = document.querySelector("#confettiLayer");
+      const soundToggle = document.querySelector("#soundToggle");
+
+      function createSeed() {
+        const values = new Uint32Array(1);
+        crypto.getRandomValues(values);
+        return values[0];
+      }
+
+      function loadState() {
+        try {
+          const stored = JSON.parse(window.localStorage.getItem(storageKey) ?? "null");
+          if (!stored || typeof stored !== "object" || Array.isArray(stored)) return { ...defaultState };
+
+          return {
+            ...defaultState,
+            activeStep: Number.isInteger(stored.activeStep) ? stored.activeStep : 0,
+            toolChoices:
+              stored.toolChoices && typeof stored.toolChoices === "object" && !Array.isArray(stored.toolChoices)
+                ? stored.toolChoices
+                : {},
+            toolsMatched: stored.toolsMatched === true,
+            stateDefined: stored.stateDefined === true,
+            initialized: stored.initialized === true,
+            transitioned: stored.transitioned === true,
+            methodSolved: stored.methodSolved === true,
+            tieRuleSolved: stored.tieRuleSolved === true,
+            quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
+            answers: stored.answers && typeof stored.answers === "object" && !Array.isArray(stored.answers) ? stored.answers : {},
+            quizSubmitted: stored.quizSubmitted === true,
+            bestScore: Number.isInteger(stored.bestScore) ? stored.bestScore : 0,
+            soundEnabled: stored.soundEnabled !== false,
+          };
+        } catch {
+          storageAvailable = false;
+          return { ...defaultState };
+        }
+      }
+
+      function saveState() {
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(state));
+          return true;
+        } catch {
+          storageAvailable = false;
+          return false;
+        }
+      }
+
+      function questionSetForSeed(seed) {
+        const random = seededRandom(seed);
+        const shuffled = [...questionPool];
+
+        for (let index = shuffled.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(random() * (index + 1));
+          [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+        }
+
+        return shuffled.slice(0, 3);
+      }
+
+      function currentQuestions() {
+        return questionSetForSeed(state.quizSeed);
+      }
+
+      function seededRandom(seed) {
+        let value = seed >>> 0;
+        return () => {
+          value += 0x6d2b79f5;
+          let result = value;
+          result = Math.imul(result ^ (result >>> 15), result | 1);
+          result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
+          return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, (character) => {
+          const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
+          return entities[character];
+        });
+      }
+
+      function conceptSolved() {
+        return state.methodSolved && state.tieRuleSolved;
+      }
+
+      function unlockedStepCount() {
+        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+      }
+
+      function isStepUnlocked(step) {
+        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+      }
+
+      function clampActiveStep() {
+        while (state.activeStep > 0 && !isStepUnlocked(state.activeStep)) {
+          state.activeStep -= 1;
+        }
+      }
+
+      function showFeedback(element, message, tone = "success") {
+        element.textContent = message;
+        element.dataset.tone = tone === "error" ? "error" : "";
+      }
+
+      function announce(message) {
+        completionRibbon.textContent = message;
+        completionRibbon.classList.add("is-visible");
+        window.clearTimeout(notificationTimer);
+        notificationTimer = window.setTimeout(() => {
+          completionRibbon.classList.remove("is-visible");
+        }, 3200);
+      }
+
+      function updateStorageNotice() {
+        storageNotice.hidden = storageAvailable;
+        storageNotice.textContent = "浏览器没有允许保存学习记录：本次互动仍可继续，但刷新页面后不会恢复进度。";
+      }
+
+      function playSound(kind) {
+        if (!state.soundEnabled) return;
+
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextConstructor) {
+          state.soundEnabled = false;
+          renderSoundToggle();
+          announce("当前浏览器不支持音效，已自动关闭音效。");
+          return;
+        }
+
+        audioContext ??= new AudioContextConstructor();
+        const context = audioContext;
+        const notes = kind === "reward" ? [523.25, 659.25, 783.99] : kind === "error" ? [180] : [392];
+
+        if (context.state === "suspended") {
+          void context.resume().catch(() => {
+            announce("浏览器暂未允许播放音效；你仍可以继续学习。");
+          });
+        }
+
+        notes.forEach((frequency, index) => {
+          const oscillator = context.createOscillator();
+          const gain = context.createGain();
+          const startAt = context.currentTime + index * 0.08;
+
+          oscillator.type = kind === "reward" ? "triangle" : "sine";
+          oscillator.frequency.setValueAtTime(frequency, startAt);
+          gain.gain.setValueAtTime(0.0001, startAt);
+          gain.gain.exponentialRampToValueAtTime(0.08, startAt + 0.012);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.14);
+          oscillator.connect(gain).connect(context.destination);
+          oscillator.start(startAt);
+          oscillator.stop(startAt + 0.15);
+        });
+      }
+
+      function reward(message) {
+        announce(message);
+        playSound("reward");
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        const colors = ["#e6612c", "#f8c85f", "#d7e6cd", "#35665a"];
+        for (let index = 0; index < 20; index += 1) {
+          const particle = document.createElement("span");
+          particle.className = "confetti";
+          particle.style.setProperty("--confetti-color", colors[index % colors.length]);
+          particle.style.setProperty("--drift-x", `${Math.round((Math.random() - 0.5) * 360)}px`);
+          particle.style.setProperty("--drift-y", `${Math.round((Math.random() - 0.2) * 300)}px`);
+          particle.style.setProperty("--spin", `${Math.round(Math.random() * 240)}deg`);
+          confettiLayer.append(particle);
+          particle.addEventListener("animationend", () => particle.remove(), { once: true });
+        }
+      }
+
+      function renderSoundToggle() {
+        soundToggle.textContent = state.soundEnabled ? "音效：开" : "音效：关";
+        soundToggle.setAttribute("aria-pressed", String(state.soundEnabled));
+      }
+
+      function renderSteps() {
+        clampActiveStep();
+        taskProgress.textContent = `${unlockedStepCount()} / 4 已推进`;
+
+        stepButtons.forEach((button) => {
+          const step = Number(button.dataset.step);
+          button.setAttribute("aria-disabled", String(!isStepUnlocked(step)));
+          if (step === state.activeStep) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+        });
+
+        panels.forEach((panel) => {
+          panel.hidden = Number(panel.dataset.panel) !== state.activeStep;
+        });
+      }
+
+      function renderSourceTask() {
+        document.querySelectorAll("[data-quantity]").forEach((row) => {
+          const quantity = row.dataset.quantity;
+          const selected = state.toolChoices[quantity];
+          row.querySelectorAll("[data-choice]").forEach((button) => {
+            const choice = button.dataset.choice;
+            button.disabled = state.toolsMatched;
+            button.classList.toggle("is-correct", selected === choice && choice === correctTools[quantity]);
+            button.classList.toggle("is-wrong", selected === choice && choice !== correctTools[quantity]);
+          });
+        });
+
+        if (state.toolsMatched) {
+          showFeedback(sourceFeedback, "两项都选对了：邻接表保存每个点的邻居，访问标记防止 DFS/BFS 重复访问。下一步已经点亮。");
+        }
+      }
+
+      function renderFlowTask() {
+        const divideButton = document.querySelector("#divideButton");
+        const remainderButton = document.querySelector("#remainderButton");
+        const evenButton = document.querySelector("#evenButton");
+
+        divideButton.setAttribute("aria-disabled", String(state.stateDefined));
+        remainderButton.setAttribute("aria-disabled", String(!state.stateDefined || state.initialized));
+        evenButton.setAttribute("aria-disabled", String(!state.initialized || state.transitioned));
+        divideButton.classList.toggle("is-done", state.stateDefined);
+        remainderButton.classList.toggle("is-done", state.initialized);
+        evenButton.classList.toggle("is-done", state.transitioned);
+
+        if (state.transitioned) {
+          variableValue.textContent = "{0,1,2} 一块，{3,4} 一块；连通块数 = 2";
+          variableMeta.textContent = "三步走完。不要跳过“访问标记”这一步。";
+          showFeedback(flowFeedback, "你已经按顺序走完。下一步确定 DFS/BFS 顺序差异和两个边界。");
+        } else if (state.initialized) {
+          variableValue.textContent = "已初始化：visited = [false, false, false, false, false]";
+          variableMeta.textContent = "访问标记写清了。下一步点“DFS：从未访问的点数连通块”。";
+          showFeedback(flowFeedback, "第二步走完。下一步点“DFS：从未访问的点数连通块”，不要跳过。");
+        } else if (state.stateDefined) {
+          variableValue.textContent = "已写出：adj[0]={1}, adj[1]={0,2}, adj[2]={1}, adj[3]={4}, adj[4]={3}";
+          variableMeta.textContent = "邻接表写好了。不要跳到最后一步。";
+          showFeedback(flowFeedback, "第一步走完。下一步点“访问标记：全部设为 false”，不要跳到结束。");
+        } else {
+          variableValue.textContent = "还没开始写邻接表";
+          variableMeta.textContent = "先点“邻接表：先写出每个点的邻居”。";
+          flowFeedback.textContent = "";
+        }
+      }
+
+      function renderDebugTask() {
+        document.querySelectorAll("[data-concept='method']").forEach((button) => {
+          button.disabled = state.methodSolved;
+          button.classList.toggle("is-correct", state.methodSolved && button.dataset.pick === "dfs-then-bfs");
+        });
+        document.querySelectorAll("[data-concept='tieRule']").forEach((button) => {
+          button.disabled = state.tieRuleSolved;
+          button.classList.toggle("is-correct", state.tieRuleSolved && button.dataset.pick === "grouped");
+        });
+
+        if (conceptSolved()) {
+          showFeedback(debugFeedback, "对：DFS 沿一条路径走到底再回头，BFS 用队列一层一层扩展；从 0 出发只能访问到 {0,1,2}，还要对未访问的 3 再发起一次 DFS 才能数满 2 个连通块。下一步去做随机小测吧。");
+        } else if (state.methodSolved) {
+          showFeedback(debugFeedback, "顺序差异选对了。继续选出怎么把 2 个连通块都数到。");
+        } else {
+          debugFeedback.textContent = "";
+          debugFeedback.dataset.tone = "";
+        }
+      }
+
+      function questionsAreValid(questions) {
+        return (
+          Array.isArray(questions) &&
+          questions.length > 0 &&
+          questions.every(
+            (question) =>
+              question &&
+              typeof question.prompt === "string" &&
+              question.type === "choice" &&
+              Array.isArray(question.options) &&
+              question.options.length >= 2 &&
+              Number.isInteger(question.answer) &&
+              question.options[question.answer] != null,
+          )
+        );
+      }
+
+      function renderQuiz() {
+        const questions = currentQuestions();
+        const letters = ["A", "B", "C", "D"];
+        document.querySelector("#quizSeed").textContent = `本次试卷标识：${state.quizSeed}`;
+        const submitButton = document.querySelector("#submitQuizButton");
+
+        if (questionPool.length === 0 || !questionsAreValid(questions)) {
+          quizForm.innerHTML =
+            '<p class="inline-feedback" data-tone="error">题库暂时不可用或题目无效。本次学习进度仍保留，请稍后重试或换一套题。</p>';
+          submitButton.disabled = true;
+          quizResult.dataset.tone = "warn";
+          quizResult.textContent = "无法组卷：请检查题库后重试。进度没有丢失。";
+          return;
+        }
+
+        quizForm.innerHTML = questions
+          .map((question, questionIndex) => {
+            const selected = Number(state.answers[question.id]);
+            const options = question.options
+              .map((option, optionIndex) => {
+                const isCorrect = state.quizSubmitted && optionIndex === question.answer;
+                const isIncorrect = state.quizSubmitted && selected === optionIndex && optionIndex !== question.answer;
+                const classes = [
+                  "answer-option",
+                  state.quizSubmitted ? "is-locked" : "",
+                  isCorrect ? "is-correct" : "",
+                  isIncorrect ? "is-incorrect" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+
+                return `
+                  <label class="${classes}">
+                    <input
+                      type="radio"
+                      name="${question.id}"
+                      value="${optionIndex}"
+                      ${selected === optionIndex ? "checked" : ""}
+                      ${state.quizSubmitted ? "disabled" : ""}
+                    />
+                    <span class="answer-letter">${letters[optionIndex]}</span>
+                    <span>${escapeHtml(option)}</span>
+                  </label>
+                `;
+              })
+              .join("");
+
+            return `
+              <section class="question">
+                <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
+                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <div class="answer-options">${options}</div>
+                ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
+              </section>
+            `;
+          })
+          .join("");
+
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+        submitButton.disabled = state.quizSubmitted || unanswered > 0;
+        submitButton.textContent = state.quizSubmitted ? "本套题已提交" : unanswered > 0 ? `还差 ${unanswered} 题` : "提交并查看解析";
+
+        if (state.quizSubmitted) {
+          const score = quizScore(questions);
+          const passed = score >= 2;
+          quizResult.dataset.tone = passed ? "" : "warn";
+          quizResult.textContent = passed
+            ? `本次答对 ${score}/3。很好，已经能写邻接表、加访问标记，并数出 (0,1)(1,2)(3,4) 这张图的连通块数 = 2。`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+        } else {
+          quizResult.textContent = "";
+          quizResult.dataset.tone = "";
+        }
+      }
+
+      function quizScore(questions = currentQuestions()) {
+        return questions.reduce((score, question) => score + (Number(state.answers[question.id]) === question.answer ? 1 : 0), 0);
+      }
+
+      function render() {
+        renderSteps();
+        renderSourceTask();
+        renderFlowTask();
+        renderDebugTask();
+        renderQuiz();
+        renderSoundToggle();
+        updateStorageNotice();
+      }
+
+      function selectStep(step) {
+        if (!isStepUnlocked(step)) {
+          announce("先完成前一个任务，下一步就会自动点亮。");
+          playSound("error");
+          return;
+        }
+
+        state.activeStep = step;
+        saveState();
+        render();
+        document.querySelector(`[data-panel="${step}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function refreshQuiz() {
+        const currentIds = currentQuestions()
+          .map((question) => question.id)
+          .sort()
+          .join(",");
+        let nextSeed = createSeed();
+
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          const nextIds = questionSetForSeed(nextSeed)
+            .map((question) => question.id)
+            .sort()
+            .join(",");
+          if (nextIds !== currentIds) break;
+          nextSeed = (nextSeed + 0x9e3779b9) >>> 0;
+        }
+
+        state.quizSeed = nextSeed;
+        state.answers = {};
+        state.quizSubmitted = false;
+        saveState();
+        renderQuiz();
+        announce("已换一套随机题。请先独立作答，再查看解析。");
+        playSound("calm");
+      }
+
+      document.querySelector("#beginButton").addEventListener("click", () => {
+        document.querySelector("#learningArea").scrollIntoView({ behavior: "smooth", block: "start" });
+        announce("从任务 1 开始：先确定用邻接表表示图，再确定为什么需要访问标记。");
+      });
+
+      stepButtons.forEach((button) => {
+        button.addEventListener("click", () => selectStep(Number(button.dataset.step)));
+      });
+
+      document.querySelectorAll("[data-quantity] [data-choice]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (state.toolsMatched) return;
+
+          const row = button.closest("[data-quantity]");
+          const quantity = row?.dataset.quantity;
+          const choice = button.dataset.choice;
+          if (!quantity || !choice) return;
+
+          state.toolChoices[quantity] = choice;
+          const expected = correctTools[quantity];
+
+          if (choice !== expected) {
+            showFeedback(sourceFeedback, toolErrorHelp[quantity][choice], "error");
+            announce(toolErrorHelp[quantity][choice]);
+            playSound("error");
+            saveState();
+            renderSourceTask();
+            return;
+          }
+
+          const complete = Object.keys(correctTools).every((key) => state.toolChoices[key] === correctTools[key]);
+          if (complete) {
+            state.toolsMatched = true;
+            state.activeStep = 1;
+            saveState();
+            render();
+            reward("任务 1 完成：邻接表保存每个点的邻居，访问标记防止 DFS/BFS 重复访问。下一步手动数出连通块。");
+            return;
+          }
+
+          saveState();
+          renderSourceTask();
+          showFeedback(sourceFeedback, "这一项选对了。继续给剩下的现象做选择。");
+          playSound("calm");
+        });
+      });
+
+      document.querySelector("#divideButton").addEventListener("click", () => {
+        if (state.stateDefined) {
+          announce("第一步已经写好邻接表，下一步写访问标记。");
+          return;
+        }
+
+        state.stateDefined = true;
+        saveState();
+        renderFlowTask();
+        announce("已写出邻接表：adj[0]={1}, adj[1]={0,2}, adj[2]={1}, adj[3]={4}, adj[4]={3}。下一步必须先把 visited 全部设为 false。");
+        playSound("calm");
+      });
+
+      document.querySelector("#remainderButton").addEventListener("click", () => {
+        if (!state.stateDefined) {
+          announce("先写邻接表，再写访问标记。不要跳步。");
+          playSound("error");
+          return;
+        }
+        if (state.initialized) {
+          announce("第二步已经写好访问标记，下一步跑 DFS 数连通块。");
+          return;
+        }
+
+        state.initialized = true;
+        saveState();
+        renderFlowTask();
+        announce("已初始化：visited 全部设为 false。下一步跑 DFS 数出连通块。");
+        playSound("calm");
+      });
+
+      document.querySelector("#evenButton").addEventListener("click", () => {
+        if (!state.initialized) {
+          announce("先写访问标记，再跑 DFS。不要跳过中间步。");
+          playSound("error");
+          return;
+        }
+        if (state.transitioned) {
+          announce("这三步已经走完，可以进入下一任务。");
+          return;
+        }
+
+        state.transitioned = true;
+        state.activeStep = 2;
+        saveState();
+        render();
+        reward("任务 2 完成：邻接表、访问标记、DFS 都走完了，连通块数 = 2。下一步看顺序差异和边界。");
+      });
+
+      document.querySelectorAll("[data-concept]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const concept = button.dataset.concept;
+          const pick = button.dataset.pick;
+
+          if (concept === "method") {
+            if (state.methodSolved) return;
+            if (pick === "dfs-then-bfs") {
+              state.methodSolved = true;
+              saveState();
+              render();
+              if (conceptSolved()) {
+                state.activeStep = 3;
+                saveState();
+                render();
+                reward("任务 3 完成：你知道 DFS 走到底再回头、BFS 一层一层扩展，也知道要对每个未访问的点再发起一次 DFS 才能数满连通块。现在去做随机小测吧。");
+              } else {
+                announce("顺序差异选对了。继续选出怎么把 2 个连通块都数到。");
+                playSound("calm");
+              }
+              return;
+            }
+
+            const message =
+              pick === "same-order"
+                ? "DFS 和 BFS 的遍历顺序并不一样：DFS 走到底再回头，BFS 按层扩展，两者访问节点的先后次序不同。"
+                : "DFS 和 BFS 的速度取决于图的结构和要解决的问题，不能一概而论谁更快；先看清两者顺序上的差异。";
+            showFeedback(debugFeedback, message, "error");
+            announce(message);
+            playSound("error");
+            return;
+          }
+
+          if (concept === "tieRule") {
+            if (state.tieRuleSolved) return;
+            if (pick === "grouped") {
+              state.tieRuleSolved = true;
+              if (conceptSolved()) state.activeStep = 3;
+              saveState();
+              render();
+              if (conceptSolved()) {
+                reward("任务 3 完成：你知道 DFS 走到底再回头、BFS 一层一层扩展，也知道要对每个未访问的点再发起一次 DFS 才能数满连通块。现在去做随机小测吧。");
+              } else {
+                announce("边界选对了。再把顺序差异那一题选对。");
+                playSound("calm");
+              }
+              return;
+            }
+
+            const message =
+              pick === "single-run"
+                ? "一次 DFS 只能访问到起点所在的连通块：从 0 出发只能到达 {0,1,2}，图里还有未访问的 3、4，必须再检查一遍。"
+                : "不能凭空假设连通块数：必须遍历所有点，对每个还没访问过的点都再发起一次 DFS，才能不漏也不多算。";
+            showFeedback(debugFeedback, message, "error");
+            announce(message);
+            playSound("error");
+          }
+        });
+      });
+
+      quizForm.addEventListener("change", (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== "radio") return;
+
+        state.answers[input.name] = Number(input.value);
+        saveState();
+        renderQuiz();
+        announce("答案已记录。三题都选完后可以提交查看解析。");
+        playSound("calm");
+      });
+
+      document.querySelector("#submitQuizButton").addEventListener("click", () => {
+        const questions = currentQuestions();
+        if (questionPool.length === 0 || !questionsAreValid(questions)) {
+          announce("题库暂时不可用或题目无效。本次作答仍保留，请稍后重试。");
+          playSound("error");
+          renderQuiz();
+          return;
+        }
+
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+
+        if (unanswered > 0) {
+          announce(`还有 ${unanswered} 题未选择答案。`);
+          playSound("error");
+          return;
+        }
+
+        state.quizSubmitted = true;
+        const score = quizScore(questions);
+        state.bestScore = Math.max(state.bestScore, score);
+        saveState();
+        render();
+
+        if (score === questions.length) {
+          reward("三题全对！你已经能写邻接表、加访问标记，并数出 (0,1)(1,2)(3,4) 这张图的连通块数 = 2。");
+        } else if (score >= 2) {
+          reward(`答对 ${score}/3，任务完成。回看解析会让记忆更牢。`);
+        } else {
+          announce(`答对 ${score}/3。先看每题解析，再换一套题巩固。`);
+          playSound("error");
+        }
+      });
+
+      document.querySelector("#newQuizButton").addEventListener("click", refreshQuiz);
+
+      soundToggle.addEventListener("click", () => {
+        state.soundEnabled = !state.soundEnabled;
+        saveState();
+        renderSoundToggle();
+        announce(state.soundEnabled ? "音效已开启：之后的操作会有轻提示音。" : "音效已关闭：仍会保留所有视觉反馈。");
+        if (state.soundEnabled) playSound("calm");
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return;
+        if (event.key === "ArrowRight") selectStep(Math.min(3, state.activeStep + 1));
+        if (event.key === "ArrowLeft") selectStep(Math.max(0, state.activeStep - 1));
+      });
+
+      render();
+    </script>
+    <script src="/glossary/faq-panel.js"></script>
+  </body>
+</html>
