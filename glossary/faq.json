@@ -1861,6 +1861,62 @@
           "url": "https://oi-wiki.org/basic/simulate/"
         }
       ]
+    },
+    {
+      "id": "dfs",
+      "term": "深度优先搜索",
+      "aliases": ["DFS", "深搜", "depth-first search"],
+      "summary": "对每个选择先走到底、再回头换一种选择，用递归实现。",
+      "answer": "深度优先搜索（DFS，C++ 里常用递归函数实现）是指从一个选择出发一直往下走，走到不能再走时再回头换另一种选择。现在只要知道“选一个就往下走到底，再回头换选法”，图上的完整 DFS 算法是拓展。",
+      "remember": "先往下走到底，再回头换选法。",
+      "links": [
+        {
+          "title": "DFS（搜索，OI Wiki）",
+          "url": "https://oi-wiki.org/search/dfs/"
+        }
+      ]
+    },
+    {
+      "id": "search-tree",
+      "term": "搜索树",
+      "aliases": ["选择树", "决策树", "search tree"],
+      "summary": "把每一步的所有选择画成树，一条从根到叶子的路径就是一种方案。",
+      "answer": "搜索树是把每一步能做的选择都画成树的分支：根节点是还没开始选，每往下一层就是多做了一个选择，从根走到叶子的一条路径就是一种完整方案。画小规模的搜索树能帮你看清哪些分支被剪掉了。",
+      "remember": "画出搜索树，一条路径就是一种方案。",
+      "links": [
+        {
+          "title": "DFS（搜索，OI Wiki）",
+          "url": "https://oi-wiki.org/search/dfs/"
+        }
+      ]
+    },
+    {
+      "id": "backtrack",
+      "term": "回溯",
+      "aliases": ["撤销选择", "回退", "backtracking"],
+      "summary": "走不通或者已经处理完这条分支后，撤销刚才的选择，回到上一层继续尝试别的选法。",
+      "answer": "回溯是指沿着搜索树往下走完一条分支后，把刚才做的选择撤销（比如把加入集合的数移出去），回到上一层，再尝试另一种选择。C++ 里通常是“选择 → 递归 → 撤销”三步写在一起。现在只要记住每次递归返回前要撤销选择。",
+      "remember": "走不通就回头，记得撤销刚才的选择。",
+      "links": [
+        {
+          "title": "回溯法（OI Wiki）",
+          "url": "https://oi-wiki.org/search/backtracking/"
+        }
+      ]
+    },
+    {
+      "id": "pruning",
+      "term": "剪枝",
+      "aliases": ["提前停止", "prune", "剪掉分支"],
+      "summary": "提前判断这条分支不可能有解，就不再往下搜，直接停止。",
+      "answer": "剪枝是指在搜索途中提前判断“这条分支已经不可能凑出答案了”，就直接停止，不用把这条分支走到底。例如当前和已经超过目标值时就没必要继续加数。现在只要记住剪枝不能剪掉还有可能的分支，否则会漏解。",
+      "remember": "提前判断不可能就停，别漏掉还有可能的分支。",
+      "links": [
+        {
+          "title": "剪枝优化（OI Wiki）",
+          "url": "https://oi-wiki.org/search/opt/"
+        }
+      ]
     }
   ]
 }
