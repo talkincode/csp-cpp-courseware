@@ -171,3 +171,7 @@ test("S4-01 wires contest-statement FAQ terms into the guided lesson", async () 
 test("S4-02 wires modeling-card FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s4-02", ["modeling-card", "known-unknown", "sample-reverse"]);
 });
+
+test("S4-03 wires simulation FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s4-03", ["state-table", "event-order", "condition-branch", "sample-trace"]);
+});
