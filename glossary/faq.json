@@ -1735,6 +1735,76 @@
           "url": "https://zh.cppreference.com/w/cpp/io/cout"
         }
       ]
+    },
+    {
+      "id": "modeling-card",
+      "term": "建模卡",
+      "aliases": ["读题卡", "题目卡片", "建模"],
+      "summary": "编码前写下已知、未知、目标和边界的清单。",
+      "answer": "建模卡是编码前的一张清单：已知、未知、目标、约束和边界。它不是 C++ 关键字，只是纸上或注释里的结构化记录。现在先填卡，再写程序。搜索树是拓展。",
+      "remember": "先填建模卡，再写代码。",
+      "links": [
+        {
+          "title": "如何做题（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "known-unknown",
+      "term": "已知与未知",
+      "aliases": ["已知", "未知", "输入输出量"],
+      "summary": "题面已经给出的量和还要求出的答案。",
+      "answer": "已知是题面已经给出的量和输入，未知是要求出的答案。例如求和题：已知 n 和 n 个数，未知是它们的和。现在先分清这两栏，不要一上来写代码。",
+      "remember": "已知是给的，未知是要求的。",
+      "links": [
+        {
+          "title": "如何做题（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "sample-reverse",
+      "term": "样例反推",
+      "aliases": ["用样例倒推", "样例核对", "反推过程"],
+      "summary": "用题目给的输入输出倒推过程。",
+      "answer": "样例反推就是用题目给的输入输出倒推过程。例如输入 3 和 1 2 3、输出 6，说明要把三个数加起来。现在用样例核对目标，不要只看自己的想法。",
+      "remember": "先用样例倒推目标，再写代码。",
+      "links": [
+        {
+          "title": "cin（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io/cin"
+        }
+      ]
+    },
+    {
+      "id": "constraint",
+      "term": "约束",
+      "aliases": ["限制条件", "题目约束", "不能违反的条件"],
+      "summary": "题面规定不能违反的条件。",
+      "answer": "约束是题面规定不能违反的条件，例如 `1 <= n <= 1000`。它限制数组大小和循环次数。现在先把约束抄到建模卡。评测机内部是拓展。",
+      "remember": "约束先抄到卡上，再决定怎么写。",
+      "links": [
+        {
+          "title": "复杂度基础（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/complexity/"
+        }
+      ]
+    },
+    {
+      "id": "algorithm-candidate",
+      "term": "算法候选",
+      "aliases": ["候选算法", "做法列表", "先列做法"],
+      "summary": "编码前先列出的几种可能做法。",
+      "answer": "算法候选是编码前先列出的几种做法。求和题先写循环累加就够。现在只要会列候选，不必立刻选最难的。图论、搜索树、状态压缩是拓展。",
+      "remember": "先列候选，再动手写。",
+      "links": [
+        {
+          "title": "枚举（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/enumerate/"
+        }
+      ]
     }
   ]
 }
