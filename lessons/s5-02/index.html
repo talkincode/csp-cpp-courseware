@@ -1,0 +1,2122 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="S5-02 系统化调试：面向 CSP-J 初学者的互动式 C++ 入门课。"
+    />
+    <title>S5-02 · 按证据修错，不靠乱改</title>
+    <style>
+      :root {
+        --forest: #0c2620;
+        --forest-soft: #174137;
+        --forest-fog: #35665a;
+        --paper: #f3ead7;
+        --paper-bright: #fffaf0;
+        --paper-shadow: #ddcfb8;
+        --ink: #18372f;
+        --muted: #687a70;
+        --orange: #e6612c;
+        --orange-soft: #f3ba76;
+        --mint: #d7e6cd;
+        --gold: #f8c85f;
+        --success: #278057;
+        --danger: #ad4325;
+        --line: rgba(24, 55, 47, 0.2);
+        --shadow: 0 21px 54px rgba(1, 16, 12, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: var(--forest);
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 10% 0%, rgba(70, 126, 108, 0.56), transparent 42%),
+          radial-gradient(ellipse at 94% 100%, rgba(230, 97, 44, 0.23), transparent 43%),
+          var(--forest);
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 3px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 19px 0;
+        color: var(--paper);
+      }
+
+      .back-link {
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .back-link:hover {
+        color: var(--orange-soft);
+      }
+
+      .course-marker {
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.73rem;
+        letter-spacing: 0.08em;
+      }
+
+      .sound-toggle {
+        padding: 8px 11px;
+        color: var(--paper);
+        background: transparent;
+        border: 1px solid rgba(255, 250, 240, 0.44);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        transition: background 150ms ease, color 150ms ease;
+      }
+
+      .sound-toggle:hover {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .topbar-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .lesson-shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto 34px;
+        overflow: hidden;
+        background: var(--paper);
+        border: 1px solid rgba(255, 250, 240, 0.36);
+        border-radius: 17px;
+        box-shadow: var(--shadow);
+      }
+
+      .lesson-hero {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 252px;
+        gap: 34px;
+        padding: clamp(30px, 7vw, 70px) clamp(24px, 6vw, 68px);
+        background:
+          radial-gradient(circle at 93% 18%, rgba(230, 97, 44, 0.23), transparent 20%),
+          linear-gradient(130deg, var(--paper-bright), var(--paper-shadow));
+      }
+
+      .lesson-hero::after {
+        position: absolute;
+        right: -67px;
+        bottom: -105px;
+        width: 270px;
+        height: 270px;
+        border: 32px solid rgba(53, 102, 90, 0.16);
+        border-radius: 48% 52% 50% 50%;
+        content: "";
+      }
+
+      .lesson-hero h1 {
+        max-width: 690px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(2.35rem, 5.5vw, 5.1rem);
+        line-height: 0.99;
+        letter-spacing: -0.035em;
+      }
+
+      .lesson-hero h1 code {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.75em;
+        letter-spacing: -0.07em;
+      }
+
+      .lesson-hero p {
+        max-width: 580px;
+        margin: 20px 0 0;
+        color: #476056;
+        font-size: 0.98rem;
+        line-height: 1.78;
+      }
+
+      .primary-action,
+      .secondary-action,
+      .flow-action,
+      .answer-option,
+      .step-button {
+        border: 0;
+        border-radius: 5px;
+        transition: transform 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+      }
+
+      .primary-action {
+        margin-top: 25px;
+        padding: 12px 17px;
+        color: var(--forest);
+        background: var(--orange-soft);
+        box-shadow: 4px 5px 0 rgba(230, 97, 44, 0.31);
+        font-weight: 800;
+      }
+
+      .primary-action:hover {
+        background: var(--orange);
+        transform: translateY(-2px);
+      }
+
+      .primary-action:active,
+      .secondary-action:active,
+      .flow-action:active,
+      .answer-option:active {
+        transform: translateY(1px) scale(0.98);
+      }
+
+      .mission-slip {
+        z-index: 1;
+        align-self: end;
+        padding: 21px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 2px solid var(--orange);
+        border-radius: 7px;
+        box-shadow: 9px 10px 0 rgba(230, 97, 44, 0.25);
+        transform: rotate(2.2deg);
+      }
+
+      .mission-slip strong,
+      .mission-slip span {
+        display: block;
+      }
+
+      .mission-slip strong {
+        color: var(--orange-soft);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.3rem;
+      }
+
+      .mission-slip span {
+        margin-top: 10px;
+        color: var(--mint);
+        font-size: 0.78rem;
+        line-height: 1.63;
+      }
+
+      .learning-area {
+        display: grid;
+        grid-template-columns: 244px minmax(0, 1fr);
+        min-height: 750px;
+        background:
+          linear-gradient(rgba(24, 55, 47, 0.055) 1px, transparent 1px) 0 0 / 100% 34px,
+          var(--paper);
+      }
+
+      .task-rail {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+        padding: 31px 18px;
+        color: var(--paper);
+        background:
+          linear-gradient(155deg, rgba(215, 230, 205, 0.13), transparent 45%),
+          var(--forest);
+      }
+
+      .task-rail h2 {
+        margin: 0;
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.35rem;
+      }
+
+      .task-progress {
+        margin: 2px 0 6px;
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.77rem;
+      }
+
+      .step-list {
+        display: grid;
+        gap: 9px;
+      }
+
+      .step-button {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+        gap: 9px;
+        width: 100%;
+        padding: 11px 7px;
+        color: var(--mint);
+        background: transparent;
+        border: 1px solid transparent;
+        text-align: left;
+      }
+
+      .step-button:hover:not([aria-disabled="true"]) {
+        background: rgba(255, 250, 240, 0.08);
+        transform: translateX(2px);
+      }
+
+      .step-button[aria-current="step"] {
+        color: var(--paper);
+        background: rgba(230, 97, 44, 0.16);
+        border-color: rgba(230, 97, 44, 0.74);
+      }
+
+      .step-button[aria-disabled="true"] {
+        color: rgba(215, 230, 205, 0.43);
+      }
+
+      .step-number {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.69rem;
+        font-weight: 900;
+      }
+
+      .step-button[aria-current="step"] .step-number {
+        color: var(--paper);
+        background: var(--orange);
+      }
+
+      .step-button[aria-disabled="true"] .step-number {
+        color: rgba(12, 38, 32, 0.6);
+        background: rgba(215, 230, 205, 0.35);
+      }
+
+      .step-copy strong,
+      .step-copy span {
+        display: block;
+      }
+
+      .step-copy strong {
+        font-size: 0.82rem;
+      }
+
+      .step-copy span {
+        margin-top: 3px;
+        font-size: 0.66rem;
+        line-height: 1.35;
+        opacity: 0.83;
+      }
+
+      .rail-note {
+        margin: auto 2px 0;
+        padding-top: 17px;
+        border-top: 1px solid rgba(215, 230, 205, 0.27);
+        color: var(--mint);
+        font-size: 0.73rem;
+        line-height: 1.65;
+      }
+
+      .workbench {
+        min-width: 0;
+        padding: clamp(24px, 4vw, 48px);
+      }
+
+      .step-panel[hidden] {
+        display: none;
+      }
+
+      .step-panel {
+        max-width: 790px;
+        animation: arrive 240ms ease-out both;
+      }
+
+      @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateY(7px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .step-panel h2 {
+        max-width: 710px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(1.65rem, 3vw, 2.55rem);
+        line-height: 1.16;
+      }
+
+      .step-lead {
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: #52675d;
+        font-size: 0.93rem;
+        line-height: 1.75;
+      }
+
+      .guided-note {
+        max-width: 690px;
+        margin: 25px 0;
+        padding: 13px 15px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        font-size: 0.84rem;
+        line-height: 1.62;
+      }
+
+      .code-sheet {
+        position: relative;
+        max-width: 705px;
+        overflow: hidden;
+        margin: 26px 0;
+        padding: 21px 0 17px;
+        background:
+          linear-gradient(90deg, transparent 0 47px, rgba(230, 97, 44, 0.22) 47px 48px, transparent 48px),
+          repeating-linear-gradient(to bottom, transparent 0 29px, rgba(24, 55, 47, 0.09) 29px 30px),
+          var(--paper-bright);
+        border: 1px solid var(--line);
+        box-shadow: 6px 8px 0 rgba(24, 55, 47, 0.12);
+      }
+
+      .code-sheet::before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 5px;
+        background: var(--forest-fog);
+        content: "";
+      }
+
+      .code-sheet ol {
+        margin: 0;
+        padding: 0 22px 0 71px;
+      }
+
+      .code-sheet li {
+        min-height: 30px;
+        padding-left: 10px;
+        color: #28483e;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: clamp(0.75rem, 1.7vw, 0.88rem);
+        line-height: 30px;
+        white-space: pre-wrap;
+      }
+
+      .code-sheet li::marker {
+        color: #8f9d93;
+      }
+
+      .code-sheet .highlight {
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.36);
+      }
+
+      .code-sheet .focus-line {
+        color: var(--forest);
+        background: rgba(215, 230, 205, 0.68);
+        font-weight: 800;
+      }
+
+      .inline-code {
+        padding: 1px 4px;
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.26);
+        border-radius: 3px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.9em;
+      }
+
+      .callout-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 13px;
+        max-width: 705px;
+        margin: 22px 0;
+      }
+
+      .callout {
+        min-height: 124px;
+        padding: 15px;
+        background: rgba(255, 250, 240, 0.67);
+        border-top: 3px solid var(--forest-fog);
+      }
+
+      .callout strong,
+      .callout span {
+        display: block;
+      }
+
+      .callout strong {
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .callout span {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        line-height: 1.57;
+      }
+
+      .secondary-action {
+        padding: 10px 13px;
+        color: var(--forest);
+        background: transparent;
+        border: 1px solid var(--forest-fog);
+        font-weight: 800;
+      }
+
+      .secondary-action:hover {
+        color: var(--paper);
+        background: var(--forest);
+      }
+
+      .inline-feedback {
+        min-height: 1.8em;
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+
+      .inline-feedback[data-tone="error"] {
+        color: var(--danger);
+      }
+
+      .flow-line {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin: 30px 0 20px;
+      }
+
+      .flow-action {
+        position: relative;
+        min-height: 102px;
+        padding: 14px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .flow-action:not(:last-child)::after {
+        position: absolute;
+        top: 50%;
+        right: -13px;
+        z-index: 1;
+        color: var(--orange);
+        content: "→";
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        transform: translateY(-50%);
+      }
+
+      .flow-action:hover:not([aria-disabled="true"]) {
+        background: #fff0d5;
+        transform: translateY(-2px);
+      }
+
+      .flow-action[aria-disabled="true"] {
+        color: #9aa89f;
+        background: rgba(221, 207, 184, 0.53);
+      }
+
+      .flow-action.is-done {
+        color: var(--paper);
+        background: var(--forest-soft);
+        border-color: var(--forest-soft);
+      }
+
+      .flow-index,
+      .flow-action strong,
+      .flow-action span {
+        display: block;
+      }
+
+      .flow-index {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+      }
+
+      .flow-action.is-done .flow-index {
+        color: var(--orange-soft);
+      }
+
+      .flow-action strong {
+        margin-top: 9px;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .flow-action span {
+        margin-top: 7px;
+        font-size: 0.7rem;
+        line-height: 1.43;
+      }
+
+      .terminal {
+        max-width: 705px;
+        min-height: 156px;
+        margin: 19px 0 0;
+        padding: 16px 17px;
+        overflow: auto;
+        color: #d7e6cd;
+        background: #071b16;
+        border-top: 4px solid var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.81rem;
+        line-height: 1.65;
+        white-space: pre-wrap;
+      }
+
+      .terminal .terminal-success {
+        color: #a8e1bc;
+      }
+
+      .terminal .faq-term,
+      .terminal .faq-term:hover,
+      .terminal .faq-term[aria-expanded="true"] {
+        padding: 0 6px;
+        color: #0c2620;
+        background: #f8c85f;
+        border-bottom-color: #d9a63a;
+      }
+
+      .terminal .terminal-warm {
+        color: var(--orange-soft);
+      }
+
+      .fix-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 21px;
+      }
+
+      .fix-actions button {
+        min-height: 70px;
+        padding: 10px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .fix-actions button:hover {
+        background: #fff0d5;
+      }
+
+      .fix-actions button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .quiz-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin: 23px 0 18px;
+      }
+
+      .quiz-seed {
+        color: var(--muted);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.71rem;
+      }
+
+      .quiz-form {
+        display: grid;
+        gap: 19px;
+      }
+
+      .question {
+        padding: 20px 0 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .question h3 {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.12rem;
+        line-height: 1.5;
+      }
+
+      .question-objective {
+        margin: 7px 0 0;
+        color: var(--muted);
+        font-size: 0.73rem;
+        line-height: 1.45;
+      }
+
+      .answer-options {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .answer-option {
+        display: grid;
+        grid-template-columns: 20px 26px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding: 11px 12px;
+        color: var(--ink);
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .answer-option:hover:not(.is-locked) {
+        background: #fff0d5;
+      }
+
+      .answer-option input {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        accent-color: var(--forest-fog);
+      }
+
+      .answer-letter {
+        display: grid;
+        width: 24px;
+        height: 24px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+        font-weight: 900;
+      }
+
+      .answer-option.is-correct {
+        color: #174d35;
+        background: #e2f2e4;
+        border-color: rgba(39, 128, 87, 0.57);
+      }
+
+      .answer-option.is-incorrect {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .answer-option.is-locked {
+        cursor: default;
+      }
+
+      .explanation {
+        margin: 10px 0 0 56px;
+        color: #52675d;
+        font-size: 0.8rem;
+        line-height: 1.62;
+      }
+
+      .quiz-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 11px;
+        margin-top: 23px;
+      }
+
+      .quiz-result {
+        min-height: 1.8em;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 800;
+        line-height: 1.6;
+      }
+
+      .quiz-result[data-tone="warn"] {
+        color: #91501a;
+      }
+
+      .external-boundary {
+        max-width: 790px;
+        margin: 34px 0 0;
+        padding: 15px 17px;
+        color: #486057;
+        background: rgba(221, 207, 184, 0.55);
+        border-top: 2px solid var(--forest-fog);
+        font-size: 0.8rem;
+        line-height: 1.63;
+      }
+
+      .external-boundary strong {
+        color: var(--forest);
+      }
+
+      .completion-ribbon {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 10;
+        max-width: min(370px, calc(100vw - 40px));
+        padding: 13px 15px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 1px solid var(--orange-soft);
+        border-radius: 6px;
+        box-shadow: 7px 9px 0 rgba(230, 97, 44, 0.28);
+        font-size: 0.82rem;
+        line-height: 1.55;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(12px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .completion-ribbon.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .storage-notice {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 9;
+        max-width: min(370px, calc(100vw - 40px));
+        margin: 0;
+        padding: 11px 14px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        box-shadow: 5px 7px 0 rgba(24, 55, 47, 0.14);
+        font-size: 0.76rem;
+        line-height: 1.55;
+      }
+
+      .confetti-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 11;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .confetti {
+        position: absolute;
+        top: 34%;
+        left: 50%;
+        width: 10px;
+        height: 16px;
+        background: var(--confetti-color);
+        clip-path: polygon(50% 0, 100% 28%, 72% 100%, 0 71%, 11% 20%);
+        animation: burst 880ms cubic-bezier(0.14, 0.78, 0.32, 1) forwards;
+        transform: translate(-50%, -50%) rotate(var(--spin));
+      }
+
+      @keyframes burst {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) rotate(var(--spin));
+        }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--drift-x)), calc(-50% + var(--drift-y))) rotate(calc(var(--spin) + 250deg));
+        }
+      }
+
+      .level-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .level-chip {
+        padding: 5px 9px;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .level-chip.is-required {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .level-chip.is-recommended {
+        color: var(--forest);
+        background: var(--mint);
+      }
+
+      .level-chip.is-extra {
+        color: #476056;
+        background: rgba(24, 55, 47, 0.1);
+      }
+
+      .type-grid {
+        display: grid;
+        gap: 12px;
+        max-width: 705px;
+        margin: 22px 0;
+      }
+
+      .type-row {
+        display: grid;
+        grid-template-columns: minmax(140px, 1.3fr) repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        align-items: stretch;
+        padding: 12px;
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+      }
+
+      .type-label strong,
+      .type-label span {
+        display: block;
+      }
+
+      .type-label strong {
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+      }
+
+      .type-label span {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.72rem;
+        line-height: 1.45;
+      }
+
+      .type-row button {
+        min-height: 54px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-weight: 800;
+      }
+
+      .type-row button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .type-row button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .type-row button.is-wrong {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .formula-row {
+        display: grid;
+        grid-template-columns: minmax(140px, 1.1fr) repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        align-items: stretch;
+        padding: 12px;
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+      }
+
+      .formula-row button {
+        min-height: 58px;
+        padding: 8px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.72rem;
+        font-weight: 800;
+        line-height: 1.35;
+        white-space: normal;
+      }
+
+      .formula-row button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .formula-row button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .formula-row button.is-wrong {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .variable-box {
+        max-width: 360px;
+        margin: 22px 0;
+        padding: 18px 20px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 2px solid var(--orange);
+        border-radius: 7px;
+        box-shadow: 9px 10px 0 rgba(230, 97, 44, 0.25);
+      }
+
+      .variable-box .box-kicker {
+        color: var(--orange-soft);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.72rem;
+      }
+
+      .variable-box .box-value {
+        margin-top: 8px;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 2rem;
+        line-height: 1.1;
+      }
+
+      .variable-box .box-meta {
+        margin-top: 8px;
+        color: var(--mint);
+        font-size: 0.8rem;
+        line-height: 1.55;
+      }
+
+      .concept-actions {
+        display: grid;
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 18px;
+      }
+
+      .concept-actions button {
+        min-height: 58px;
+        padding: 10px 12px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.84rem;
+        font-weight: 800;
+        line-height: 1.45;
+        text-align: left;
+      }
+
+      .concept-actions button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .concept-actions button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      @media (max-width: 880px) {
+        .lesson-hero {
+          grid-template-columns: 1fr;
+        }
+
+        .mission-slip {
+          width: min(100%, 290px);
+          justify-self: end;
+        }
+
+        .learning-area {
+          grid-template-columns: 1fr;
+        }
+
+        .task-rail {
+          display: grid;
+          grid-template-columns: minmax(150px, 0.45fr) 1fr;
+          gap: 12px 23px;
+          padding: 22px;
+        }
+
+        .step-list {
+          grid-template-columns: repeat(4, minmax(135px, 1fr));
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .step-button {
+          min-width: 135px;
+        }
+
+        .rail-note {
+          grid-column: 1 / -1;
+          margin: 0;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .topbar,
+        .lesson-shell {
+          width: min(100% - 18px, 620px);
+        }
+
+        .topbar {
+          padding: 12px 0;
+        }
+
+        .course-marker {
+          display: none;
+        }
+
+        .lesson-hero {
+          padding: 34px 22px;
+        }
+
+        .lesson-hero h1 {
+          font-size: clamp(2.2rem, 13vw, 3.5rem);
+        }
+
+        .mission-slip {
+          justify-self: stretch;
+          width: auto;
+          transform: rotate(1deg);
+        }
+
+        .task-rail {
+          display: block;
+          padding: 21px 14px;
+        }
+
+        .step-list {
+          margin-top: 14px;
+        }
+
+        .rail-note {
+          display: none;
+        }
+
+        .workbench {
+          padding: 28px 19px;
+        }
+
+        .callout-row,
+        .flow-line,
+        .fix-actions,
+        .type-row,
+        .formula-row {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-action:not(:last-child)::after {
+          top: auto;
+          right: 50%;
+          bottom: -22px;
+          transform: translateX(50%) rotate(90deg);
+        }
+
+        .flow-line {
+          gap: 28px;
+        }
+
+        .code-sheet {
+          margin-right: -5px;
+          margin-left: -5px;
+        }
+
+        .code-sheet ol {
+          padding-right: 9px;
+          padding-left: 62px;
+        }
+
+        .code-sheet li {
+          padding-left: 6px;
+          font-size: 0.7rem;
+        }
+
+        .completion-ribbon,
+        .storage-notice {
+          right: 10px;
+          bottom: 10px;
+          max-width: calc(100vw - 20px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 1ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body data-faq-terms="systematic-debug minimal-repro debug-print assert-idea diff-check">
+    <header class="topbar">
+      <a class="back-link" href="../../index.html">← 返回课程路线</a>
+      <span class="course-marker">第五阶段 · S5-02 · 60 分钟</span>
+      <div class="topbar-tools">
+        <button id="faqCatalogButton" class="faq-open" type="button">常见问题</button>
+        <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">音效：开</button>
+      </div>
+    </header>
+
+    <main class="lesson-shell">
+      <section class="lesson-hero">
+        <div>
+          <h1>按证据修错，不靠乱改</h1>
+          <p>
+            这一课只练一件事：用<button type="button" class="faq-term" data-faq="systematic-debug">系统化调试</button>按证据修错，而不是靠猜测乱改。顺序是先做<button type="button" class="faq-term" data-faq="minimal-repro">最小复现</button>，再用<button type="button" class="faq-term" data-faq="debug-print">分段输出</button>或<button type="button" class="faq-term" data-faq="assert-idea">断言思路</button>检验假设，最后记下修复原因并重新测试。必会：能把错误缩小到小数据；能写出验证假设的输出；不靠乱改碰运气。最小示例：求前缀和的程序对 n=5 错了，先缩成 n=2 仍错。样例追踪：n=5 输出 9，手算应是 10；缩到 a=[1,2] 仍少 1；分段输出发现 prefix 从 a[1] 开始加。边界是不要在大数据上猜改，也不要改完不回归。建议掌握：写下修复原因。拓展：用暴力程序做<button type="button" class="faq-term" data-faq="diff-check">差分检查</button>只是拓展习惯，现在不当硬门槛。这里不会在浏览器里运行 C++。
+          </p>
+          <div class="level-legend" aria-label="必会、建议掌握和拓展">
+            <span class="level-chip is-required">必会：缩小到小数据；写出验证假设的输出；不靠乱改</span>
+            <span class="level-chip is-recommended">建议掌握：记下修复原因并回归测试</span>
+            <span class="level-chip is-extra">拓展：差分检查，不当硬门槛</span>
+          </div>
+          <button id="beginButton" class="primary-action" type="button">开始第一个任务</button>
+        </div>
+        <aside class="mission-slip" aria-label="本课任务">
+          <strong>本课任务</strong>
+          <span>能按“最小复现 → 分段输出 → 记录原因并回归”修一个答案错误，而不是乱改直到碰巧对了。</span>
+        </aside>
+      </section>
+
+      <section id="learningArea" class="learning-area" aria-label="互动学习区">
+        <nav class="task-rail" aria-label="本课任务步骤">
+          <div>
+            <h2>任务路线</h2>
+            <p id="taskProgress" class="task-progress">0 / 4 已推进</p>
+          </div>
+          <div class="step-list">
+            <button class="step-button" type="button" data-step="0" aria-current="step">
+              <span class="step-number">1</span>
+              <span class="step-copy"><strong>先选出该怎么修</strong><span>最小复现 vs 乱改</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="1" aria-disabled="true">
+              <span class="step-number">2</span>
+              <span class="step-copy"><strong>手动走一遍修错卡</strong><span>缩小、分段输出、回归</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="2" aria-disabled="true">
+              <span class="step-number">3</span>
+              <span class="step-copy"><strong>断言与差分</strong><span>建议掌握 / 拓展</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="3" aria-disabled="true">
+              <span class="step-number">4</span>
+              <span class="step-copy"><strong>随机小测</strong><span>检查是否理解</span></span>
+            </button>
+          </div>
+          <p class="rail-note">没有真的卡住：每一步完成后，下一步会自动点亮。你也可以随时回看已经完成的任务。</p>
+        </nav>
+
+        <div class="workbench">
+          <section class="step-panel" data-panel="0">
+            <h2>任务 1：先选出该怎么修</h2>
+            <p class="step-lead">
+              先确定答案错误时该按什么<button type="button" class="faq-term" data-faq="systematic-debug">系统化调试</button>开始，再确定有了反例后该不该用<button type="button" class="faq-term" data-faq="debug-print">分段输出</button>。点不认识的词可看基础解释。
+            </p>
+            <p class="guided-note"><strong>必会：</strong>能说出为什么要先做<button type="button" class="faq-term" data-faq="minimal-repro">最小复现</button>；能说出为什么不能靠乱改碰运气。这里不会在浏览器里运行 C++，只练习选择和走过程。</p>
+            <div class="type-grid" aria-label="选择调试起点">
+              <div class="formula-row" data-quantity="orderChoice">
+                <p class="type-label"><strong>程序在 n=100000 上错了，样例却是对的。第一步该做什么？</strong><span>最小复现 · 必会</span></p>
+                <button type="button" data-choice="brute-first">先构造能稳定复现错误的最小数据，再对着小数据修</button>
+                <button type="button" data-choice="optimal-only">在原程序上随便改几处，直到碰巧对了</button>
+                <button type="button" data-choice="all-or-nothing">先把算法换成更高级的，大数据错了多半是算法不够强</button>
+              </div>
+              <div class="formula-row" data-quantity="fallbackChoice">
+                <p class="type-label"><strong>已经有一组 n=2 的反例，接下来该怎么验证“是下标写错了”？</strong><span>分段输出 · 必会</span></p>
+                <button type="button" data-choice="submit-fallback">在可疑位置加分段输出，看中间值是不是自己想的</button>
+                <button type="button" data-choice="keep-debugging">把整份代码删掉重写，省得一行行查</button>
+                <button type="button" data-choice="delete-fallback">不再测小数据，直接提交看评测机给不给分</button>
+              </div>
+            </div>
+            <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="1" hidden>
+            <h2>任务 2：按缩小、分段输出、回归三步走完修错卡</h2>
+            <p class="step-lead">
+              最小示例：求前缀和的程序对 n=5 输出 9，手算应是 10。按顺序点三步：先做<button type="button" class="faq-term" data-faq="minimal-repro">最小复现</button>，再<button type="button" class="faq-term" data-faq="debug-print">分段输出</button>，最后记下原因并用原样例和反例回归。这里不会在浏览器里运行 C++。
+            </p>
+            <p class="guided-note"><strong>必会：</strong>能解释每一步为什么这样做。边界：不要在 n=100000 上猜改；不要改完不回归。</p>
+            <div class="code-sheet" aria-label="缩小、分段输出、回归三步对照">
+              <ol>
+                <li>// 现象：n=5，a=[1,2,3,4,5]，输出 9，手算应是 10</li>
+                <li class="highlight">// 缩小：试 a=[1,2]，输出 2，手算应是 3，错误仍在</li>
+                <li class="focus-line">// 分段输出：打印 i 和 prefix，发现循环从 i=1 开始，漏了 a[0]</li>
+                <li>// 回归：记下“少加了 a[0]”，再用原样例和这组反例复测</li>
+              </ol>
+            </div>
+            <div class="flow-line" aria-label="按顺序走完三步">
+              <button id="divideButton" class="flow-action" type="button">
+                <span class="flow-index">A</span>
+                <strong>缩小：把 n=5 的错误缩到 n=2 仍错</strong>
+                <span>先做成最小复现</span>
+              </button>
+              <button id="remainderButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">B</span>
+                <strong>分段输出：打印 i 和 prefix 对照手算</strong>
+                <span>用中间值检验假设</span>
+              </button>
+              <button id="evenButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">C</span>
+                <strong>回归：记下原因，再用样例和反例复测</strong>
+                <span>改完还要再测</span>
+              </button>
+            </div>
+            <aside id="variableBox" class="variable-box" aria-live="polite">
+              <div class="box-kicker">当前对照：修错卡</div>
+              <div class="box-value" id="variableValue">还没开始缩小错误范围</div>
+              <div class="box-meta" id="variableMeta">先点“缩小：把 n=5 的错误缩到 n=2 仍错”。</div>
+            </aside>
+            <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="2" hidden>
+            <h2>任务 3：用断言思路检验，并把差分检查当拓展</h2>
+            <p class="step-lead">
+              必会：修完后要用原样例和最小反例再测一遍。建议掌握：用<button type="button" class="faq-term" data-faq="assert-idea">断言思路</button>写下“这里应该等于什么”。拓展：<button type="button" class="faq-term" data-faq="diff-check">差分检查</button>现在只需要认识，不当硬门槛。
+            </p>
+            <p class="guided-note"><strong>必会 / 建议掌握 / 拓展：</strong>必会是缩小错误、写出验证假设的输出、改完要回归。建议掌握是记下修复原因并用断言思路。差分检查是拓展，现在不用当硬门槛。</p>
+            <div class="code-sheet" aria-label="断言思路与差分检查对照">
+              <ol>
+                <li>// 必会：改完循环起点后，再用 n=2 反例和原样例复测</li>
+                <li class="highlight">// 建议掌握：写下“prefix 在 i=0 时应等于 a[0]”</li>
+                <li class="focus-line">// 边界：不要连续改三处还不记录，也不要只看最终答案</li>
+                <li>// 拓展：拿暴力程序对照同一组输入（现在不当硬门槛）</li>
+              </ol>
+            </div>
+            <p class="step-lead">先选出该用什么思路检验假设：</p>
+            <div class="concept-actions" aria-label="选择断言思路">
+              <button type="button" data-concept="method" data-pick="dfs-then-bfs">写下“这里 prefix 应该等于手算”，再对照分段输出</button>
+              <button type="button" data-concept="method" data-pick="same-order">连续改 3 个地方，改对了再回头想为什么</button>
+              <button type="button" data-concept="method" data-pick="dfs-always-faster">只看最终答案对不对，中间值不用管</button>
+            </div>
+            <p class="step-lead">再选出修完后该怎么对待测试：</p>
+            <div class="concept-actions" aria-label="选择回归与差分">
+              <button type="button" data-concept="tieRule" data-pick="grouped">用原样例和这组最小反例再跑一遍；差分检查只作拓展认识</button>
+              <button type="button" data-concept="tieRule" data-pick="single-run">修完立刻提交，不再测，评测机会替你确认</button>
+              <button type="button" data-concept="tieRule" data-pick="assume-one">只测修好的那一组，原来的样例可以不管</button>
+            </div>
+            <p id="debugFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="3" hidden>
+            <h2>任务 4：随机小测，看看你是否真的懂了</h2>
+            <p class="step-lead">
+              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+            </p>
+            <div class="quiz-tools">
+              <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
+              <span id="quizSeed" class="quiz-seed"></span>
+            </div>
+            <form id="quizForm" class="quiz-form" aria-describedby="quizResult"></form>
+            <div class="quiz-footer">
+              <button id="submitQuizButton" class="primary-action" type="button">提交并查看解析</button>
+              <p id="quizResult" class="quiz-result" role="status" aria-live="polite"></p>
+            </div>
+          </section>
+
+          <aside class="external-boundary">
+            <strong>视频交付边界：</strong>本课的视频课件由仓库外流程制作。本页面只实现互动学习、引导和随机小测，不加载、不生产也不渲染视频资产。
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <p id="storageNotice" class="storage-notice" hidden></p>
+    <div id="completionRibbon" class="completion-ribbon" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+    <script>
+      const storageKey = "csp-cpp-s5-02-progress-v1";
+      const correctTools = { orderChoice: "brute-first", fallbackChoice: "submit-fallback" };
+      const toolErrorHelp = {
+        orderChoice: {
+          "optimal-only": "在原程序上随便改几处风险很高：没有最小复现，改对了也不知道为什么，下次还会再错。",
+          "all-or-nothing": "一出错就换更高级算法风险很高：样例对、大数据错，更常见的是实现细节，不是算法等级不够。",
+        },
+        fallbackChoice: {
+          "keep-debugging": "整份重写会丢掉已经对的部分：有了 n=2 的反例，应该用分段输出验证假设。",
+          "delete-fallback": "把验证交给评测机等于放弃证据：小数据上手算更快，也更安全。",
+        },
+      };
+      const questionPool = [
+        {
+          id: "why-minimal-repro",
+          courseId: "S5-02",
+          objective: "能把一个错误缩小到小数据",
+          difficulty: "required",
+          type: "choice",
+          prompt: "程序在 n=100000 上错了、样例却对，为什么要先做最小复现？",
+          options: ["小数据能手算对照，更容易看出是哪一行写错", "最小复现能代替交程序，缩完就不用修代码", "只有大数据才算真正的错误，小数据不必管", "评测机会自动把错误缩到最小，自己不用做"],
+          answer: 0,
+          explanation: "最小复现是找出仍会出错的最小输入。数据越小越容易手算，也越容易定位。乱改大数据，很难知道改对了没有。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "why-debug-print",
+          courseId: "S5-02",
+          objective: "能写出验证假设的输出",
+          difficulty: "required",
+          type: "choice",
+          prompt: "已经有一组 n=2 的反例，为什么还要分段输出中间值？",
+          options: ["中间值能检验“是下标写错了”这类假设，只看最终答案往往看不出错在哪", "分段输出是给评测机看的，必须留在最终程序里", "有了反例就够了，中间值对修错没有帮助", "分段输出能让程序自动变对，不必再改逻辑"],
+          answer: 0,
+          explanation: "分段输出是在关键步骤打印中间值，确认程序走到哪、变量是多少。查完再删掉。最终答案错了，中间值才告诉你错在哪一段。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "why-not-guess-edit",
+          courseId: "S5-02",
+          objective: "能说明修复后重新测了什么",
+          difficulty: "required",
+          type: "choice",
+          prompt: "为什么不能靠“乱改直到碰巧对了”来调试？",
+          options: ["没有证据就不知道为什么对，下次换一组数据还可能再错，也无法记录修复原因", "乱改更快，比赛里一定比系统化调试更划算", "碰巧对了说明程序已经完全正确，不必再测", "评测机只看最终答案，过了就等于理解了错误"],
+          answer: 0,
+          explanation: "系统化调试按证据修错。乱改即使碰巧对了，也说不清修了什么，更没法保证样例和反例都还对。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "assert-idea-meaning",
+          courseId: "S5-02",
+          objective: "能写出验证假设的输出",
+          difficulty: "recommended",
+          type: "choice",
+          prompt: "“断言思路”在这节课里指的是什么？",
+          options: ["先写下“这里应该等于手算结果”，再对照程序的中间值", "必须在代码里写 assert 关键字，否则不算调试", "把整份参考代码抄进程序当正确答案", "一种必须掌握的高级算法模板"],
+          answer: 0,
+          explanation: "断言思路是先写一句“这里应该等于什么”，再看中间值是否符合。现在不必先学 assert 关键字，先会这个想法就够。这是建议掌握，不是新语法门槛。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "diff-check-extra",
+          courseId: "S5-02",
+          objective: "能把一个错误缩小到小数据",
+          difficulty: "recommended",
+          type: "choice",
+          prompt: "差分检查在这节课里应该怎么看待？",
+          options: ["可以用暴力程序对照同一组输入来找反例，但这是拓展习惯，现在不当 CSP-J 硬门槛", "不会写差分检查就不能参加 CSP-J", "差分检查能代替最小复现和分段输出", "差分检查只在 NOI 才允许使用"],
+          answer: 0,
+          explanation: "差分检查是用能过小数据的暴力程序当镜子。它能帮忙找反例，但是拓展，本课必会仍是缩小错误、分段输出和回归测试。",
+          source: "course-plan / 自编",
+        },
+      ];
+
+      const defaultState = {
+        activeStep: 0,
+        toolChoices: {},
+        toolsMatched: false,
+        stateDefined: false,
+        initialized: false,
+        transitioned: false,
+        methodSolved: false,
+        tieRuleSolved: false,
+        quizSeed: createSeed(),
+        answers: {},
+        quizSubmitted: false,
+        bestScore: 0,
+        soundEnabled: true,
+      };
+
+      let storageAvailable = true;
+      let state = loadState();
+      let notificationTimer;
+      let audioContext;
+
+      const panels = [...document.querySelectorAll(".step-panel")];
+      const stepButtons = [...document.querySelectorAll("[data-step]")];
+      const taskProgress = document.querySelector("#taskProgress");
+      const sourceFeedback = document.querySelector("#sourceFeedback");
+      const flowFeedback = document.querySelector("#flowFeedback");
+      const debugFeedback = document.querySelector("#debugFeedback");
+      const variableValue = document.querySelector("#variableValue");
+      const variableMeta = document.querySelector("#variableMeta");
+      const quizForm = document.querySelector("#quizForm");
+      const quizResult = document.querySelector("#quizResult");
+      const completionRibbon = document.querySelector("#completionRibbon");
+      const storageNotice = document.querySelector("#storageNotice");
+      const confettiLayer = document.querySelector("#confettiLayer");
+      const soundToggle = document.querySelector("#soundToggle");
+
+      function createSeed() {
+        const values = new Uint32Array(1);
+        crypto.getRandomValues(values);
+        return values[0];
+      }
+
+      function loadState() {
+        try {
+          const stored = JSON.parse(window.localStorage.getItem(storageKey) ?? "null");
+          if (!stored || typeof stored !== "object" || Array.isArray(stored)) return { ...defaultState };
+
+          return {
+            ...defaultState,
+            activeStep: Number.isInteger(stored.activeStep) ? stored.activeStep : 0,
+            toolChoices:
+              stored.toolChoices && typeof stored.toolChoices === "object" && !Array.isArray(stored.toolChoices)
+                ? stored.toolChoices
+                : {},
+            toolsMatched: stored.toolsMatched === true,
+            stateDefined: stored.stateDefined === true,
+            initialized: stored.initialized === true,
+            transitioned: stored.transitioned === true,
+            methodSolved: stored.methodSolved === true,
+            tieRuleSolved: stored.tieRuleSolved === true,
+            quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
+            answers: stored.answers && typeof stored.answers === "object" && !Array.isArray(stored.answers) ? stored.answers : {},
+            quizSubmitted: stored.quizSubmitted === true,
+            bestScore: Number.isInteger(stored.bestScore) ? stored.bestScore : 0,
+            soundEnabled: stored.soundEnabled !== false,
+          };
+        } catch {
+          storageAvailable = false;
+          return { ...defaultState };
+        }
+      }
+
+      function saveState() {
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(state));
+          return true;
+        } catch {
+          storageAvailable = false;
+          return false;
+        }
+      }
+
+      function questionSetForSeed(seed) {
+        const random = seededRandom(seed);
+        const shuffled = [...questionPool];
+
+        for (let index = shuffled.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(random() * (index + 1));
+          [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+        }
+
+        return shuffled.slice(0, 3);
+      }
+
+      function currentQuestions() {
+        return questionSetForSeed(state.quizSeed);
+      }
+
+      function seededRandom(seed) {
+        let value = seed >>> 0;
+        return () => {
+          value += 0x6d2b79f5;
+          let result = value;
+          result = Math.imul(result ^ (result >>> 15), result | 1);
+          result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
+          return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, (character) => {
+          const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
+          return entities[character];
+        });
+      }
+
+      function conceptSolved() {
+        return state.methodSolved && state.tieRuleSolved;
+      }
+
+      function unlockedStepCount() {
+        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+      }
+
+      function isStepUnlocked(step) {
+        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+      }
+
+      function clampActiveStep() {
+        while (state.activeStep > 0 && !isStepUnlocked(state.activeStep)) {
+          state.activeStep -= 1;
+        }
+      }
+
+      function showFeedback(element, message, tone = "success") {
+        element.textContent = message;
+        element.dataset.tone = tone === "error" ? "error" : "";
+      }
+
+      function announce(message) {
+        completionRibbon.textContent = message;
+        completionRibbon.classList.add("is-visible");
+        window.clearTimeout(notificationTimer);
+        notificationTimer = window.setTimeout(() => {
+          completionRibbon.classList.remove("is-visible");
+        }, 3200);
+      }
+
+      function updateStorageNotice() {
+        storageNotice.hidden = storageAvailable;
+        storageNotice.textContent = "浏览器没有允许保存学习记录：本次互动仍可继续，但刷新页面后不会恢复进度。";
+      }
+
+      function playSound(kind) {
+        if (!state.soundEnabled) return;
+
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextConstructor) {
+          state.soundEnabled = false;
+          renderSoundToggle();
+          announce("当前浏览器不支持音效，已自动关闭音效。");
+          return;
+        }
+
+        audioContext ??= new AudioContextConstructor();
+        const context = audioContext;
+        const notes = kind === "reward" ? [523.25, 659.25, 783.99] : kind === "error" ? [180] : [392];
+
+        if (context.state === "suspended") {
+          void context.resume().catch(() => {
+            announce("浏览器暂未允许播放音效；你仍可以继续学习。");
+          });
+        }
+
+        notes.forEach((frequency, index) => {
+          const oscillator = context.createOscillator();
+          const gain = context.createGain();
+          const startAt = context.currentTime + index * 0.08;
+
+          oscillator.type = kind === "reward" ? "triangle" : "sine";
+          oscillator.frequency.setValueAtTime(frequency, startAt);
+          gain.gain.setValueAtTime(0.0001, startAt);
+          gain.gain.exponentialRampToValueAtTime(0.08, startAt + 0.012);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.14);
+          oscillator.connect(gain).connect(context.destination);
+          oscillator.start(startAt);
+          oscillator.stop(startAt + 0.15);
+        });
+      }
+
+      function reward(message) {
+        announce(message);
+        playSound("reward");
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        const colors = ["#e6612c", "#f8c85f", "#d7e6cd", "#35665a"];
+        for (let index = 0; index < 20; index += 1) {
+          const particle = document.createElement("span");
+          particle.className = "confetti";
+          particle.style.setProperty("--confetti-color", colors[index % colors.length]);
+          particle.style.setProperty("--drift-x", `${Math.round((Math.random() - 0.5) * 360)}px`);
+          particle.style.setProperty("--drift-y", `${Math.round((Math.random() - 0.2) * 300)}px`);
+          particle.style.setProperty("--spin", `${Math.round(Math.random() * 240)}deg`);
+          confettiLayer.append(particle);
+          particle.addEventListener("animationend", () => particle.remove(), { once: true });
+        }
+      }
+
+      function renderSoundToggle() {
+        soundToggle.textContent = state.soundEnabled ? "音效：开" : "音效：关";
+        soundToggle.setAttribute("aria-pressed", String(state.soundEnabled));
+      }
+
+      function renderSteps() {
+        clampActiveStep();
+        taskProgress.textContent = `${unlockedStepCount()} / 4 已推进`;
+
+        stepButtons.forEach((button) => {
+          const step = Number(button.dataset.step);
+          button.setAttribute("aria-disabled", String(!isStepUnlocked(step)));
+          if (step === state.activeStep) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+        });
+
+        panels.forEach((panel) => {
+          panel.hidden = Number(panel.dataset.panel) !== state.activeStep;
+        });
+      }
+
+      function renderSourceTask() {
+        document.querySelectorAll("[data-quantity]").forEach((row) => {
+          const quantity = row.dataset.quantity;
+          const selected = state.toolChoices[quantity];
+          row.querySelectorAll("[data-choice]").forEach((button) => {
+            const choice = button.dataset.choice;
+            button.disabled = state.toolsMatched;
+            button.classList.toggle("is-correct", selected === choice && choice === correctTools[quantity]);
+            button.classList.toggle("is-wrong", selected === choice && choice !== correctTools[quantity]);
+          });
+        });
+
+        if (state.toolsMatched) {
+          showFeedback(sourceFeedback, "两项都选对了：先做最小复现，再用分段输出验证假设。下一步已经点亮。");
+        }
+      }
+
+      function renderFlowTask() {
+        const divideButton = document.querySelector("#divideButton");
+        const remainderButton = document.querySelector("#remainderButton");
+        const evenButton = document.querySelector("#evenButton");
+
+        divideButton.setAttribute("aria-disabled", String(state.stateDefined));
+        remainderButton.setAttribute("aria-disabled", String(!state.stateDefined || state.initialized));
+        evenButton.setAttribute("aria-disabled", String(!state.initialized || state.transitioned));
+        divideButton.classList.toggle("is-done", state.stateDefined);
+        remainderButton.classList.toggle("is-done", state.initialized);
+        evenButton.classList.toggle("is-done", state.transitioned);
+
+        if (state.transitioned) {
+          variableValue.textContent = "已记下原因并回归：少加了 a[0]";
+          variableMeta.textContent = "三步走完。不要改完不测。";
+          showFeedback(flowFeedback, "你已经按顺序走完。下一步用断言思路检验，并把差分检查当拓展。");
+        } else if (state.initialized) {
+          variableValue.textContent = "已分段输出：循环从 i=1 开始，漏了 a[0]";
+          variableMeta.textContent = "假设被中间值证实了。下一步点“回归：记下原因，再用样例和反例复测”。";
+          showFeedback(flowFeedback, "第二步走完。下一步点“回归：记下原因，再用样例和反例复测”，不要跳过。");
+        } else if (state.stateDefined) {
+          variableValue.textContent = "已缩小：a=[1,2] 输出 2，手算应是 3";
+          variableMeta.textContent = "最小复现做成了。不要跳到最后一步。";
+          showFeedback(flowFeedback, "第一步走完。下一步点“分段输出：打印 i 和 prefix 对照手算”，不要跳到结束。");
+        } else {
+          variableValue.textContent = "还没开始缩小错误范围";
+          variableMeta.textContent = "先点“缩小：把 n=5 的错误缩到 n=2 仍错”。";
+          flowFeedback.textContent = "";
+        }
+      }
+
+      function renderDebugTask() {
+        document.querySelectorAll("[data-concept='method']").forEach((button) => {
+          button.disabled = state.methodSolved;
+          button.classList.toggle("is-correct", state.methodSolved && button.dataset.pick === "dfs-then-bfs");
+        });
+        document.querySelectorAll("[data-concept='tieRule']").forEach((button) => {
+          button.disabled = state.tieRuleSolved;
+          button.classList.toggle("is-correct", state.tieRuleSolved && button.dataset.pick === "grouped");
+        });
+
+        if (conceptSolved()) {
+          showFeedback(debugFeedback, "对：用断言思路检验假设，修完后用样例和反例回归；差分检查只作拓展。下一步去做随机小测吧。");
+        } else if (state.methodSolved) {
+          showFeedback(debugFeedback, "断言思路选对了。继续选出修完后该怎么测。");
+        } else {
+          debugFeedback.textContent = "";
+          debugFeedback.dataset.tone = "";
+        }
+      }
+
+      function questionsAreValid(questions) {
+        return (
+          Array.isArray(questions) &&
+          questions.length > 0 &&
+          questions.every(
+            (question) =>
+              question &&
+              typeof question.prompt === "string" &&
+              question.type === "choice" &&
+              Array.isArray(question.options) &&
+              question.options.length >= 2 &&
+              Number.isInteger(question.answer) &&
+              question.options[question.answer] != null,
+          )
+        );
+      }
+
+      function renderQuiz() {
+        const questions = currentQuestions();
+        const letters = ["A", "B", "C", "D"];
+        document.querySelector("#quizSeed").textContent = `本次试卷标识：${state.quizSeed}`;
+        const submitButton = document.querySelector("#submitQuizButton");
+
+        if (questionPool.length === 0 || !questionsAreValid(questions)) {
+          quizForm.innerHTML =
+            '<p class="inline-feedback" data-tone="error">题库暂时不可用或题目无效。本次学习进度仍保留，请稍后重试或换一套题。</p>';
+          submitButton.disabled = true;
+          quizResult.dataset.tone = "warn";
+          quizResult.textContent = "无法组卷：请检查题库后重试。进度没有丢失。";
+          return;
+        }
+
+        quizForm.innerHTML = questions
+          .map((question, questionIndex) => {
+            const selected = Number(state.answers[question.id]);
+            const options = question.options
+              .map((option, optionIndex) => {
+                const isCorrect = state.quizSubmitted && optionIndex === question.answer;
+                const isIncorrect = state.quizSubmitted && selected === optionIndex && optionIndex !== question.answer;
+                const classes = [
+                  "answer-option",
+                  state.quizSubmitted ? "is-locked" : "",
+                  isCorrect ? "is-correct" : "",
+                  isIncorrect ? "is-incorrect" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+
+                return `
+                  <label class="${classes}">
+                    <input
+                      type="radio"
+                      name="${question.id}"
+                      value="${optionIndex}"
+                      ${selected === optionIndex ? "checked" : ""}
+                      ${state.quizSubmitted ? "disabled" : ""}
+                    />
+                    <span class="answer-letter">${letters[optionIndex]}</span>
+                    <span>${escapeHtml(option)}</span>
+                  </label>
+                `;
+              })
+              .join("");
+
+            return `
+              <section class="question">
+                <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
+                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <div class="answer-options">${options}</div>
+                ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
+              </section>
+            `;
+          })
+          .join("");
+
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+        submitButton.disabled = state.quizSubmitted || unanswered > 0;
+        submitButton.textContent = state.quizSubmitted ? "本套题已提交" : unanswered > 0 ? `还差 ${unanswered} 题` : "提交并查看解析";
+
+        if (state.quizSubmitted) {
+          const score = quizScore(questions);
+          const passed = score >= 2;
+          quizResult.dataset.tone = passed ? "" : "warn";
+          quizResult.textContent = passed
+            ? `本次答对 ${score}/3。很好，已经能写流程卡、预留检查时间，并且知道不跳过样例。`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+        } else {
+          quizResult.textContent = "";
+          quizResult.dataset.tone = "";
+        }
+      }
+
+      function quizScore(questions = currentQuestions()) {
+        return questions.reduce((score, question) => score + (Number(state.answers[question.id]) === question.answer ? 1 : 0), 0);
+      }
+
+      function render() {
+        renderSteps();
+        renderSourceTask();
+        renderFlowTask();
+        renderDebugTask();
+        renderQuiz();
+        renderSoundToggle();
+        updateStorageNotice();
+      }
+
+      function selectStep(step) {
+        if (!isStepUnlocked(step)) {
+          announce("先完成前一个任务，下一步就会自动点亮。");
+          playSound("error");
+          return;
+        }
+
+        state.activeStep = step;
+        saveState();
+        render();
+        document.querySelector(`[data-panel="${step}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function refreshQuiz() {
+        const currentIds = currentQuestions()
+          .map((question) => question.id)
+          .sort()
+          .join(",");
+        let nextSeed = createSeed();
+
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          const nextIds = questionSetForSeed(nextSeed)
+            .map((question) => question.id)
+            .sort()
+            .join(",");
+          if (nextIds !== currentIds) break;
+          nextSeed = (nextSeed + 0x9e3779b9) >>> 0;
+        }
+
+        state.quizSeed = nextSeed;
+        state.answers = {};
+        state.quizSubmitted = false;
+        saveState();
+        renderQuiz();
+        announce("已换一套随机题。请先独立作答，再查看解析。");
+        playSound("calm");
+      }
+
+      document.querySelector("#beginButton").addEventListener("click", () => {
+        document.querySelector("#learningArea").scrollIntoView({ behavior: "smooth", block: "start" });
+        announce("从任务 1 开始：先确定该怎么缩小错误，再确定该不该分段输出。");
+      });
+
+      stepButtons.forEach((button) => {
+        button.addEventListener("click", () => selectStep(Number(button.dataset.step)));
+      });
+
+      document.querySelectorAll("[data-quantity] [data-choice]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (state.toolsMatched) return;
+
+          const row = button.closest("[data-quantity]");
+          const quantity = row?.dataset.quantity;
+          const choice = button.dataset.choice;
+          if (!quantity || !choice) return;
+
+          state.toolChoices[quantity] = choice;
+          const expected = correctTools[quantity];
+
+          if (choice !== expected) {
+            showFeedback(sourceFeedback, toolErrorHelp[quantity][choice], "error");
+            announce(toolErrorHelp[quantity][choice]);
+            playSound("error");
+            saveState();
+            renderSourceTask();
+            return;
+          }
+
+          const complete = Object.keys(correctTools).every((key) => state.toolChoices[key] === correctTools[key]);
+          if (complete) {
+            state.toolsMatched = true;
+            state.activeStep = 1;
+            saveState();
+            render();
+            reward("任务 1 完成：先做最小复现，再用分段输出验证假设。下一步手动走一遍修错卡。");
+            return;
+          }
+
+          saveState();
+          renderSourceTask();
+          showFeedback(sourceFeedback, "这一项选对了。继续给剩下的现象做选择。");
+          playSound("calm");
+        });
+      });
+
+      document.querySelector("#divideButton").addEventListener("click", () => {
+        if (state.stateDefined) {
+          announce("第一步已经缩小到 n=2，下一步做分段输出。");
+          return;
+        }
+
+        state.stateDefined = true;
+        saveState();
+        renderFlowTask();
+        announce("已缩小：a=[1,2] 仍错。下一步必须先分段输出。");
+        playSound("calm");
+      });
+
+      document.querySelector("#remainderButton").addEventListener("click", () => {
+        if (!state.stateDefined) {
+          announce("先缩小到小数据，再分段输出。不要跳步。");
+          playSound("error");
+          return;
+        }
+        if (state.initialized) {
+          announce("第二步已经分段输出，下一步回归测试。");
+          return;
+        }
+
+        state.initialized = true;
+        saveState();
+        renderFlowTask();
+        announce("已分段输出：循环从 i=1 开始，漏了 a[0]。下一步记下原因并回归。");
+        playSound("calm");
+      });
+
+      document.querySelector("#evenButton").addEventListener("click", () => {
+        if (!state.initialized) {
+          announce("先分段输出，再回归测试。不要跳过中间步。");
+          playSound("error");
+          return;
+        }
+        if (state.transitioned) {
+          announce("这三步已经走完，可以进入下一任务。");
+          return;
+        }
+
+        state.transitioned = true;
+        state.activeStep = 2;
+        saveState();
+        render();
+        reward("任务 2 完成：缩小、分段输出、回归都走完了。下一步看断言思路和差分检查。");
+      });
+
+      document.querySelectorAll("[data-concept]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const concept = button.dataset.concept;
+          const pick = button.dataset.pick;
+
+          if (concept === "method") {
+            if (state.methodSolved) return;
+            if (pick === "dfs-then-bfs") {
+              state.methodSolved = true;
+              saveState();
+              render();
+              if (conceptSolved()) {
+                state.activeStep = 3;
+                saveState();
+                render();
+                reward("任务 3 完成：你知道要用断言思路检验，修完后要回归。现在去做随机小测吧。");
+              } else {
+                announce("断言思路选对了。继续选出修完后该怎么测。");
+                playSound("calm");
+              }
+              return;
+            }
+
+            const message =
+              pick === "same-order"
+                ? "连续改 3 处还不记录风险很高：对了也不知道为什么，下次还会再错。"
+                : "只看最终答案风险很高：中间值才告诉你错在哪一段。";
+            showFeedback(debugFeedback, message, "error");
+            announce(message);
+            playSound("error");
+            return;
+          }
+
+          if (concept === "tieRule") {
+            if (state.tieRuleSolved) return;
+            if (pick === "grouped") {
+              state.tieRuleSolved = true;
+              if (conceptSolved()) state.activeStep = 3;
+              saveState();
+              render();
+              if (conceptSolved()) {
+                reward("任务 3 完成：你知道要用断言思路检验，修完后要回归。现在去做随机小测吧。");
+              } else {
+                announce("回归态度选对了。再把断言思路那一题选对。");
+                playSound("calm");
+              }
+              return;
+            }
+
+            const message =
+              pick === "single-run"
+                ? "修完立刻提交风险很高：没有回归，可能把原来对的样例改坏。"
+                : "只测修好的那一组不够：原来的样例也要再跑，避免修 A 坏 B。";
+            showFeedback(debugFeedback, message, "error");
+            announce(message);
+            playSound("error");
+          }
+        });
+      });
+
+      quizForm.addEventListener("change", (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== "radio") return;
+
+        state.answers[input.name] = Number(input.value);
+        saveState();
+        renderQuiz();
+        announce("答案已记录。三题都选完后可以提交查看解析。");
+        playSound("calm");
+      });
+
+      document.querySelector("#submitQuizButton").addEventListener("click", () => {
+        const questions = currentQuestions();
+        if (questionPool.length === 0 || !questionsAreValid(questions)) {
+          announce("题库暂时不可用或题目无效。本次作答仍保留，请稍后重试。");
+          playSound("error");
+          renderQuiz();
+          return;
+        }
+
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+
+        if (unanswered > 0) {
+          announce(`还有 ${unanswered} 题未选择答案。`);
+          playSound("error");
+          return;
+        }
+
+        state.quizSubmitted = true;
+        const score = quizScore(questions);
+        state.bestScore = Math.max(state.bestScore, score);
+        saveState();
+        render();
+
+        if (score === questions.length) {
+          reward("三题全对！你已经能按证据缩小错误、分段输出，并且知道改完要回归。");
+        } else if (score >= 2) {
+          reward(`答对 ${score}/3，任务完成。回看解析会让记忆更牢。`);
+        } else {
+          announce(`答对 ${score}/3。先看每题解析，再换一套题巩固。`);
+          playSound("error");
+        }
+      });
+
+      document.querySelector("#newQuizButton").addEventListener("click", refreshQuiz);
+
+      soundToggle.addEventListener("click", () => {
+        state.soundEnabled = !state.soundEnabled;
+        saveState();
+        renderSoundToggle();
+        announce(state.soundEnabled ? "音效已开启：之后的操作会有轻提示音。" : "音效已关闭：仍会保留所有视觉反馈。");
+        if (state.soundEnabled) playSound("calm");
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return;
+        if (event.key === "ArrowRight") selectStep(Math.min(3, state.activeStep + 1));
+        if (event.key === "ArrowLeft") selectStep(Math.max(0, state.activeStep - 1));
+      });
+
+      render();
+    </script>
+    <script src="/glossary/faq-panel.js"></script>
+  </body>
+</html>
