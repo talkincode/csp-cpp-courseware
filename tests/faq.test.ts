@@ -195,3 +195,7 @@ test("S4-07 wires graph-traversal FAQ terms into the guided lesson", async () =>
 test("S4-08 wires subtask-and-scoring-strategy FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s4-08", ["subtask", "partial-score", "fallback-solution", "easy-first-order", "complexity-downgrade"]);
 });
+
+test("S5-01 wires timed-solving-flow FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s5-01", ["timed-solving-flow", "problem-timing", "modeling-draft", "sample-check", "reserve-check-time"]);
+});
