@@ -203,3 +203,7 @@ test("S5-01 wires timed-solving-flow FAQ terms into the guided lesson", async ()
 test("S5-02 wires systematic-debug FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s5-02", ["systematic-debug", "minimal-repro", "debug-print", "assert-idea", "diff-check"]);
 });
+
+test("S5-03 wires common-trap FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s5-03", ["overflow", "long-long", "array-init", "out-of-bounds", "precedence", "equal-equal", "clean-output"]);
+});
