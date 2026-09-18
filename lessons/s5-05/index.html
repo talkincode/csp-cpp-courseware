@@ -1,0 +1,2146 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="S5-05 模拟赛一：实现与自测：面向 CSP-J 初学者的互动式 C++ 入门课。"
+    />
+    <title>S5-05 · 排好顺序，测完再交</title>
+    <style>
+      :root {
+        --forest: #0c2620;
+        --forest-soft: #174137;
+        --forest-fog: #35665a;
+        --paper: #f3ead7;
+        --paper-bright: #fffaf0;
+        --paper-shadow: #ddcfb8;
+        --ink: #18372f;
+        --muted: #687a70;
+        --orange: #e6612c;
+        --orange-soft: #f3ba76;
+        --mint: #d7e6cd;
+        --gold: #f8c85f;
+        --success: #278057;
+        --danger: #ad4325;
+        --line: rgba(24, 55, 47, 0.2);
+        --shadow: 0 21px 54px rgba(1, 16, 12, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background: var(--forest);
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 10% 0%, rgba(70, 126, 108, 0.56), transparent 42%),
+          radial-gradient(ellipse at 94% 100%, rgba(230, 97, 44, 0.23), transparent 43%),
+          var(--forest);
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 3px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 19px 0;
+        color: var(--paper);
+      }
+
+      .back-link {
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .back-link:hover {
+        color: var(--orange-soft);
+      }
+
+      .course-marker {
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.73rem;
+        letter-spacing: 0.08em;
+      }
+
+      .sound-toggle {
+        padding: 8px 11px;
+        color: var(--paper);
+        background: transparent;
+        border: 1px solid rgba(255, 250, 240, 0.44);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        transition: background 150ms ease, color 150ms ease;
+      }
+
+      .sound-toggle:hover {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .topbar-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .lesson-shell {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto 34px;
+        overflow: hidden;
+        background: var(--paper);
+        border: 1px solid rgba(255, 250, 240, 0.36);
+        border-radius: 17px;
+        box-shadow: var(--shadow);
+      }
+
+      .lesson-hero {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 252px;
+        gap: 34px;
+        padding: clamp(30px, 7vw, 70px) clamp(24px, 6vw, 68px);
+        background:
+          radial-gradient(circle at 93% 18%, rgba(230, 97, 44, 0.23), transparent 20%),
+          linear-gradient(130deg, var(--paper-bright), var(--paper-shadow));
+      }
+
+      .lesson-hero::after {
+        position: absolute;
+        right: -67px;
+        bottom: -105px;
+        width: 270px;
+        height: 270px;
+        border: 32px solid rgba(53, 102, 90, 0.16);
+        border-radius: 48% 52% 50% 50%;
+        content: "";
+      }
+
+      .lesson-hero h1 {
+        max-width: 690px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(2.35rem, 5.5vw, 5.1rem);
+        line-height: 0.99;
+        letter-spacing: -0.035em;
+      }
+
+      .lesson-hero h1 code {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.75em;
+        letter-spacing: -0.07em;
+      }
+
+      .lesson-hero p {
+        max-width: 580px;
+        margin: 20px 0 0;
+        color: #476056;
+        font-size: 0.98rem;
+        line-height: 1.78;
+      }
+
+      .primary-action,
+      .secondary-action,
+      .flow-action,
+      .answer-option,
+      .step-button {
+        border: 0;
+        border-radius: 5px;
+        transition: transform 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+      }
+
+      .primary-action {
+        margin-top: 25px;
+        padding: 12px 17px;
+        color: var(--forest);
+        background: var(--orange-soft);
+        box-shadow: 4px 5px 0 rgba(230, 97, 44, 0.31);
+        font-weight: 800;
+      }
+
+      .primary-action:hover {
+        background: var(--orange);
+        transform: translateY(-2px);
+      }
+
+      .primary-action:active,
+      .secondary-action:active,
+      .flow-action:active,
+      .answer-option:active {
+        transform: translateY(1px) scale(0.98);
+      }
+
+      .mission-slip {
+        z-index: 1;
+        align-self: end;
+        padding: 21px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 2px solid var(--orange);
+        border-radius: 7px;
+        box-shadow: 9px 10px 0 rgba(230, 97, 44, 0.25);
+        transform: rotate(2.2deg);
+      }
+
+      .mission-slip strong,
+      .mission-slip span {
+        display: block;
+      }
+
+      .mission-slip strong {
+        color: var(--orange-soft);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.3rem;
+      }
+
+      .mission-slip span {
+        margin-top: 10px;
+        color: var(--mint);
+        font-size: 0.78rem;
+        line-height: 1.63;
+      }
+
+      .learning-area {
+        display: grid;
+        grid-template-columns: 244px minmax(0, 1fr);
+        min-height: 750px;
+        background:
+          linear-gradient(rgba(24, 55, 47, 0.055) 1px, transparent 1px) 0 0 / 100% 34px,
+          var(--paper);
+      }
+
+      .task-rail {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+        padding: 31px 18px;
+        color: var(--paper);
+        background:
+          linear-gradient(155deg, rgba(215, 230, 205, 0.13), transparent 45%),
+          var(--forest);
+      }
+
+      .task-rail h2 {
+        margin: 0;
+        color: var(--paper);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.35rem;
+      }
+
+      .task-progress {
+        margin: 2px 0 6px;
+        color: var(--mint);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.77rem;
+      }
+
+      .step-list {
+        display: grid;
+        gap: 9px;
+      }
+
+      .step-button {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+        gap: 9px;
+        width: 100%;
+        padding: 11px 7px;
+        color: var(--mint);
+        background: transparent;
+        border: 1px solid transparent;
+        text-align: left;
+      }
+
+      .step-button:hover:not([aria-disabled="true"]) {
+        background: rgba(255, 250, 240, 0.08);
+        transform: translateX(2px);
+      }
+
+      .step-button[aria-current="step"] {
+        color: var(--paper);
+        background: rgba(230, 97, 44, 0.16);
+        border-color: rgba(230, 97, 44, 0.74);
+      }
+
+      .step-button[aria-disabled="true"] {
+        color: rgba(215, 230, 205, 0.43);
+      }
+
+      .step-number {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.69rem;
+        font-weight: 900;
+      }
+
+      .step-button[aria-current="step"] .step-number {
+        color: var(--paper);
+        background: var(--orange);
+      }
+
+      .step-button[aria-disabled="true"] .step-number {
+        color: rgba(12, 38, 32, 0.6);
+        background: rgba(215, 230, 205, 0.35);
+      }
+
+      .step-copy strong,
+      .step-copy span {
+        display: block;
+      }
+
+      .step-copy strong {
+        font-size: 0.82rem;
+      }
+
+      .step-copy span {
+        margin-top: 3px;
+        font-size: 0.66rem;
+        line-height: 1.35;
+        opacity: 0.83;
+      }
+
+      .rail-note {
+        margin: auto 2px 0;
+        padding-top: 17px;
+        border-top: 1px solid rgba(215, 230, 205, 0.27);
+        color: var(--mint);
+        font-size: 0.73rem;
+        line-height: 1.65;
+      }
+
+      .workbench {
+        min-width: 0;
+        padding: clamp(24px, 4vw, 48px);
+      }
+
+      .step-panel[hidden] {
+        display: none;
+      }
+
+      .step-panel {
+        max-width: 790px;
+        animation: arrive 240ms ease-out both;
+      }
+
+      @keyframes arrive {
+        from {
+          opacity: 0;
+          transform: translateY(7px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .step-panel h2 {
+        max-width: 710px;
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: clamp(1.65rem, 3vw, 2.55rem);
+        line-height: 1.16;
+      }
+
+      .step-lead {
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: #52675d;
+        font-size: 0.93rem;
+        line-height: 1.75;
+      }
+
+      .guided-note {
+        max-width: 690px;
+        margin: 25px 0;
+        padding: 13px 15px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        font-size: 0.84rem;
+        line-height: 1.62;
+      }
+
+      .code-sheet {
+        position: relative;
+        max-width: 705px;
+        overflow: hidden;
+        margin: 26px 0;
+        padding: 21px 0 17px;
+        background:
+          linear-gradient(90deg, transparent 0 47px, rgba(230, 97, 44, 0.22) 47px 48px, transparent 48px),
+          repeating-linear-gradient(to bottom, transparent 0 29px, rgba(24, 55, 47, 0.09) 29px 30px),
+          var(--paper-bright);
+        border: 1px solid var(--line);
+        box-shadow: 6px 8px 0 rgba(24, 55, 47, 0.12);
+      }
+
+      .code-sheet::before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 5px;
+        background: var(--forest-fog);
+        content: "";
+      }
+
+      .code-sheet ol {
+        margin: 0;
+        padding: 0 22px 0 71px;
+      }
+
+      .code-sheet li {
+        min-height: 30px;
+        padding-left: 10px;
+        color: #28483e;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: clamp(0.75rem, 1.7vw, 0.88rem);
+        line-height: 30px;
+        white-space: pre-wrap;
+      }
+
+      .code-sheet li::marker {
+        color: #8f9d93;
+      }
+
+      .code-sheet .highlight {
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.36);
+      }
+
+      .code-sheet .focus-line {
+        color: var(--forest);
+        background: rgba(215, 230, 205, 0.68);
+        font-weight: 800;
+      }
+
+      .inline-code {
+        padding: 1px 4px;
+        color: #9f3b20;
+        background: rgba(243, 186, 118, 0.26);
+        border-radius: 3px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.9em;
+      }
+
+      .callout-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 13px;
+        max-width: 705px;
+        margin: 22px 0;
+      }
+
+      .callout {
+        min-height: 124px;
+        padding: 15px;
+        background: rgba(255, 250, 240, 0.67);
+        border-top: 3px solid var(--forest-fog);
+      }
+
+      .callout strong,
+      .callout span {
+        display: block;
+      }
+
+      .callout strong {
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .callout span {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        line-height: 1.57;
+      }
+
+      .secondary-action {
+        padding: 10px 13px;
+        color: var(--forest);
+        background: transparent;
+        border: 1px solid var(--forest-fog);
+        font-weight: 800;
+      }
+
+      .secondary-action:hover {
+        color: var(--paper);
+        background: var(--forest);
+      }
+
+      .inline-feedback {
+        min-height: 1.8em;
+        max-width: 690px;
+        margin: 14px 0 0;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 700;
+        line-height: 1.6;
+      }
+
+      .inline-feedback[data-tone="error"] {
+        color: var(--danger);
+      }
+
+      .flow-line {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin: 30px 0 20px;
+      }
+
+      .flow-action {
+        position: relative;
+        min-height: 102px;
+        padding: 14px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .flow-action:not(:last-child)::after {
+        position: absolute;
+        top: 50%;
+        right: -13px;
+        z-index: 1;
+        color: var(--orange);
+        content: "→";
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        transform: translateY(-50%);
+      }
+
+      .flow-action:hover:not([aria-disabled="true"]) {
+        background: #fff0d5;
+        transform: translateY(-2px);
+      }
+
+      .flow-action[aria-disabled="true"] {
+        color: #9aa89f;
+        background: rgba(221, 207, 184, 0.53);
+      }
+
+      .flow-action.is-done {
+        color: var(--paper);
+        background: var(--forest-soft);
+        border-color: var(--forest-soft);
+      }
+
+      .flow-index,
+      .flow-action strong,
+      .flow-action span {
+        display: block;
+      }
+
+      .flow-index {
+        color: var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+      }
+
+      .flow-action.is-done .flow-index {
+        color: var(--orange-soft);
+      }
+
+      .flow-action strong {
+        margin-top: 9px;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .flow-action span {
+        margin-top: 7px;
+        font-size: 0.7rem;
+        line-height: 1.43;
+      }
+
+      .terminal {
+        max-width: 705px;
+        min-height: 156px;
+        margin: 19px 0 0;
+        padding: 16px 17px;
+        overflow: auto;
+        color: #d7e6cd;
+        background: #071b16;
+        border-top: 4px solid var(--orange);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.81rem;
+        line-height: 1.65;
+        white-space: pre-wrap;
+      }
+
+      .terminal .terminal-success {
+        color: #a8e1bc;
+      }
+
+      .terminal .faq-term,
+      .terminal .faq-term:hover,
+      .terminal .faq-term[aria-expanded="true"] {
+        padding: 0 6px;
+        color: #0c2620;
+        background: #f8c85f;
+        border-bottom-color: #d9a63a;
+      }
+
+      .terminal .terminal-warm {
+        color: var(--orange-soft);
+      }
+
+      .fix-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 21px;
+      }
+
+      .fix-actions button {
+        min-height: 70px;
+        padding: 10px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .fix-actions button:hover {
+        background: #fff0d5;
+      }
+
+      .fix-actions button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .quiz-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin: 23px 0 18px;
+      }
+
+      .quiz-seed {
+        color: var(--muted);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.71rem;
+      }
+
+      .quiz-form {
+        display: grid;
+        gap: 19px;
+      }
+
+      .question {
+        padding: 20px 0 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .question h3 {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.12rem;
+        line-height: 1.5;
+      }
+
+      .question-objective {
+        margin: 7px 0 0;
+        color: var(--muted);
+        font-size: 0.73rem;
+        line-height: 1.45;
+      }
+
+      .answer-options {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .answer-option {
+        display: grid;
+        grid-template-columns: 20px 26px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        padding: 11px 12px;
+        color: var(--ink);
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+        text-align: left;
+      }
+
+      .answer-option:hover:not(.is-locked) {
+        background: #fff0d5;
+      }
+
+      .answer-option input {
+        width: 17px;
+        height: 17px;
+        margin: 0;
+        accent-color: var(--forest-fog);
+      }
+
+      .answer-letter {
+        display: grid;
+        width: 24px;
+        height: 24px;
+        place-items: center;
+        color: var(--forest);
+        background: var(--mint);
+        border-radius: 50%;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.68rem;
+        font-weight: 900;
+      }
+
+      .answer-option.is-correct {
+        color: #174d35;
+        background: #e2f2e4;
+        border-color: rgba(39, 128, 87, 0.57);
+      }
+
+      .answer-option.is-incorrect {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .answer-option.is-locked {
+        cursor: default;
+      }
+
+      .explanation {
+        margin: 10px 0 0 56px;
+        color: #52675d;
+        font-size: 0.8rem;
+        line-height: 1.62;
+      }
+
+      .quiz-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 11px;
+        margin-top: 23px;
+      }
+
+      .quiz-result {
+        min-height: 1.8em;
+        color: var(--success);
+        font-size: 0.86rem;
+        font-weight: 800;
+        line-height: 1.6;
+      }
+
+      .quiz-result[data-tone="warn"] {
+        color: #91501a;
+      }
+
+      .external-boundary {
+        max-width: 790px;
+        margin: 34px 0 0;
+        padding: 15px 17px;
+        color: #486057;
+        background: rgba(221, 207, 184, 0.55);
+        border-top: 2px solid var(--forest-fog);
+        font-size: 0.8rem;
+        line-height: 1.63;
+      }
+
+      .external-boundary strong {
+        color: var(--forest);
+      }
+
+      .completion-ribbon {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 10;
+        max-width: min(370px, calc(100vw - 40px));
+        padding: 13px 15px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 1px solid var(--orange-soft);
+        border-radius: 6px;
+        box-shadow: 7px 9px 0 rgba(230, 97, 44, 0.28);
+        font-size: 0.82rem;
+        line-height: 1.55;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(12px);
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .completion-ribbon.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .storage-notice {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 9;
+        max-width: min(370px, calc(100vw - 40px));
+        margin: 0;
+        padding: 11px 14px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        box-shadow: 5px 7px 0 rgba(24, 55, 47, 0.14);
+        font-size: 0.76rem;
+        line-height: 1.55;
+      }
+
+      .confetti-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 11;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .confetti {
+        position: absolute;
+        top: 34%;
+        left: 50%;
+        width: 10px;
+        height: 16px;
+        background: var(--confetti-color);
+        clip-path: polygon(50% 0, 100% 28%, 72% 100%, 0 71%, 11% 20%);
+        animation: burst 880ms cubic-bezier(0.14, 0.78, 0.32, 1) forwards;
+        transform: translate(-50%, -50%) rotate(var(--spin));
+      }
+
+      @keyframes burst {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) rotate(var(--spin));
+        }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--drift-x)), calc(-50% + var(--drift-y))) rotate(calc(var(--spin) + 250deg));
+        }
+      }
+
+      .level-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .level-chip {
+        padding: 5px 9px;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .level-chip.is-required {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .level-chip.is-recommended {
+        color: var(--forest);
+        background: var(--mint);
+      }
+
+      .level-chip.is-extra {
+        color: #476056;
+        background: rgba(24, 55, 47, 0.1);
+      }
+
+      .type-grid {
+        display: grid;
+        gap: 12px;
+        max-width: 705px;
+        margin: 22px 0;
+      }
+
+      .type-row {
+        display: grid;
+        grid-template-columns: minmax(140px, 1.3fr) repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        align-items: stretch;
+        padding: 12px;
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+      }
+
+      .type-label strong,
+      .type-label span {
+        display: block;
+      }
+
+      .type-label strong {
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+      }
+
+      .type-label span {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.72rem;
+        line-height: 1.45;
+      }
+
+      .type-row button {
+        min-height: 54px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-weight: 800;
+      }
+
+      .type-row button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .type-row button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .type-row button.is-wrong {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .formula-row {
+        display: grid;
+        grid-template-columns: minmax(140px, 1.1fr) repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        align-items: stretch;
+        padding: 12px;
+        background: rgba(255, 250, 240, 0.62);
+        border: 1px solid var(--line);
+      }
+
+      .formula-row button {
+        min-height: 58px;
+        padding: 8px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.72rem;
+        font-weight: 800;
+        line-height: 1.35;
+        white-space: normal;
+      }
+
+      .formula-row button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .formula-row button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      .formula-row button.is-wrong {
+        color: #742f1d;
+        background: #ffe7dc;
+        border-color: rgba(173, 67, 37, 0.47);
+      }
+
+      .variable-box {
+        max-width: 360px;
+        margin: 22px 0;
+        padding: 18px 20px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 2px solid var(--orange);
+        border-radius: 7px;
+        box-shadow: 9px 10px 0 rgba(230, 97, 44, 0.25);
+      }
+
+      .variable-box .box-kicker {
+        color: var(--orange-soft);
+        font-family: "SF Mono", "Menlo", monospace;
+        font-size: 0.72rem;
+      }
+
+      .variable-box .box-value {
+        margin-top: 8px;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 2rem;
+        line-height: 1.1;
+      }
+
+      .variable-box .box-meta {
+        margin-top: 8px;
+        color: var(--mint);
+        font-size: 0.8rem;
+        line-height: 1.55;
+      }
+
+      .concept-actions {
+        display: grid;
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 18px;
+      }
+
+      .concept-actions button {
+        min-height: 58px;
+        padding: 10px 12px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.84rem;
+        font-weight: 800;
+        line-height: 1.45;
+        text-align: left;
+      }
+
+      .concept-actions button:hover:not(:disabled) {
+        background: #fff0d5;
+      }
+
+      .concept-actions button.is-correct {
+        color: var(--paper);
+        background: var(--success);
+        border-color: var(--success);
+      }
+
+      @media (max-width: 880px) {
+        .lesson-hero {
+          grid-template-columns: 1fr;
+        }
+
+        .mission-slip {
+          width: min(100%, 290px);
+          justify-self: end;
+        }
+
+        .learning-area {
+          grid-template-columns: 1fr;
+        }
+
+        .task-rail {
+          display: grid;
+          grid-template-columns: minmax(150px, 0.45fr) 1fr;
+          gap: 12px 23px;
+          padding: 22px;
+        }
+
+        .step-list {
+          grid-template-columns: repeat(4, minmax(135px, 1fr));
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .step-button {
+          min-width: 135px;
+        }
+
+        .rail-note {
+          grid-column: 1 / -1;
+          margin: 0;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .topbar,
+        .lesson-shell {
+          width: min(100% - 18px, 620px);
+        }
+
+        .topbar {
+          padding: 12px 0;
+        }
+
+        .course-marker {
+          display: none;
+        }
+
+        .lesson-hero {
+          padding: 34px 22px;
+        }
+
+        .lesson-hero h1 {
+          font-size: clamp(2.2rem, 13vw, 3.5rem);
+        }
+
+        .mission-slip {
+          justify-self: stretch;
+          width: auto;
+          transform: rotate(1deg);
+        }
+
+        .task-rail {
+          display: block;
+          padding: 21px 14px;
+        }
+
+        .step-list {
+          margin-top: 14px;
+        }
+
+        .rail-note {
+          display: none;
+        }
+
+        .workbench {
+          padding: 28px 19px;
+        }
+
+        .callout-row,
+        .flow-line,
+        .fix-actions,
+        .type-row,
+        .formula-row {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-action:not(:last-child)::after {
+          top: auto;
+          right: 50%;
+          bottom: -22px;
+          transform: translateX(50%) rotate(90deg);
+        }
+
+        .flow-line {
+          gap: 28px;
+        }
+
+        .code-sheet {
+          margin-right: -5px;
+          margin-left: -5px;
+        }
+
+        .code-sheet ol {
+          padding-right: 9px;
+          padding-left: 62px;
+        }
+
+        .code-sheet li {
+          padding-left: 6px;
+          font-size: 0.7rem;
+        }
+
+        .completion-ribbon,
+        .storage-notice {
+          right: 10px;
+          bottom: 10px;
+          max-width: calc(100vw - 20px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 1ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body data-faq-terms="mock-exam submission-order self-test-table time-log">
+    <header class="topbar">
+      <a class="back-link" href="../../index.html">← 返回课程路线</a>
+      <span class="course-marker">第五阶段 · S5-05 · 55 分钟</span>
+      <div class="topbar-tools">
+        <button id="faqCatalogButton" class="faq-open" type="button">常见问题</button>
+        <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">音效：开</button>
+      </div>
+    </header>
+
+    <main class="lesson-shell">
+      <section class="lesson-hero">
+        <div>
+          <h1>排好提交顺序，测完再交</h1>
+          <p>
+            这一课只练一件事：在一次限时的<button type="button" class="faq-term" data-faq="mock-exam">模拟赛</button>里，先把几道题的<button type="button" class="faq-term" data-faq="submission-order">提交顺序</button>排好，再在写完或放弃每一题之后，用<button type="button" class="faq-term" data-faq="self-test-table">自测表</button>如实记录测过的数据和结果，并靠<button type="button" class="faq-term" data-faq="time-log">时间记录</button>判断要不要换题或提前收尾。必会：能在模拟赛开始前用几分钟浏览全部题目并排出提交顺序（有把握的先做）；能在完成或放弃一题后，在自测表里如实记录测试数据、结果和花费时间。最小示例：本次模拟赛有 3 道题——T1（简单，全对预计 20 分）、T2（中等，部分测试点可拿分）、T3（难题，暂时只会写暴力），总时长 120 分钟。样例追踪：先用 5 分钟浏览三题，标出把握程度，排出顺序 T1 → T2 → T3；写完 T1 后在自测表记录“样例通过、n=0 边界也测过，用时 25 分钟”；转到 T2，写完后自测表记录“样例通过，n=0 尚未测”；剩余时间不够时不硬啃 T3，先回头补测 T2 的边界。边界是不能跳过浏览直接从第一题硬写到底、也不能为了赶时间就跳过自测表不记录。建议掌握：定期查看时间记录，判断是否该换题或提前收尾，先保住已经确定的分数。拓展：某组数据没时间测完时，要在自测表里如实写清没测的原因（例如“时间不够”），供考后复盘，而不是假装测过或直接删掉那一行。这里不会在浏览器里运行 C++。
+          </p>
+          <div class="level-legend" aria-label="必会、建议掌握和拓展">
+            <span class="level-chip is-required">必会：能排出提交顺序；能在自测表里如实记录测试数据、结果和花费时间</span>
+            <span class="level-chip is-recommended">建议掌握：定期查看时间记录，判断是否换题或提前收尾</span>
+            <span class="level-chip is-extra">拓展：如实记录未测完数据的具体原因，供考后复盘，不伪装成已完成</span>
+          </div>
+          <button id="beginButton" class="primary-action" type="button">开始第一个任务</button>
+        </div>
+        <aside class="mission-slip" aria-label="本课任务">
+          <strong>本课任务</strong>
+          <span>能为 3 道题的模拟赛排出提交顺序，用自测表记录每题的测试数据与用时，并在时间不够时如实记录未完成的原因。</span>
+        </aside>
+      </section>
+
+      <section id="learningArea" class="learning-area" aria-label="互动学习区">
+        <nav class="task-rail" aria-label="本课任务步骤">
+          <div>
+            <h2>任务路线</h2>
+            <p id="taskProgress" class="task-progress">0 / 4 已推进</p>
+          </div>
+          <div class="step-list">
+            <button class="step-button" type="button" data-step="0" aria-current="step">
+              <span class="step-number">1</span>
+              <span class="step-copy"><strong>先选出该怎么开始</strong><span>排提交顺序 vs 按题号硬写</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="1" aria-disabled="true">
+              <span class="step-number">2</span>
+              <span class="step-copy"><strong>手动走一遍模拟赛流程</strong><span>浏览排序、自测记录、时间检查</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="2" aria-disabled="true">
+              <span class="step-number">3</span>
+              <span class="step-copy"><strong>时间不够时怎么办</strong><span>建议掌握</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="3" aria-disabled="true">
+              <span class="step-number">4</span>
+              <span class="step-copy"><strong>随机小测</strong><span>检查是否理解</span></span>
+            </button>
+          </div>
+          <p class="rail-note">没有真的卡住：每一步完成后，下一步会自动点亮。你也可以随时回看已经完成的任务。</p>
+        </nav>
+
+        <div class="workbench">
+          <section class="step-panel" data-panel="0">
+            <h2>任务 1：先选出该怎么开始</h2>
+            <p class="step-lead">
+              先确定面对一场多题<button type="button" class="faq-term" data-faq="mock-exam">模拟赛</button>时该先做什么，再确定写完或放弃一题之后该怎么记录。点不认识的词可看基础解释。
+            </p>
+            <p class="guided-note"><strong>必会：</strong>能说出为什么要先排提交顺序；能说出完成或放弃一题后要记录哪些内容。这里不会在浏览器里运行 C++，只练习选择和走过程。</p>
+            <div class="type-grid" aria-label="选择开始策略">
+              <div class="formula-row" data-quantity="startChoice">
+                <p class="type-label"><strong>模拟赛有 T1（简单）、T2（中等）、T3（难题）三道题，总时长 120 分钟。拿到题目后，第一件事应该做什么？</strong><span>先做什么 · 必会</span></p>
+                <button type="button" data-choice="scan-and-order">先用几分钟浏览全部题目，估算把握程度，排出提交顺序：有把握的先做，难题放后面</button>
+                <button type="button" data-choice="start-from-first">不管题目难易，直接从 T1 按顺序写到 T3</button>
+                <button type="button" data-choice="hardest-first">直接挑看起来分值最高、最难的 T3 开始写</button>
+              </div>
+              <div class="formula-row" data-quantity="labelChoice">
+                <p class="type-label"><strong>写完（或决定放弃）一道题之后，应该怎么处理？</strong><span>记录进度 · 必会</span></p>
+                <button type="button" data-choice="log-self-test">在自测表里记录测过哪些数据、结果如何，并记下花费的时间；没测完的也要写清原因</button>
+                <button type="button" data-choice="skip-log">什么都不记录，直接进入下一题，节省时间</button>
+                <button type="button" data-choice="time-only">只记录用了多长时间，不记录测试情况</button>
+              </div>
+            </div>
+            <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="1" hidden>
+            <h2>任务 2：按浏览排序、自测记录、时间检查三步稳步推进</h2>
+            <p class="step-lead">
+              最小示例：模拟赛有 T1（简单）、T2（中等）、T3（难题）三道题，总时长 120 分钟。按顺序点三步：先排<button type="button" class="faq-term" data-faq="submission-order">提交顺序</button>，再写<button type="button" class="faq-term" data-faq="self-test-table">自测表</button>，最后看<button type="button" class="faq-term" data-faq="time-log">时间记录</button>。这里不会在浏览器里运行 C++。
+            </p>
+            <p class="guided-note"><strong>必会：</strong>能解释每一步为什么这样做。边界：不要跳过“排提交顺序”直接从第一题硬写；每写完一题都要在自测表里留下记录，不能空手进入下一题。</p>
+            <div class="code-sheet" aria-label="浏览排序、自测记录、时间检查三步对照">
+              <ol>
+                <li>// 模拟赛：T1（简单）、T2（中等）、T3（难题），总时长 120 分钟</li>
+                <li class="highlight">// 浏览排序：5 分钟内粗看三题，估算把握，排出顺序 T1 → T2 → T3</li>
+                <li class="focus-line">// 自测记录：写完一题就在自测表记“测过的数据 / 结果 / 用时”</li>
+                <li>// 时间检查：定期看时间记录，判断要不要换题或提前收尾</li>
+              </ol>
+            </div>
+            <div class="flow-line" aria-label="按顺序走完三步">
+              <button id="divideButton" class="flow-action" type="button">
+                <span class="flow-index">A</span>
+                <strong>浏览排序：排出提交顺序</strong>
+                <span>5 分钟粗看三题，按把握程度排出 T1 → T2 → T3</span>
+              </button>
+              <button id="remainderButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">B</span>
+                <strong>自测记录：填写自测表</strong>
+                <span>写完 T1 后记下测过的数据、结果和用时 25 分钟</span>
+              </button>
+              <button id="evenButton" class="flow-action" type="button" aria-disabled="true">
+                <span class="flow-index">C</span>
+                <strong>时间检查：查看时间记录</strong>
+                <span>对照总时长 120 分钟，判断是否需要换题或收尾</span>
+              </button>
+            </div>
+            <aside id="variableBox" class="variable-box" aria-live="polite">
+              <div class="box-kicker">当前对照：模拟赛进度</div>
+              <div class="box-value" id="variableValue">还没排出提交顺序</div>
+              <div class="box-meta" id="variableMeta">先点“浏览排序：排出提交顺序”。</div>
+            </aside>
+            <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="2" hidden>
+            <h2>任务 3：时间不够时，怎么记录才诚实</h2>
+            <p class="step-lead">
+              建议掌握：<button type="button" class="faq-term" data-faq="time-log">时间记录</button>显示已经超出计划时长时，要先回头检查前面题目的<button type="button" class="faq-term" data-faq="self-test-table">自测表</button>，把能确定的分数先保住。拓展：某组数据确实没时间测时，要在自测表里如实写清没测的原因，而不是假装测过或直接删掉那一行。
+            </p>
+            <p class="guided-note"><strong>必会 / 建议掌握 / 拓展：</strong>必会是排提交顺序、如实记录自测结果和用时。建议掌握是看时间记录决定要不要换题。如实记录未测完的具体原因是拓展，现在不用当硬门槛。</p>
+            <div class="code-sheet" aria-label="时间不够时的处理对照">
+              <ol>
+                <li>// 时间记录：T3 已经卡了 40 分钟，总时长只剩 20 分钟，且没有其它题可换</li>
+                <li class="highlight">// 正确处理：回头检查 T1、T2 的自测表，先保住已确定的分数</li>
+                <li class="focus-line">// 自测表：T2 有一组边界数据没测，时间不够了</li>
+                <li>// 如实记录：在自测表写“n=0 未测，原因：时间不够”，供考后复盘</li>
+              </ol>
+            </div>
+            <p class="step-lead">先判断时间不够时该怎么办：</p>
+            <div class="concept-actions" aria-label="判断时间不够时的处理方式">
+              <button type="button" data-concept="method" data-pick="test-edge-first">先回头检查前面题目的自测表，看看有没有遗漏，把能确定的分数先保住</button>
+              <button type="button" data-concept="method" data-pick="submit-anyway">继续死磕 T3，不管时间记录，因为感觉快想出来了</button>
+              <button type="button" data-concept="method" data-pick="skip-edge">不管前面的题，直接把 T3 空着交白卷</button>
+            </div>
+            <p class="step-lead">再选出自测表里该怎么记录没测完的数据：</p>
+            <div class="concept-actions" aria-label="选择自测表记录方式">
+              <button type="button" data-concept="tieRule" data-pick="log-honestly">如实记录哪组数据没测、原因是时间不够，方便考后复盘</button>
+              <button type="button" data-concept="tieRule" data-pick="mark-as-passed">为了好看，把没测的那组也标记成通过</button>
+              <button type="button" data-concept="tieRule" data-pick="delete-row">把没测的那一行从自测表里删掉，假装没有这回事</button>
+            </div>
+            <p id="debugFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="3" hidden>
+            <h2>任务 4：随机小测，看看你是否真的懂了</h2>
+            <p class="step-lead">
+              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+            </p>
+            <div class="quiz-tools">
+              <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
+              <span id="quizSeed" class="quiz-seed"></span>
+            </div>
+            <form id="quizForm" class="quiz-form" aria-describedby="quizResult"></form>
+            <div class="quiz-footer">
+              <button id="submitQuizButton" class="primary-action" type="button">提交并查看解析</button>
+              <p id="quizResult" class="quiz-result" role="status" aria-live="polite"></p>
+            </div>
+          </section>
+
+          <aside class="external-boundary">
+            <strong>视频交付边界：</strong>本课的视频课件由仓库外流程制作。本页面只实现互动学习、引导和随机小测，不加载、不生产也不渲染视频资产。
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <p id="storageNotice" class="storage-notice" hidden></p>
+    <div id="completionRibbon" class="completion-ribbon" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+    <script>
+      const storageKey = "csp-cpp-s5-05-progress-v1";
+      const correctTools = { startChoice: "scan-and-order", labelChoice: "log-self-test" };
+      const toolErrorHelp = {
+        startChoice: {
+          "start-from-first": "不管难易直接按题号硬写风险很高：可能把大量时间耗在难题 T3 上，反而丢掉 T1、T2 本能稳拿的分数。",
+          "hardest-first": "先挑最难的题风险很高：如果 T3 卡住太久，会挤掉 T1、T2 本能确定拿到的分数，也没有时间自测。",
+        },
+        labelChoice: {
+          "skip-log": "不记录很危险：没有自测表和用时，之后想换题或复盘时都不知道每题到底测过什么、卡在哪。",
+          "time-only": "只记时间不够：没写测过哪些数据和结果，之后没法判断这道题是不是真的可靠。",
+        },
+      };
+      const questionPool = [
+        {
+          id: "why-order-first",
+          courseId: "S5-05",
+          objective: "能完成一次模拟",
+          difficulty: "required",
+          type: "choice",
+          prompt: "模拟赛有 T1（简单）、T2（中等）、T3（难题）三道题，拿到题目后为什么要先花几分钟排出提交顺序，而不是直接从 T1 硬写到 T3？",
+          options: ["先估算每题把握程度、排出顺序，能优先保住有把握的分数，再用剩下时间攻难题", "排顺序只是走个形式，不影响最后能拿到多少分", "题目本来就是按从易到难排列的，不用再自己排一次", "排顺序会占用做题时间，不如立刻动笔写代码"],
+          answer: 0,
+          explanation: "题目难度和分值不一定完全按顺序排列；先花几分钟估算把握程度，能优先保住确定的分数，再把剩余时间投入难题，而不是被卡在某一题上耽误全局。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "order-example-check",
+          courseId: "S5-05",
+          objective: "能完成一次模拟",
+          difficulty: "required",
+          type: "choice",
+          prompt: "浏览完三题后发现：T1 简单、T2 中等但部分测试点可拿分、T3 暂时只会写暴力。比较合理的提交顺序是什么？",
+          options: ["T1 → T2 → T3：先做最有把握的，再做能拿部分分的，最后用剩余时间攻暴力能覆盖的部分", "T3 → T2 → T1：先攻克最难的，剩下时间再补简单题", "只做 T3，因为它看起来分值可能最高", "随机顺序都一样，反正最后都要交"],
+          answer: 0,
+          explanation: "按把握程度从高到低排列，能优先锁定确定的分数；如果先攻最难的 T3，一旦卡住太久，会连 T1、T2 本能稳拿的分都保不住。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "self-test-table-meaning",
+          courseId: "S5-05",
+          objective: "能保存测试数据",
+          difficulty: "required",
+          type: "choice",
+          prompt: "写完一道题后，自测表里应该记录什么？",
+          options: ["测过哪些数据、每次的结果，以及这道题花费的时间", "只需要记一个“做完了”，具体内容不重要", "只记录代码有多少行，方便统计工作量", "什么都不用记，反正提交后评测机会告诉你结果"],
+          answer: 0,
+          explanation: "自测表是留给自己的记录：测过哪些数据、结果如何、花了多久，这些信息能帮你判断这道题是不是真的可靠，也方便之后复盘。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "skip-self-test-risk",
+          courseId: "S5-05",
+          objective: "能保存测试数据",
+          difficulty: "required",
+          type: "choice",
+          prompt: "如果写完一题就直接跳到下一题，完全不记自测表，可能带来什么风险？",
+          options: ["之后想换题或复盘时，记不清这道题到底测过什么数据、结果是否可靠", "没有任何风险，反正代码已经写完了", "评测机会因为没记自测表而拒绝评分", "自测表只是给老师看的，不影响自己做题"],
+          answer: 0,
+          explanation: "自测表是给自己看的记录：不写的话，一旦时间紧张需要回头检查或换题，就很难想起这道题测过哪些数据、是不是真的可靠。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "time-log-purpose",
+          courseId: "S5-05",
+          objective: "能完成一次模拟",
+          difficulty: "required",
+          type: "choice",
+          prompt: "总时长 120 分钟的模拟赛里，为什么要定期查看时间记录？",
+          options: ["能判断某道题是否已经超出计划时长，从而决定要不要先换题或提前收尾", "时间记录只是用来估算平均每题用了多久，没有实际用途", "只要还没到 120 分钟，就不用管每道题各花了多少时间", "时间记录是给监考老师看的，和自己做题无关"],
+          answer: 0,
+          explanation: "定期对照时间记录，能及时发现某道题是否已经卡得太久；如果超出计划太多，就该先回头保住其它题的分数，而不是一直耗在一道题上。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "incomplete-reason-honesty",
+          courseId: "S5-05",
+          objective: "能记录未完成原因",
+          difficulty: "recommended",
+          type: "choice",
+          prompt: "T2 有一组边界数据没时间测，应该在自测表里怎么记录？",
+          options: ["如实写清“这组数据未测，原因是时间不够”，方便考后复盘", "把这组数据也标记成“已测试通过”，让记录看起来更完整", "直接把这一行从自测表里删掉，当作没发生过", "不用记录原因，反正下次模拟赛不会遇到同样的情况"],
+          answer: 0,
+          explanation: "如实记录未测完的具体原因，能在考后复盘时看清楚是时间分配的问题还是题目本身太难；伪装成已测试或删除记录都会让复盘失去意义。",
+          source: "course-plan / 自编",
+        },
+        {
+          id: "zero-progress-risk",
+          courseId: "S5-05",
+          objective: "能完成一次模拟",
+          difficulty: "recommended",
+          type: "choice",
+          prompt: "如果整场模拟赛都在纠结“先做哪题最优”，直到结束都没有提交任何一题，最后能拿到多少分？",
+          options: ["0 分，因为没有提交任何能运行的程序", "至少能拿到思路清晰的印象分", "和认真做完的同学分数一样，因为大家都很努力", "分数由自己估算决定，和有没有提交无关"],
+          answer: 0,
+          explanation: "评测只根据实际提交并运行的程序判分；提交顺序、自测表和时间记录都是为了帮你更快写出并交上可运行的程序，而不是替代真正的提交。",
+          source: "course-plan / 自编",
+        },
+      ];
+
+      const defaultState = {
+        activeStep: 0,
+        toolChoices: {},
+        toolsMatched: false,
+        stateDefined: false,
+        initialized: false,
+        transitioned: false,
+        methodSolved: false,
+        tieRuleSolved: false,
+        quizSeed: createSeed(),
+        answers: {},
+        quizSubmitted: false,
+        bestScore: 0,
+        soundEnabled: true,
+      };
+
+      let storageAvailable = true;
+      let state = loadState();
+      let notificationTimer;
+      let audioContext;
+
+      const panels = [...document.querySelectorAll(".step-panel")];
+      const stepButtons = [...document.querySelectorAll("[data-step]")];
+      const taskProgress = document.querySelector("#taskProgress");
+      const sourceFeedback = document.querySelector("#sourceFeedback");
+      const flowFeedback = document.querySelector("#flowFeedback");
+      const debugFeedback = document.querySelector("#debugFeedback");
+      const variableValue = document.querySelector("#variableValue");
+      const variableMeta = document.querySelector("#variableMeta");
+      const quizForm = document.querySelector("#quizForm");
+      const quizResult = document.querySelector("#quizResult");
+      const completionRibbon = document.querySelector("#completionRibbon");
+      const storageNotice = document.querySelector("#storageNotice");
+      const confettiLayer = document.querySelector("#confettiLayer");
+      const soundToggle = document.querySelector("#soundToggle");
+
+      function createSeed() {
+        const values = new Uint32Array(1);
+        crypto.getRandomValues(values);
+        return values[0];
+      }
+
+      function loadState() {
+        try {
+          const stored = JSON.parse(window.localStorage.getItem(storageKey) ?? "null");
+          if (!stored || typeof stored !== "object" || Array.isArray(stored)) return { ...defaultState };
+
+          return {
+            ...defaultState,
+            activeStep: Number.isInteger(stored.activeStep) ? stored.activeStep : 0,
+            toolChoices:
+              stored.toolChoices && typeof stored.toolChoices === "object" && !Array.isArray(stored.toolChoices)
+                ? stored.toolChoices
+                : {},
+            toolsMatched: stored.toolsMatched === true,
+            stateDefined: stored.stateDefined === true,
+            initialized: stored.initialized === true,
+            transitioned: stored.transitioned === true,
+            methodSolved: stored.methodSolved === true,
+            tieRuleSolved: stored.tieRuleSolved === true,
+            quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
+            answers: stored.answers && typeof stored.answers === "object" && !Array.isArray(stored.answers) ? stored.answers : {},
+            quizSubmitted: stored.quizSubmitted === true,
+            bestScore: Number.isInteger(stored.bestScore) ? stored.bestScore : 0,
+            soundEnabled: stored.soundEnabled !== false,
+          };
+        } catch {
+          storageAvailable = false;
+          return { ...defaultState };
+        }
+      }
+
+      function saveState() {
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(state));
+          return true;
+        } catch {
+          storageAvailable = false;
+          return false;
+        }
+      }
+
+      function questionSetForSeed(seed) {
+        const random = seededRandom(seed);
+        const shuffled = [...questionPool];
+
+        for (let index = shuffled.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(random() * (index + 1));
+          [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+        }
+
+        return shuffled.slice(0, 3);
+      }
+
+      function currentQuestions() {
+        return questionSetForSeed(state.quizSeed);
+      }
+
+      function seededRandom(seed) {
+        let value = seed >>> 0;
+        return () => {
+          value += 0x6d2b79f5;
+          let result = value;
+          result = Math.imul(result ^ (result >>> 15), result | 1);
+          result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
+          return ((result ^ (result >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, (character) => {
+          const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
+          return entities[character];
+        });
+      }
+
+      function conceptSolved() {
+        return state.methodSolved && state.tieRuleSolved;
+      }
+
+      function unlockedStepCount() {
+        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+      }
+
+      function isStepUnlocked(step) {
+        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+      }
+
+      function clampActiveStep() {
+        while (state.activeStep > 0 && !isStepUnlocked(state.activeStep)) {
+          state.activeStep -= 1;
+        }
+      }
+
+      function showFeedback(element, message, tone = "success") {
+        element.textContent = message;
+        element.dataset.tone = tone === "error" ? "error" : "";
+      }
+
+      function announce(message) {
+        completionRibbon.textContent = message;
+        completionRibbon.classList.add("is-visible");
+        window.clearTimeout(notificationTimer);
+        notificationTimer = window.setTimeout(() => {
+          completionRibbon.classList.remove("is-visible");
+        }, 3200);
+      }
+
+      function updateStorageNotice() {
+        storageNotice.hidden = storageAvailable;
+        storageNotice.textContent = "浏览器没有允许保存学习记录：本次互动仍可继续，但刷新页面后不会恢复进度。";
+      }
+
+      function playSound(kind) {
+        if (!state.soundEnabled) return;
+
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextConstructor) {
+          state.soundEnabled = false;
+          renderSoundToggle();
+          announce("当前浏览器不支持音效，已自动关闭音效。");
+          return;
+        }
+
+        audioContext ??= new AudioContextConstructor();
+        const context = audioContext;
+        const notes = kind === "reward" ? [523.25, 659.25, 783.99] : kind === "error" ? [180] : [392];
+
+        if (context.state === "suspended") {
+          void context.resume().catch(() => {
+            announce("浏览器暂未允许播放音效；你仍可以继续学习。");
+          });
+        }
+
+        notes.forEach((frequency, index) => {
+          const oscillator = context.createOscillator();
+          const gain = context.createGain();
+          const startAt = context.currentTime + index * 0.08;
+
+          oscillator.type = kind === "reward" ? "triangle" : "sine";
+          oscillator.frequency.setValueAtTime(frequency, startAt);
+          gain.gain.setValueAtTime(0.0001, startAt);
+          gain.gain.exponentialRampToValueAtTime(0.08, startAt + 0.012);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.14);
+          oscillator.connect(gain).connect(context.destination);
+          oscillator.start(startAt);
+          oscillator.stop(startAt + 0.15);
+        });
+      }
+
+      function reward(message) {
+        announce(message);
+        playSound("reward");
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        const colors = ["#e6612c", "#f8c85f", "#d7e6cd", "#35665a"];
+        for (let index = 0; index < 20; index += 1) {
+          const particle = document.createElement("span");
+          particle.className = "confetti";
+          particle.style.setProperty("--confetti-color", colors[index % colors.length]);
+          particle.style.setProperty("--drift-x", `${Math.round((Math.random() - 0.5) * 360)}px`);
+          particle.style.setProperty("--drift-y", `${Math.round((Math.random() - 0.2) * 300)}px`);
+          particle.style.setProperty("--spin", `${Math.round(Math.random() * 240)}deg`);
+          confettiLayer.append(particle);
+          particle.addEventListener("animationend", () => particle.remove(), { once: true });
+        }
+      }
+
+      function renderSoundToggle() {
+        soundToggle.textContent = state.soundEnabled ? "音效：开" : "音效：关";
+        soundToggle.setAttribute("aria-pressed", String(state.soundEnabled));
+      }
+
+      function renderSteps() {
+        clampActiveStep();
+        taskProgress.textContent = `${unlockedStepCount()} / 4 已推进`;
+
+        stepButtons.forEach((button) => {
+          const step = Number(button.dataset.step);
+          button.setAttribute("aria-disabled", String(!isStepUnlocked(step)));
+          if (step === state.activeStep) button.setAttribute("aria-current", "step");
+          else button.removeAttribute("aria-current");
+        });
+
+        panels.forEach((panel) => {
+          panel.hidden = Number(panel.dataset.panel) !== state.activeStep;
+        });
+      }
+
+      function renderSourceTask() {
+        document.querySelectorAll("[data-quantity]").forEach((row) => {
+          const quantity = row.dataset.quantity;
+          const selected = state.toolChoices[quantity];
+          row.querySelectorAll("[data-choice]").forEach((button) => {
+            const choice = button.dataset.choice;
+            button.disabled = state.toolsMatched;
+            button.classList.toggle("is-correct", selected === choice && choice === correctTools[quantity]);
+            button.classList.toggle("is-wrong", selected === choice && choice !== correctTools[quantity]);
+          });
+        });
+
+        if (state.toolsMatched) {
+          showFeedback(sourceFeedback, "两项都选对了：先排出提交顺序，再在自测表里如实记录测试数据和用时。下一步已经点亮。");
+        }
+      }
+
+      function renderFlowTask() {
+        const divideButton = document.querySelector("#divideButton");
+        const remainderButton = document.querySelector("#remainderButton");
+        const evenButton = document.querySelector("#evenButton");
+
+        divideButton.setAttribute("aria-disabled", String(state.stateDefined));
+        remainderButton.setAttribute("aria-disabled", String(!state.stateDefined || state.initialized));
+        evenButton.setAttribute("aria-disabled", String(!state.initialized || state.transitioned));
+        divideButton.classList.toggle("is-done", state.stateDefined);
+        remainderButton.classList.toggle("is-done", state.initialized);
+        evenButton.classList.toggle("is-done", state.transitioned);
+
+        if (state.transitioned) {
+          variableValue.textContent = "已查看时间记录：对照 120 分钟总时长，进度正常";
+          variableMeta.textContent = "三步走完。提交顺序、自测表、时间记录都已就位。";
+          showFeedback(flowFeedback, "你已经按顺序走完。下一步看看时间不够时该怎么处理。");
+        } else if (state.initialized) {
+          variableValue.textContent = "已填写自测表：T1 样例通过、n=0 边界也测过，用时 25 分钟";
+          variableMeta.textContent = "自测记录写清了。下一步点“时间检查：查看时间记录”。";
+          showFeedback(flowFeedback, "第二步走完。下一步点“时间检查：查看时间记录”，不要跳过。");
+        } else if (state.stateDefined) {
+          variableValue.textContent = "已排出提交顺序：T1 → T2 → T3";
+          variableMeta.textContent = "提交顺序排好了。下一步点“自测记录：填写自测表”。";
+          showFeedback(flowFeedback, "第一步走完。下一步点“自测记录：填写自测表”，不要跳到结束。");
+        } else {
+          variableValue.textContent = "还没排出提交顺序";
+          variableMeta.textContent = "先点“浏览排序：排出提交顺序”。";
+          flowFeedback.textContent = "";
+        }
+      }
+
+      function renderDebugTask() {
+        document.querySelectorAll("[data-concept='method']").forEach((button) => {
+          button.disabled = state.methodSolved;
+          button.classList.toggle("is-correct", state.methodSolved && button.dataset.pick === "test-edge-first");
+        });
+        document.querySelectorAll("[data-concept='tieRule']").forEach((button) => {
+          button.disabled = state.tieRuleSolved;
+          button.classList.toggle("is-correct", state.tieRuleSolved && button.dataset.pick === "log-honestly");
+        });
+
+        if (conceptSolved()) {
+          showFeedback(debugFeedback, "对：时间不够时先回头保住已确定的分数，也知道要在自测表里如实记录未测完的原因。下一步去做随机小测吧。");
+        } else if (state.methodSolved) {
+          showFeedback(debugFeedback, "时间不够时的处理选对了。继续选出自测表该怎么记录未测完的数据。");
+        } else {
+          debugFeedback.textContent = "";
+          debugFeedback.dataset.tone = "";
+        }
+      }
+
+      function questionsAreValid(questions) {
+        return (
+          Array.isArray(questions) &&
+          questions.length > 0 &&
+          questions.every(
+            (question) =>
+              question &&
+              typeof question.prompt === "string" &&
+              question.type === "choice" &&
+              Array.isArray(question.options) &&
+              question.options.length >= 2 &&
+              Number.isInteger(question.answer) &&
+              question.options[question.answer] != null,
+          )
+        );
+      }
+
+      function renderQuiz() {
+        const questions = currentQuestions();
+        const letters = ["A", "B", "C", "D"];
+        document.querySelector("#quizSeed").textContent = `本次试卷标识：${state.quizSeed}`;
+        const submitButton = document.querySelector("#submitQuizButton");
+
+        if (questionPool.length === 0 || !questionsAreValid(questions)) {
+          quizForm.innerHTML =
+            '<p class="inline-feedback" data-tone="error">题库暂时不可用或题目无效。本次学习进度仍保留，请稍后重试或换一套题。</p>';
+          submitButton.disabled = true;
+          quizResult.dataset.tone = "warn";
+          quizResult.textContent = "无法组卷：请检查题库后重试。进度没有丢失。";
+          return;
+        }
+
+        quizForm.innerHTML = questions
+          .map((question, questionIndex) => {
+            const selected = Number(state.answers[question.id]);
+            const options = question.options
+              .map((option, optionIndex) => {
+                const isCorrect = state.quizSubmitted && optionIndex === question.answer;
+                const isIncorrect = state.quizSubmitted && selected === optionIndex && optionIndex !== question.answer;
+                const classes = [
+                  "answer-option",
+                  state.quizSubmitted ? "is-locked" : "",
+                  isCorrect ? "is-correct" : "",
+                  isIncorrect ? "is-incorrect" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+
+                return `
+                  <label class="${classes}">
+                    <input
+                      type="radio"
+                      name="${question.id}"
+                      value="${optionIndex}"
+                      ${selected === optionIndex ? "checked" : ""}
+                      ${state.quizSubmitted ? "disabled" : ""}
+                    />
+                    <span class="answer-letter">${letters[optionIndex]}</span>
+                    <span>${escapeHtml(option)}</span>
+                  </label>
+                `;
+              })
+              .join("");
+
+            return `
+              <section class="question">
+                <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
+                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <div class="answer-options">${options}</div>
+                ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
+              </section>
+            `;
+          })
+          .join("");
+
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+        submitButton.disabled = state.quizSubmitted || unanswered > 0;
+        submitButton.textContent = state.quizSubmitted ? "本套题已提交" : unanswered > 0 ? `还差 ${unanswered} 题` : "提交并查看解析";
+
+        if (state.quizSubmitted) {
+          const score = quizScore(questions);
+          const passed = score >= 2;
+          quizResult.dataset.tone = passed ? "" : "warn";
+          quizResult.textContent = passed
+            ? `本次答对 ${score}/3。很好，已经能排出提交顺序、用自测表记录测试数据，并知道要如实记录未完成原因。`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+        } else {
+          quizResult.textContent = "";
+          quizResult.dataset.tone = "";
+        }
+      }
+
+      function quizScore(questions = currentQuestions()) {
+        return questions.reduce((score, question) => score + (Number(state.answers[question.id]) === question.answer ? 1 : 0), 0);
+      }
+
+      function render() {
+        renderSteps();
+        renderSourceTask();
+        renderFlowTask();
+        renderDebugTask();
+        renderQuiz();
+        renderSoundToggle();
+        updateStorageNotice();
+      }
+
+      function selectStep(step) {
+        if (!isStepUnlocked(step)) {
+          announce("先完成前一个任务，下一步就会自动点亮。");
+          playSound("error");
+          return;
+        }
+
+        state.activeStep = step;
+        saveState();
+        render();
+        document.querySelector(`[data-panel="${step}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function refreshQuiz() {
+        const currentIds = currentQuestions()
+          .map((question) => question.id)
+          .sort()
+          .join(",");
+        let nextSeed = createSeed();
+
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          const nextIds = questionSetForSeed(nextSeed)
+            .map((question) => question.id)
+            .sort()
+            .join(",");
+          if (nextIds !== currentIds) break;
+          nextSeed = (nextSeed + 0x9e3779b9) >>> 0;
+        }
+
+        state.quizSeed = nextSeed;
+        state.answers = {};
+        state.quizSubmitted = false;
+        saveState();
+        renderQuiz();
+        announce("已换一套随机题。请先独立作答，再查看解析。");
+        playSound("calm");
+      }
+
+      document.querySelector("#beginButton").addEventListener("click", () => {
+        document.querySelector("#learningArea").scrollIntoView({ behavior: "smooth", block: "start" });
+        announce("从任务 1 开始：先确定拿到题目后该先做什么，再确定完成一题后该怎么记录。");
+      });
+
+      stepButtons.forEach((button) => {
+        button.addEventListener("click", () => selectStep(Number(button.dataset.step)));
+      });
+
+      document.querySelectorAll("[data-quantity] [data-choice]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (state.toolsMatched) return;
+
+          const row = button.closest("[data-quantity]");
+          const quantity = row?.dataset.quantity;
+          const choice = button.dataset.choice;
+          if (!quantity || !choice) return;
+
+          state.toolChoices[quantity] = choice;
+          const expected = correctTools[quantity];
+
+          if (choice !== expected) {
+            showFeedback(sourceFeedback, toolErrorHelp[quantity][choice], "error");
+            announce(toolErrorHelp[quantity][choice]);
+            playSound("error");
+            saveState();
+            renderSourceTask();
+            return;
+          }
+
+          const complete = Object.keys(correctTools).every((key) => state.toolChoices[key] === correctTools[key]);
+          if (complete) {
+            state.toolsMatched = true;
+            state.activeStep = 1;
+            saveState();
+            render();
+            reward("任务 1 完成：先排出提交顺序，再在自测表里如实记录测试数据和用时。下一步手动走一遍模拟赛流程。");
+            return;
+          }
+
+          saveState();
+          renderSourceTask();
+          showFeedback(sourceFeedback, "这一项选对了。继续给剩下的现象做选择。");
+          playSound("calm");
+        });
+      });
+
+      document.querySelector("#divideButton").addEventListener("click", () => {
+        if (state.stateDefined) {
+          announce("第一步已经排好提交顺序，下一步填写自测表。");
+          return;
+        }
+
+        state.stateDefined = true;
+        saveState();
+        renderFlowTask();
+        announce("已排出提交顺序：T1 → T2 → T3。下一步必须先在自测表里记录测试情况。");
+        playSound("calm");
+      });
+
+      document.querySelector("#remainderButton").addEventListener("click", () => {
+        if (!state.stateDefined) {
+          announce("先排出提交顺序，再填写自测表。不要跳步。");
+          playSound("error");
+          return;
+        }
+        if (state.initialized) {
+          announce("第二步已经填写好自测表，下一步查看时间记录。");
+          return;
+        }
+
+        state.initialized = true;
+        saveState();
+        renderFlowTask();
+        announce("已填写自测表：T1 样例和 n=0 边界都测过，用时 25 分钟。下一步查看时间记录，判断是否需要换题。");
+        playSound("calm");
+      });
+
+      document.querySelector("#evenButton").addEventListener("click", () => {
+        if (!state.initialized) {
+          announce("先填写自测表，再查看时间记录。不要跳过中间步。");
+          playSound("error");
+          return;
+        }
+        if (state.transitioned) {
+          announce("这三步已经走完，可以进入下一任务。");
+          return;
+        }
+
+        state.transitioned = true;
+        state.activeStep = 2;
+        saveState();
+        render();
+        reward("任务 2 完成：提交顺序、自测记录、时间检查都走完了。下一步看看时间不够时该怎么处理。");
+      });
+
+      document.querySelectorAll("[data-concept]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const concept = button.dataset.concept;
+          const pick = button.dataset.pick;
+
+          if (concept === "method") {
+            if (state.methodSolved) return;
+            if (pick === "test-edge-first") {
+              state.methodSolved = true;
+              saveState();
+              render();
+              if (conceptSolved()) {
+                state.activeStep = 3;
+                saveState();
+                render();
+                reward("任务 3 完成：时间不够时你会先保住已确定的分数，也知道要如实记录未完成的原因。现在去做随机小测吧。");
+              } else {
+                announce("时间不够时的处理选对了。继续选出自测表该怎么记录未测完的数据。");
+                playSound("calm");
+              }
+              return;
+            }
+
+            const message =
+              pick === "submit-anyway"
+                ? "继续死磕一道难题风险很高：一旦时间记录显示已经超出计划太多，很可能连前面本能保住的分数都保不住。"
+                : "直接放弃前面的题也不对：应该先回头检查已经写完的题的自测表，把能确定的分数先保住，而不是整场交白卷。";
+            showFeedback(debugFeedback, message, "error");
+            announce(message);
+            playSound("error");
+            return;
+          }
+
+          if (concept === "tieRule") {
+            if (state.tieRuleSolved) return;
+            if (pick === "log-honestly") {
+              state.tieRuleSolved = true;
+              if (conceptSolved()) state.activeStep = 3;
+              saveState();
+              render();
+              if (conceptSolved()) {
+                reward("任务 3 完成：时间不够时你会先保住已确定的分数，也知道要如实记录未完成的原因。现在去做随机小测吧。");
+              } else {
+                announce("自测表记录方式选对了。再把时间不够时的处理那一题选对。");
+                playSound("calm");
+              }
+              return;
+            }
+
+            const message =
+              pick === "mark-as-passed"
+                ? "把没测的数据标记成通过并不诚实：考后复盘时会误以为这道题已经完全验证过，反而找不到真正的问题。"
+                : "直接删掉那一行也不对：应该保留“未测、原因是时间不够”的记录，供考后复盘，而不是假装没发生过。";
+            showFeedback(debugFeedback, message, "error");
+            announce(message);
+            playSound("error");
+          }
+        });
+      });
+
+      quizForm.addEventListener("change", (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== "radio") return;
+
+        state.answers[input.name] = Number(input.value);
+        saveState();
+        renderQuiz();
+        announce("答案已记录。三题都选完后可以提交查看解析。");
+        playSound("calm");
+      });
+
+      document.querySelector("#submitQuizButton").addEventListener("click", () => {
+        const questions = currentQuestions();
+        if (questionPool.length === 0 || !questionsAreValid(questions)) {
+          announce("题库暂时不可用或题目无效。本次作答仍保留，请稍后重试。");
+          playSound("error");
+          renderQuiz();
+          return;
+        }
+
+        const unanswered = questions.filter((question) => !Number.isInteger(Number(state.answers[question.id]))).length;
+
+        if (unanswered > 0) {
+          announce(`还有 ${unanswered} 题未选择答案。`);
+          playSound("error");
+          return;
+        }
+
+        state.quizSubmitted = true;
+        const score = quizScore(questions);
+        state.bestScore = Math.max(state.bestScore, score);
+        saveState();
+        render();
+
+        if (score === questions.length) {
+          reward("三题全对！你已经能排出提交顺序、用自测表记录测试数据，也知道要如实记录未完成原因。");
+        } else if (score >= 2) {
+          reward(`答对 ${score}/3，任务完成。回看解析会让记忆更牢。`);
+        } else {
+          announce(`答对 ${score}/3。先看每题解析，再换一套题巩固。`);
+          playSound("error");
+        }
+      });
+
+      document.querySelector("#newQuizButton").addEventListener("click", refreshQuiz);
+
+      soundToggle.addEventListener("click", () => {
+        state.soundEnabled = !state.soundEnabled;
+        saveState();
+        renderSoundToggle();
+        announce(state.soundEnabled ? "音效已开启：之后的操作会有轻提示音。" : "音效已关闭：仍会保留所有视觉反馈。");
+        if (state.soundEnabled) playSound("calm");
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return;
+        if (event.key === "ArrowRight") selectStep(Math.min(3, state.activeStep + 1));
+        if (event.key === "ArrowLeft") selectStep(Math.max(0, state.activeStep - 1));
+      });
+
+      render();
+    </script>
+    <script src="/glossary/faq-panel.js"></script>
+  </body>
+</html>
