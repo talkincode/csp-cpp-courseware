@@ -2113,6 +2113,76 @@
           "url": "https://oi-wiki.org/basic/complexity/"
         }
       ]
+    },
+    {
+      "id": "timed-solving-flow",
+      "term": "限时解题流程",
+      "aliases": ["timed solving flow", "流程卡"],
+      "summary": "一套固定的读题到提交顺序，用来在比赛时间里稳住手脚。",
+      "answer": "限时解题流程（timed solving flow）是一套固定顺序：审题计时、建模草稿、编码、对照样例、提交前检查。比赛时间有限，先把顺序写在流程卡上，比拿到题就直接敲代码更稳，也不容易漏掉样例。",
+      "remember": "先有顺序，再动手写代码。",
+      "links": [
+        {
+          "title": "竞赛题面与做题（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "problem-timing",
+      "term": "审题计时",
+      "aliases": ["read and time", "圈范围"],
+      "summary": "拿到题目后先看清范围和样例，并记下这道题大概花多少分钟。",
+      "answer": "审题计时是指拿到题目后先看清数据范围、输入输出和样例，并记下这道题大概花多少分钟。不先计时，后面很容易写到一半才发现时间不够，连样例都来不及对照。",
+      "remember": "先看清题，再决定花多少时间。",
+      "links": [
+        {
+          "title": "题面阅读（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "modeling-draft",
+      "term": "建模草稿",
+      "aliases": ["draft before coding", "先写打算"],
+      "summary": "动笔写代码前，先写下已知条件、要求和打算怎么做。",
+      "answer": "建模草稿是写代码前在纸上或注释里写下已知条件、要求和打算怎么做。哪怕只有三行，也能避免边写边改、最后连自己都说不清程序在算什么。这是建议掌握的习惯，不是新算法。",
+      "remember": "先写打算，再写代码。",
+      "links": [
+        {
+          "title": "题意转化（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "sample-check",
+      "term": "样例检查",
+      "aliases": ["sample check", "对照样例"],
+      "summary": "程序写完后，先用题目给出的样例输入核对输出。",
+      "answer": "样例检查是指程序写完后，先用题目给出的样例输入跑一遍，看输出是否和样例完全一致。样例对了不代表满分，但样例都没对就提交，几乎一定拿不到分。所以不能跳过样例。",
+      "remember": "样例没对，先别提交。",
+      "links": [
+        {
+          "title": "样例与自测（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "reserve-check-time",
+      "term": "预留检查时间",
+      "aliases": ["leave time to check", "提交前检查"],
+      "summary": "比赛结束前留出几分钟，重新对照样例并看边界。",
+      "answer": "预留检查时间是指在比赛结束前留出几分钟，重新对照样例、看看有没有忘记的边界。时间再紧也不该把最后一秒都用来写新代码，否则容易把已经能跑的程序改坏。",
+      "remember": "交卷前留几分钟检查。",
+      "links": [
+        {
+          "title": "竞赛策略（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
     }
   ]
 }
