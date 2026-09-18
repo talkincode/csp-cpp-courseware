@@ -207,3 +207,7 @@ test("S5-02 wires systematic-debug FAQ terms into the guided lesson", async () =
 test("S5-03 wires common-trap FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s5-03", ["overflow", "long-long", "array-init", "out-of-bounds", "precedence", "equal-equal", "clean-output"]);
 });
+
+test("S5-04 wires 80-percent-strategy FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s5-04", ["brute-force-baseline", "subtask", "special-case", "complexity-upgrade", "pseudo-optimization", "diff-check"]);
+});

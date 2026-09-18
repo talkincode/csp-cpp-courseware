@@ -2239,6 +2239,62 @@
           "url": "https://oi-wiki.org/contest/problems/"
         }
       ]
+    },
+    {
+      "id": "brute-force-baseline",
+      "term": "暴力基线",
+      "aliases": ["brute-force baseline", "暴力解法", "基线"],
+      "summary": "先写一份思路直接、复杂度较高但正确性有把握的解法，用来验证和对拍。",
+      "answer": "暴力基线是指遇到难题时，先写一份思路最直接、复杂度可能较高（比如逐个枚举）但正确性有把握的解法。它不追求通过所有数据范围，而是先在小数据上验证“思路是对的”，之后既能保住能覆盖的分数，也能在升级算法时用来对拍验证。",
+      "remember": "想不出最优解时，先写一份能验证的暴力基线。",
+      "links": [
+        {
+          "title": "从暴力到优化（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/complexity/"
+        }
+      ]
+    },
+    {
+      "id": "special-case",
+      "term": "特殊情况",
+      "aliases": ["special case", "边界情况"],
+      "summary": "题目里容易被忽略、需要单独处理的输入，例如区间为空。",
+      "answer": "特殊情况是指题目输入里容易被忽略、和一般情况处理方式不同的数据，例如区间求和里 l 大于 r（空区间）、l 等于 r（单个元素）。写完基线后要主动标注这些情况，升级算法时要重点验证它们有没有被正确处理。",
+      "remember": "先想清楚哪些输入是特殊情况，再动手升级算法。",
+      "links": [
+        {
+          "title": "边界数据设计（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "complexity-upgrade",
+      "term": "复杂度升级",
+      "aliases": ["complexity upgrade", "算法升级"],
+      "summary": "在已验证正确的基线上，逐步换成复杂度更低的写法，同时保证结果不变。",
+      "answer": "复杂度升级是指在已经验证正确的暴力基线基础上，逐步替换成复杂度更低、运行更快的算法（例如把逐次累加的区间求和换成前缀和），同时通过对拍等方式确认新写法的输出和基线完全一致，不能只图“看起来更快”而丢掉正确性。",
+      "remember": "先有正确的基线，再升级复杂度，别跳过验证这一步。",
+      "links": [
+        {
+          "title": "前缀和与复杂度（OI Wiki）",
+          "url": "https://oi-wiki.org/basic/prefix-sum/"
+        }
+      ]
+    },
+    {
+      "id": "pseudo-optimization",
+      "term": "伪优化",
+      "aliases": ["pseudo optimization", "假优化"],
+      "summary": "看起来精简或更快，实际上悄悄改变了程序结果的错误“优化”。",
+      "answer": "伪优化是指某处修改看起来让代码更短、更快，但实际上悄悄改变了程序的输出结果，例如把区间和公式 sum[r]-sum[l-1] 错写成 sum[r]-sum[l]。这不是真正的性能优化，而是引入了新的错误。升级算法后一定要用基线做对拍，才能及时发现伪优化。",
+      "remember": "变快了不代表变对了，升级后要用基线对拍确认。",
+      "links": [
+        {
+          "title": "常见实现陷阱（OI Wiki）",
+          "url": "https://oi-wiki.org/lang-basic/"
+        }
+      ]
     }
   ]
 }
