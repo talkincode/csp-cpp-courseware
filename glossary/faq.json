@@ -2449,6 +2449,62 @@
           "url": "https://oi-wiki.org/contest/problems/"
         }
       ]
+    },
+    {
+      "id": "knowledge-map",
+      "term": "知识地图",
+      "aliases": ["knowledge map", "知识清单"],
+      "summary": "把五个阶段学过的知识点列成一张表，标出每一项自己是熟练、一般还是薄弱。",
+      "answer": "知识地图是把整条学习路线（语法工具、程序组织、算法思维、CSP-J 专项、赛场整合）里出现过的知识点列成一张表，逐项标注自己当前的掌握程度。它不是重新学一遍，而是把已经学过的内容做一次盘点，方便看清哪里还需要复习。",
+      "remember": "知识地图是盘点已学内容，不是重新学一遍新知识。",
+      "links": [
+        {
+          "title": "CSP-J 知识点大纲（NOI 官网）",
+          "url": "https://www.noi.cn/gynoi/jsffb/"
+        }
+      ]
+    },
+    {
+      "id": "pre-contest-checklist",
+      "term": "赛前检查清单",
+      "aliases": ["pre-contest checklist", "赛前清单"],
+      "summary": "比赛前用来确认环境、模板和流程都准备好的一张固定清单。",
+      "answer": "赛前检查清单列出比赛当天要确认的具体事项，比如编译环境能否正常使用、常用代码片段是否找得到、提交流程是否清楚、时间分配计划是否带在身边。它的作用是减少“临场才发现没准备”的意外，不是用来临时抱佛脚学新算法。",
+      "remember": "赛前清单确认的是准备是否到位，不是临时补知识。",
+      "links": [
+        {
+          "title": "赛前准备建议（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "weak-module",
+      "term": "薄弱模块",
+      "aliases": ["weak module", "薄弱项"],
+      "summary": "在知识地图里被标记为“还不熟练”、需要安排额外复习的具体知识点。",
+      "answer": "薄弱模块是指在知识地图盘点后，发现自己还不够熟练的具体知识点，比如某类模拟题容易漏分支、某种 DP 状态定义总想不清楚。找出薄弱模块后，要为它安排一次有针对性的复习，而不是笼统地说“我基础不好”。",
+      "remember": "薄弱模块要具体到知识点，并配一个有针对性的复习安排。",
+      "links": [
+        {
+          "title": "CSP-J 知识点大纲（NOI 官网）",
+          "url": "https://www.noi.cn/gynoi/jsffb/"
+        }
+      ]
+    },
+    {
+      "id": "csp-s-boundary",
+      "term": "CSP-S 衔接条件",
+      "aliases": ["CSP-S boundary", "CSP-J 与 CSP-S 边界"],
+      "summary": "说明 CSP-J 已经掌握之后，进入 CSP-S 大致还需要补充哪些更高级的内容，而不是现在就要学。",
+      "answer": "CSP-S 衔接条件是指：完成 CSP-J 路线后，如果要继续挑战 CSP-S，大致还会遇到更复杂的数据结构和更高级的算法模型，这些内容现在不属于 CSP-J 的必会范围。这里只做边界说明，帮助你判断“这是以后再学的内容”，不会展开具体教学。",
+      "remember": "CSP-S 的更高级内容现在只需要知道边界在哪，不必现在学会。",
+      "links": [
+        {
+          "title": "CSP 认证介绍（NOI 官网）",
+          "url": "https://www.noi.cn/gynoi/jsffb/"
+        }
+      ]
     }
   ]
 }
