@@ -215,3 +215,7 @@ test("S5-04 wires 80-percent-strategy FAQ terms into the guided lesson", async (
 test("S5-05 wires mock-exam FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s5-05", ["mock-exam", "submission-order", "self-test-table", "time-log"]);
 });
+
+test("S5-06 wires error-classification FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s5-06", ["error-classification", "fix-rule", "redo-key-question", "boundary-data"]);
+});

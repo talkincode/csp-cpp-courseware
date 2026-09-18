@@ -2351,6 +2351,48 @@
           "url": "https://oi-wiki.org/contest/problems/"
         }
       ]
+    },
+    {
+      "id": "error-classification",
+      "term": "错误分类",
+      "aliases": ["error classification", "失分归类"],
+      "summary": "把每处失分标记成读题错、算法错、实现错、边界错或时间错中的一种。",
+      "answer": "错误分类是模拟赛复盘时的第一步：给每处失分打上标签——读题错（看漏或看错题目条件）、算法错（方法本身不对）、实现错（思路对但代码写错）、边界错（没测最小或最大等边界）、时间错（没能在规定时间内完成）。先分类，才知道该往哪个方向改。",
+      "remember": "先分类，再想改法，不要笼统地说“粗心”。",
+      "links": [
+        {
+          "title": "赛后复盘（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "fix-rule",
+      "term": "改法",
+      "aliases": ["fix rule", "改进规则", "纠正规则"],
+      "summary": "针对一类错误写下的、下次能直接照做的具体规则。",
+      "answer": "改法是给一类错误写的具体规则，例如“写循环前先在纸上画出下标范围，和数组大小对一遍”。它必须具体到下次能直接照做，而不是“以后注意点”这种模糊提醒——模糊的话没法真的被执行。",
+      "remember": "改法要具体到能照做，不是一句“下次小心”。",
+      "links": [
+        {
+          "title": "调试与复盘（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/error"
+        }
+      ]
+    },
+    {
+      "id": "redo-key-question",
+      "term": "重做关键题",
+      "aliases": ["redo key question", "重做验证"],
+      "summary": "写完改法后，挑一道相关的题重新做一遍，验证改法是否真的有效。",
+      "answer": "重做关键题是指分类、写完改法之后，挑一道用得上这条改法的题重新做一遍，看这次是否真的避开了同类错误。只写改法不实践，很容易下次还是原地踏步。",
+      "remember": "改法写完就去重做一道题，验证它是不是真的有效。",
+      "links": [
+        {
+          "title": "赛后复盘（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
     }
   ]
 }
