@@ -219,3 +219,7 @@ test("S5-05 wires mock-exam FAQ terms into the guided lesson", async () => {
 test("S5-06 wires error-classification FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s5-06", ["error-classification", "fix-rule", "redo-key-question", "boundary-data"]);
 });
+
+test("S5-07 wires stability-check FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s5-07", ["fresh-problem-set", "cross-check", "baseline-comparison", "stable-habit"]);
+});

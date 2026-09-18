@@ -939,10 +939,33 @@ test("S5-06 supplies a guided error-classification lesson and randomized choice 
   expect(source).toContain("暂不确定");
 });
 
+test("S5-07 supplies a guided stability-check lesson and randomized choice quiz", async () => {
+  const { source, manifest } = await expectImplementedInteractiveLesson("s5-07");
+
+  expect(manifest.faqTermIds).toContain("fresh-problem-set");
+  expect(manifest.faqTermIds).toContain("cross-check");
+  expect(manifest.faqTermIds).toContain("baseline-comparison");
+  expect(manifest.faqTermIds).toContain("stable-habit");
+  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(source).toContain("必会");
+  expect(source).toContain("建议掌握");
+  expect(source).toContain("拓展");
+  expect(source).toContain('courseId: "S5-07"');
+  expect(source).toContain('type: "choice"');
+  expect(source).toContain("不会在浏览器里运行 C++");
+  expect(source).toContain("csp-cpp-s5-07-progress-v1");
+  expect(source).toContain("course-plan / 自编");
+  expect(source).toContain("题库暂时不可用");
+  expect(source).toContain("新题组");
+  expect(source).toContain("交叉检查");
+  expect(source).toContain("对照上一次");
+  expect(source).toContain("稳定习惯");
+});
+
 test("the dashboard only exposes an interactive entry for implemented lessons", async () => {
   const dashboard = await Bun.file(`${import.meta.dir}/../index.html`).text();
 
-  expect(dashboard).toContain('const implementedInteractiveLessons = ["S1-01", "S1-02", "S1-03", "S1-04", "S1-05", "S1-06", "S1-07", "S1-08", "S2-01", "S2-02", "S2-03", "S2-04", "S2-05", "S2-06", "S2-07", "S2-08", "S3-01", "S3-02", "S3-03", "S3-04", "S3-05", "S3-06", "S3-07", "S3-08", "S4-01", "S4-02", "S4-03", "S4-04", "S4-05", "S4-06", "S4-07", "S4-08", "S5-01", "S5-02", "S5-03", "S5-04", "S5-05", "S5-06"]');
+  expect(dashboard).toContain('const implementedInteractiveLessons = ["S1-01", "S1-02", "S1-03", "S1-04", "S1-05", "S1-06", "S1-07", "S1-08", "S2-01", "S2-02", "S2-03", "S2-04", "S2-05", "S2-06", "S2-07", "S2-08", "S3-01", "S3-02", "S3-03", "S3-04", "S3-05", "S3-06", "S3-07", "S3-08", "S4-01", "S4-02", "S4-03", "S4-04", "S4-05", "S4-06", "S4-07", "S4-08", "S5-01", "S5-02", "S5-03", "S5-04", "S5-05", "S5-06", "S5-07"]');
   expect(dashboard).toContain(".lesson-entry[hidden] {");
   expect(dashboard).toContain("display: none;");
   expect(dashboard).toContain("互动课件正在制作");

@@ -2393,6 +2393,62 @@
           "url": "https://oi-wiki.org/contest/problems/"
         }
       ]
+    },
+    {
+      "id": "fresh-problem-set",
+      "term": "新题组",
+      "aliases": ["fresh problem set", "新一套题目"],
+      "summary": "一组之前没做过的新题目，避免凭记忆而非真实能力得分。",
+      "answer": "新题组是指这次模拟赛用的是完全没有做过的新题目，而不是重复上一次模拟赛的原题。这样才能保证这次的表现反映的是真实的解题和自我管理能力，而不是因为记住了上次的题目和答案。",
+      "remember": "用没做过的新题，才能看出真本事，不是背答案。",
+      "links": [
+        {
+          "title": "竞赛题面与做题（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "cross-check",
+      "term": "交叉检查",
+      "aliases": ["cross check", "交叉验证"],
+      "summary": "换一个独立的角度或方法再确认一次结论是否可靠，而不是只信第一次判断。",
+      "answer": "交叉检查是指在自测或复盘时，换一个独立的角度或方法再确认一遍结论是否可靠——比如不只看有没有通过样例，还额外手算一组新数据，或者对照自己上一次记录的规则重新走一遍，而不是仅凭“看起来对”就直接相信。",
+      "remember": "只信一次判断不够，换个角度再确认一遍。",
+      "links": [
+        {
+          "title": "样例与自测（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "baseline-comparison",
+      "term": "对照上一次",
+      "aliases": ["baseline comparison", "对照基线"],
+      "summary": "把这次模拟赛的具体记录和上一次并排比较，而不是凭印象判断有没有进步。",
+      "answer": "对照上一次是指把这次模拟赛的实际记录（比如每题用时、犯的错误类型、是否用了自测表）和上一次的记录并排列出来比较，具体看哪些地方数字上真的变了，而不是只凭“这次感觉顺多了”这种模糊印象下结论。",
+      "remember": "比较要用具体数字和记录，不能只凭“感觉”下结论。",
+      "links": [
+        {
+          "title": "赛后复盘（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
+    },
+    {
+      "id": "stable-habit",
+      "term": "稳定习惯",
+      "aliases": ["stable habit", "习惯稳定性"],
+      "summary": "连续两次模拟赛都真的做到、不用刻意提醒也会执行的具体行为。",
+      "answer": "稳定习惯不是“知道该这么做”，而是连续两次独立的模拟赛里都真的做到了同一个具体行为（比如每次都先排提交顺序、每次写完题都记自测表），不需要刻意提醒也会照做。只做对一次还不算稳定，需要至少两次独立验证。",
+      "remember": "只做对一次不算稳定，两次独立验证过才算。",
+      "links": [
+        {
+          "title": "赛后复盘（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
     }
   ]
 }
