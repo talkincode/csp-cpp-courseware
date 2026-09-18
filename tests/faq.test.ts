@@ -199,3 +199,7 @@ test("S4-08 wires subtask-and-scoring-strategy FAQ terms into the guided lesson"
 test("S5-01 wires timed-solving-flow FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s5-01", ["timed-solving-flow", "problem-timing", "modeling-draft", "sample-check", "reserve-check-time"]);
 });
+
+test("S5-02 wires systematic-debug FAQ terms into the guided lesson", async () => {
+  await expectLessonFaqWiring("s5-02", ["systematic-debug", "minimal-repro", "debug-print", "assert-idea", "diff-check"]);
+});

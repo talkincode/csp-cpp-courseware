@@ -2183,6 +2183,62 @@
           "url": "https://oi-wiki.org/contest/problems/"
         }
       ]
+    },
+    {
+      "id": "systematic-debug",
+      "term": "系统化调试",
+      "aliases": ["debug by evidence", "按证据修错"],
+      "summary": "按证据缩小错误，而不是靠猜测乱改程序。",
+      "answer": "系统化调试是按证据修错：先做出仍会出错的最小数据，再用分段输出或断言检验假设，最后记下修复原因并重新测试。它不是新算法，也不要求会用调试器。乱改直到碰巧对了，不算系统化调试。",
+      "remember": "先找证据，再改代码。",
+      "links": [
+        {
+          "title": "C++ 常见错误（Microsoft Learn）",
+          "url": "https://learn.microsoft.com/zh-cn/cpp/error-messages/compiler-errors-1/c-cpp-build-errors"
+        }
+      ]
+    },
+    {
+      "id": "minimal-repro",
+      "term": "最小复现",
+      "aliases": ["minimal reproduction", "缩小错误范围"],
+      "summary": "把错误缩小到仍会出错的最小一组数据。",
+      "answer": "最小复现是找出仍能稳定触发错误的最小输入。比如 n=100000 才错时，先试着缩到 n=2 或 n=3。数据越小，越容易手算对照，也越容易看出是哪一行写错。",
+      "remember": "先把错误缩到小数据。",
+      "links": [
+        {
+          "title": "C++ 输入输出（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/io"
+        }
+      ]
+    },
+    {
+      "id": "assert-idea",
+      "term": "断言思路",
+      "aliases": ["assert idea", "应该等于"],
+      "summary": "先写下“这里应该等于什么”，再对照程序的中间结果。",
+      "answer": "断言思路是先写一句“这里的值应该等于手算结果”，再看程序中间值是否符合。符合就说明这段没问题，不符合就把怀疑范围缩小。现在不必先学 assert 关键字，先会这个想法就够。",
+      "remember": "先写“应该等于”，再对照。",
+      "links": [
+        {
+          "title": "assert（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/error/assert"
+        }
+      ]
+    },
+    {
+      "id": "diff-check",
+      "term": "差分检查",
+      "aliases": ["differential check", "对照暴力"],
+      "summary": "拿一份能过小数据的暴力程序，对照同一组输入的输出。",
+      "answer": "差分检查是用一份能过小数据的暴力程序，和当前程序跑同一组输入，看输出是否一致。不一致时，这组输入就是反例。它是建议认识的拓展习惯，现在不当 CSP-J 硬门槛。",
+      "remember": "暴力程序可以对同一组输入当镜子。",
+      "links": [
+        {
+          "title": "样例与自测（OI Wiki）",
+          "url": "https://oi-wiki.org/contest/problems/"
+        }
+      ]
     }
   ]
 }
