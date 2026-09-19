@@ -74,6 +74,7 @@ async function expectImplementedInteractiveLesson(directory: string) {
 test("the first lesson supplies a guided interactive page and randomized choice quiz", async () => {
   const { source, manifest } = await expectImplementedInteractiveLesson("s1-01");
 
+  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
   expect(manifest.faqTermIds).toContain("main");
   expect(manifest.faqTermIds).toContain("include");
   expect(manifest.faqTermIds).toContain("cout");
@@ -90,6 +91,7 @@ test("the first lesson supplies a guided interactive page and randomized choice 
 test("S1-02 supplies a guided variable lesson and randomized choice quiz", async () => {
   const { source, manifest } = await expectImplementedInteractiveLesson("s1-02");
 
+  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
   expect(manifest.faqTermIds).toContain("int");
   expect(manifest.faqTermIds).toContain("char");
   expect(manifest.faqTermIds).toContain("variable");

@@ -12,7 +12,8 @@
     "mode": "randomized-choice",
     "questionCount": 3,
     "questionBankSize": 5,
-    "choiceDominant": true
+    "choiceDominant": true,
+    "reviewState": "awaiting-user-review"
   },
   "video": {
     "owner": "external",
