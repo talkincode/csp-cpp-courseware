@@ -179,6 +179,17 @@ test("S1-05 supplies a guided condition lesson and randomized choice quiz", asyn
   expect(source).toContain("if (score >= 60)");
   expect(source).toContain("else if");
   expect(source).toContain("if (score = 60)");
+  expect(source).toContain('id="microIf"');
+  expect(source).toContain('id="microElseIf"');
+  expect(source).toContain('id="microCheckButton"');
+  expect(source).toContain('id="microResetButton"');
+  expect(source).toContain("function checkSingleCondition");
+  expect(source).toContain("function renderMicroTask");
+  expect(source).toContain("microSolved");
+  expect(source).toContain("半角");
+  expect(source).toContain("不会运行你写的 C++");
+  expect(source).not.toContain("eval(");
+  expect(source).not.toContain("new Function");
 });
 
 test("S1-06 supplies a guided loop lesson and randomized choice quiz", async () => {

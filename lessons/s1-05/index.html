@@ -1069,6 +1069,66 @@
         border-color: var(--success);
       }
 
+      .micro-sheet {
+        max-width: 705px;
+        margin: 20px 0 4px;
+        padding: 16px 18px;
+      }
+
+      .micro-sheet ol {
+        margin: 0;
+        padding-left: 21px;
+        color: var(--muted);
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 0.86rem;
+        line-height: 2.3;
+      }
+
+      .micro-input {
+        width: min(190px, 46%);
+        min-height: 34px;
+        padding: 5px 8px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        font-family: inherit;
+        font-size: 0.84rem;
+      }
+
+      .micro-input.is-correct {
+        color: var(--forest);
+        background: var(--mint);
+        border-color: var(--success);
+      }
+
+      .micro-input.is-wrong {
+        background: #fff0d5;
+        border-color: var(--danger);
+      }
+
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 11px;
+        max-width: 705px;
+        margin-top: 16px;
+      }
+
+      .micro-ref {
+        max-width: 705px;
+        margin: 14px 0 0;
+        padding: 14px 16px;
+        overflow-x: auto;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 1px dashed var(--forest-fog);
+        border-radius: 4px;
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 0.82rem;
+        line-height: 1.8;
+      }
+
       @media (max-width: 880px) {
         .lesson-hero {
           grid-template-columns: 1fr;
@@ -1239,7 +1299,7 @@
         <nav class="task-rail" aria-label="本课任务步骤">
           <div>
             <h2>任务路线</h2>
-            <p id="taskProgress" class="task-progress">0 / 4 已推进</p>
+            <p id="taskProgress" class="task-progress">0 / 5 已推进</p>
           </div>
           <div class="step-list">
             <button class="step-button" type="button" data-step="0" aria-current="step">
@@ -1256,6 +1316,10 @@
             </button>
             <button class="step-button" type="button" data-step="3" aria-disabled="true">
               <span class="step-number">4</span>
+              <span class="step-copy"><strong>亲手写条件</strong><span>补两行 if</span></span>
+            </button>
+            <button class="step-button" type="button" data-step="4" aria-disabled="true">
+              <span class="step-number">5</span>
               <span class="step-copy"><strong>随机小测</strong><span>检查是否理解</span></span>
             </button>
           </div>
@@ -1347,7 +1411,70 @@
           </section>
 
           <section class="step-panel" data-panel="3" hidden>
-            <h2>任务 4：随机小测，看看你是否真的懂了</h2>
+            <h2>任务 4：亲手补齐两行条件</h2>
+            <p class="step-lead">
+              三路判断里最容易写错的是边界。这一次换你自己写：把下面两行条件补齐，让 90 分算优秀、60 分算合格。这里只在你的浏览器里检查条件写对没有，不会运行你写的 C++。
+            </p>
+            <p class="guided-note"><strong>必会：</strong>条件里要比较 <span class="inline-code">score</span>，比较大小用 <span class="inline-code">&gt;=</span>，比较相等用 <button type="button" class="faq-term" data-faq="equal-equal">==</button>；只写一个 <button type="button" class="faq-term" data-faq="assignment">=</button> 是赋值。写不出来先点“看提示”，再点“参考代码”对照，写错了也能重来。</p>
+            <div class="micro-sheet" aria-label="亲手补齐两行条件">
+              <ol>
+                <li>
+                  if (
+                  <input
+                    id="microIf"
+                    class="micro-input"
+                    type="text"
+                    value=""
+                    placeholder="score >= 90"
+                    aria-label="第一空：在 if 括号里写优秀条件"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    autocorrect="off"
+                    spellcheck="false"
+                    inputmode="latin"
+                    maxlength="40"
+                  />
+                  ) {
+                </li>
+                <li>
+                  } else if (
+                  <input
+                    id="microElseIf"
+                    class="micro-input"
+                    type="text"
+                    value=""
+                    placeholder="score >= 60"
+                    aria-label="第二空：在 else if 括号里写合格条件"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    autocorrect="off"
+                    spellcheck="false"
+                    inputmode="latin"
+                    maxlength="40"
+                  />
+                  ) {
+                </li>
+                <li>} else { cout &lt;&lt; "需要复习"; }</li>
+              </ol>
+            </div>
+            <div class="micro-actions" role="group" aria-label="写条件时的检查与兜底">
+              <button id="microCheckButton" class="primary-action" type="button">检查这两行</button>
+              <button id="microHintButton" class="secondary-action" type="button">看提示</button>
+              <button id="microRefButton" class="secondary-action" type="button">参考代码</button>
+              <button id="microResetButton" class="secondary-action" type="button">重写一遍</button>
+            </div>
+            <pre id="microRef" class="micro-ref" hidden>if (score &gt;= 90) {
+  cout &lt;&lt; "优秀";
+} else if (score &gt;= 60) {
+  cout &lt;&lt; "合格";
+} else {
+  cout &lt;&lt; "需要复习";
+}</pre>
+            <p id="microFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="step-panel" data-panel="4" hidden>
+            <h2>任务 5：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
               每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
@@ -1458,6 +1585,9 @@
         evenChecked: false,
         precedenceSolved: false,
         parensSolved: false,
+        microIf: "",
+        microElseIf: "",
+        microSolved: false,
         quizSeed: createSeed(),
         answers: {},
         quizSubmitted: false,
@@ -1476,6 +1606,10 @@
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
+      const microIfInput = document.querySelector("#microIf");
+      const microElseIfInput = document.querySelector("#microElseIf");
+      const microFeedback = document.querySelector("#microFeedback");
+      const microRef = document.querySelector("#microRef");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
       const quizForm = document.querySelector("#quizForm");
@@ -1509,6 +1643,9 @@
             evenChecked: stored.evenChecked === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
+            microIf: typeof stored.microIf === "string" ? stored.microIf : "",
+            microElseIf: typeof stored.microElseIf === "string" ? stored.microElseIf : "",
+            microSolved: stored.microSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
             answers: stored.answers && typeof stored.answers === "object" && !Array.isArray(stored.answers) ? stored.answers : {},
             quizSubmitted: stored.quizSubmitted === true,
@@ -1570,11 +1707,12 @@
       }
 
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        const steps = [state.formulasMatched, state.evenChecked, conceptSolved(), state.microSolved, state.quizSubmitted];
+        return steps.filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched, state.evenChecked, conceptSolved(), state.microSolved][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1665,7 +1803,7 @@
 
       function renderSteps() {
         clampActiveStep();
-        taskProgress.textContent = `${unlockedStepCount()} / 4 已推进`;
+        taskProgress.textContent = `${unlockedStepCount()} / 5 已推进`;
 
         stepButtons.forEach((button) => {
           const step = Number(button.dataset.step);
@@ -1738,13 +1876,102 @@
         });
 
         if (conceptSolved()) {
-          showFeedback(debugFeedback, "对：单个 = 会改掉分数；条件里提问用 ==。下一步去做随机小测吧。");
+          showFeedback(debugFeedback, "对：单个 = 会改掉分数；条件里提问用 ==。下一步亲手补两行条件。");
         } else if (state.precedenceSolved) {
           showFeedback(debugFeedback, "赋值陷阱选对了。继续选出必会的比较写法。");
         } else {
           debugFeedback.textContent = "";
           debugFeedback.dataset.tone = "";
         }
+      }
+
+      function renderMicroTask() {
+        if (document.activeElement !== microIfInput) microIfInput.value = state.microIf;
+        if (document.activeElement !== microElseIfInput) microElseIfInput.value = state.microElseIf;
+
+        microIfInput.disabled = state.microSolved;
+        microElseIfInput.disabled = state.microSolved;
+        microIfInput.classList.toggle("is-correct", state.microSolved);
+        microElseIfInput.classList.toggle("is-correct", state.microSolved);
+
+        if (state.microSolved) {
+          showFeedback(microFeedback, "两行条件都写对了：90 和 60 都包含等于，所以用 >=。下一步做随机小测。");
+        } else if (state.microIf || state.microElseIf) {
+          showFeedback(microFeedback, "草稿已经记住了。点“检查这两行”看看写对没有，随时可以重写。");
+        } else {
+          microFeedback.textContent = "";
+          microFeedback.dataset.tone = "";
+        }
+      }
+
+      function normalizeCode(value) {
+        return (value ?? "").replace(/　/g, " ").trim();
+      }
+
+      // 这里只按文字规则检查条件写对没有：不编译、不执行学习者写的 C++。
+      function checkSingleCondition(raw, target) {
+        const text = normalizeCode(raw);
+        if (!text) return { ok: false, message: "先在空里敲点东西试试，比如 score >= 90。" };
+        if (/[一-龥、。（）；：]/.test(text)) return { ok: false, message: "用了中文符号哦：括号、分号都要用半角，比如 ( ) 和 ; 。" };
+        if (/score/i.test(text) && !/score/.test(text)) return { ok: false, message: "变量名大小写看一下哦：题目里是小写 score。" };
+        if (!/score/.test(text)) return { ok: false, message: "条件里要用到 score，不然程序不知道在比谁哦。" };
+        if (/;/.test(text)) return { ok: false, message: "if 括号里不用加分号哦，加了这一行就提前结束了。" };
+        if (/score\s*=\s*\d/.test(text) || (/[^=!<>]=(?!=)/.test(` ${text} `) && !/==|>=|<=|>|</.test(text))) {
+          return { ok: false, message: "单个 = 是放进变量哦：比较大小要用 >=，比如 score >= 90。" };
+        }
+        if (!/>=/.test(text)) return { ok: false, message: "优秀线和合格线都包含等于，要用 >=，不是 > 哦。" };
+        if (!/score\s*>=\s*\d+/.test(text)) return { ok: false, message: "格式再靠拢一下：写成 score >= 数字，比如 score >= 90。" };
+        if (!new RegExp(`${target}(?!\\d)`).test(text.replace(/\s+/g, ""))) {
+          return { ok: false, message: `数字写错了哦：这一空要写 ${target.replace(">=", " >= ")}。` };
+        }
+        return { ok: true, message: "" };
+      }
+
+      function evaluateMicroConditions(ifValue, elseIfValue) {
+        const results = [
+          { key: "microIf", label: "第一空（优秀）", target: "score>=90", value: ifValue },
+          { key: "microElseIf", label: "第二空（合格）", target: "score>=60", value: elseIfValue },
+        ].map((field) => ({ ...field, check: checkSingleCondition(field.value, field.target) }));
+        const unfinished = results.find((field) => !field.check.ok) ?? null;
+
+        return {
+          results,
+          solved: unfinished === null,
+          problem: unfinished ? { label: unfinished.label, message: unfinished.check.message } : null,
+        };
+      }
+
+      function checkMicroTask() {
+        if (state.microSolved) {
+          announce("这两行条件已经写对了，可以进入随机小测。");
+          return;
+        }
+
+        const outcome = evaluateMicroConditions(microIfInput.value, microElseIfInput.value);
+        const inputs = [microIfInput, microElseIfInput];
+
+        outcome.results.forEach((field, index) => {
+          const input = inputs[index];
+          state[field.key] = input.value;
+          input.classList.toggle("is-wrong", !field.check.ok && input.value.trim().length > 0);
+          input.classList.toggle("is-correct", field.check.ok);
+        });
+
+        saveState();
+
+        if (outcome.problem) {
+          const message = `${outcome.problem.label}：${outcome.problem.message}`;
+          showFeedback(microFeedback, message, "error");
+          announce(message);
+          playSound("error");
+          return;
+        }
+
+        state.microSolved = true;
+        state.activeStep = 4;
+        saveState();
+        render();
+        reward("任务 4 完成：你亲手写出了 90 和 60 两行条件。下一步做随机小测。");
       }
 
       function questionsAreValid(questions) {
@@ -1848,6 +2075,7 @@
         renderSourceTask();
         renderFlowTask();
         renderDebugTask();
+        renderMicroTask();
         renderQuiz();
         renderSoundToggle();
         updateStorageNotice();
@@ -2002,7 +2230,7 @@
                 state.activeStep = 3;
                 saveState();
                 render();
-                reward("任务 3 完成：你分清了 = 和 ==。现在去做随机小测吧。");
+                reward("任务 3 完成：你分清了 = 和 ==。下一步亲手补两行条件。");
               } else {
                 announce("赋值陷阱选对了。继续选出必会的比较写法。");
                 playSound("calm");
@@ -2028,7 +2256,7 @@
               saveState();
               render();
               if (conceptSolved()) {
-                reward("任务 3 完成：你分清了 = 和 ==。现在去做随机小测吧。");
+                reward("任务 3 完成：你分清了 = 和 ==。下一步亲手补两行条件。");
               } else {
                 announce("比较写法选对了。再把赋值陷阱那一题选对。");
                 playSound("calm");
@@ -2042,6 +2270,56 @@
             announce(message);
             playSound("error");
           }
+        });
+      });
+
+      document.querySelector("#microCheckButton").addEventListener("click", checkMicroTask);
+
+      document.querySelector("#microHintButton").addEventListener("click", () => {
+        const message = "提示：两空都写 score，和 90、60 比较时别丢掉等于，用 >= ；写成单个 = 就变成赋值了。";
+        showFeedback(microFeedback, message);
+        announce(message);
+        playSound("calm");
+      });
+
+      document.querySelector("#microRefButton").addEventListener("click", () => {
+        microRef.hidden = !microRef.hidden;
+        const message = microRef.hidden
+          ? "参考代码已收起：再自己写一次试试。"
+          : "参考代码已展开：90 和 60 都用 >=，剩下的用 else 兜底。";
+        announce(message);
+        playSound("calm");
+      });
+
+      document.querySelector("#microResetButton").addEventListener("click", () => {
+        state.microIf = "";
+        state.microElseIf = "";
+        state.microSolved = false;
+        microIfInput.value = "";
+        microElseIfInput.value = "";
+        [microIfInput, microElseIfInput].forEach((input) => input.classList.remove("is-correct", "is-wrong"));
+        saveState();
+        render();
+        announce("两行都清空了，按自己的思路重写一次。");
+        playSound("calm");
+      });
+
+      [
+        { input: microIfInput, key: "microIf" },
+        { input: microElseIfInput, key: "microElseIf" },
+      ].forEach(({ input, key }) => {
+        input.addEventListener("input", () => {
+          state[key] = input.value;
+          input.classList.remove("is-wrong", "is-correct");
+          microFeedback.textContent = "";
+          microFeedback.dataset.tone = "";
+          saveState();
+        });
+
+        input.addEventListener("keydown", (event) => {
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          checkMicroTask();
         });
       });
 
@@ -2101,7 +2379,7 @@
 
       window.addEventListener("keydown", (event) => {
         if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return;
-        if (event.key === "ArrowRight") selectStep(Math.min(3, state.activeStep + 1));
+        if (event.key === "ArrowRight") selectStep(Math.min(4, state.activeStep + 1));
         if (event.key === "ArrowLeft") selectStep(Math.max(0, state.activeStep - 1));
       });
 
