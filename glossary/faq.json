@@ -321,6 +321,76 @@
           "url": "https://zh.cppreference.com/w/cpp/io"
         }
       ]
+    },
+    {
+      "id": "if-statement",
+      "term": "if 分支",
+      "aliases": ["if", "条件分支"],
+      "summary": "满足条件才执行一段程序的写法。",
+      "answer": "`if (score >= 90)` 表示：如果括号里的条件成立，就执行后面花括号里的程序。不成立就跳过。现在只要记住：先写条件，再写成立时要做的事。",
+      "remember": "if 后面括号里写条件，成立才执行。",
+      "links": [
+        {
+          "title": "if 语句（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/if"
+        }
+      ]
+    },
+    {
+      "id": "else-branch",
+      "term": "else / else if",
+      "aliases": ["else", "else if", "否则"],
+      "summary": "条件不满足时，换一条路走的写法。",
+      "answer": "`else if` 是再加一个条件，`else` 是前面都不满足时的保底。分数分档常用三路：优秀、合格、再复习。现在先会写三路，不必背复杂嵌套。",
+      "remember": "if 不满足，看 else if，最后看 else。",
+      "links": [
+        {
+          "title": "if 与 else 分支（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/if"
+        }
+      ]
+    },
+    {
+      "id": "comparison",
+      "term": "比较运算",
+      "aliases": ["比较", ">", "<", ">=", "<="],
+      "summary": "比较两个数，得到成立或不成立。",
+      "answer": "`>` `<` `>=` `<=` 用来比大小，结果只有成立或不成立。`score >= 60` 包含 60 分。本课先分清大于和大于等于，边界要亲手试 60 和 90。",
+      "remember": ">= 包含等于，> 不包含；边界要代入试。",
+      "links": [
+        {
+          "title": "比较运算（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_comparison"
+        }
+      ]
+    },
+    {
+      "id": "equality",
+      "term": "== 与 =",
+      "aliases": ["==", "等于等于", "赋值与比较"],
+      "summary": "== 是比较是否相等，= 是把值放进变量。",
+      "answer": "`score == 100` 是在问：分数等于 100 吗？`score = 100` 是把 100 放进 score。条件里写错成 `=`，程序不会按你想的判断。这是本课最常见的错。",
+      "remember": "条件里比较相等用两个等号 ==。",
+      "links": [
+        {
+          "title": "比较与赋值运算（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_comparison"
+        }
+      ]
+    },
+    {
+      "id": "logical-op",
+      "term": "逻辑组合",
+      "aliases": ["&&", "||", "!", "且", "或", "非"],
+      "summary": "把几个小条件拼成一个大条件的符号。",
+      "answer": "`&&` 表示同时成立，`||` 表示至少一个成立，`!` 表示反过来。例如 `score >= 0 && score <= 100` 检查分数是否在范围内。现在先会读，不必背真值表。",
+      "remember": "&& 是同时，|| 是至少一个，! 是反过来。",
+      "links": [
+        {
+          "title": "逻辑运算符（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/operator_logical"
+        }
+      ]
     }
   ]
 }

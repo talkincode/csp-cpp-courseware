@@ -40,9 +40,12 @@ lessons/s1-03/
 lessons/s1-04/
 ├── index.html   # 输入输出格式的互动学习与随机选择题小测
 └── lesson.json  # 本课的交付状态；视频明确为仓库外实现
+lessons/s1-05/
+├── index.html   # 条件判断的互动学习（含 2 行微编程）与随机选择题小测
+└── lesson.json  # 本课的交付状态；视频明确为仓库外实现
 ```
 
-启动 `bun run dev` 后，打开 <http://localhost:4173/lessons/s1-01/>、<http://localhost:4173/lessons/s1-02/>、<http://localhost:4173/lessons/s1-03/> 或 <http://localhost:4173/lessons/s1-04/>。其余课程目录目前只保留元数据，尚未实现页面。
+启动 `bun run dev` 后，打开 <http://localhost:4173/lessons/s1-01/>、<http://localhost:4173/lessons/s1-02/>、<http://localhost:4173/lessons/s1-03/>、<http://localhost:4173/lessons/s1-04/> 或 <http://localhost:4173/lessons/s1-05/>。其余课程目录目前只保留元数据，尚未实现页面。
 
 课件里的陌生词（例如 `g++`）可点开 [`glossary/faq.json`](./glossary/faq.json) 中的基础解释。后续课件出现同类概念时，也必须引用同一份词条表。
 
@@ -62,7 +65,7 @@ lessons/s1-04/
 
 每一节课程最终都应成为一个独立、可在线学习的单元，包含：
 
-- 与本课目标对应的网页互动学习界面；
+- 与本课目标对应的网页互动学习界面（包含动手编写关键代码的微编程输入框，拒绝纯点击通关）；
 - 可重复参加的在线测试，从经审校题库中随机组卷，并以选择题为主；
 - 作答结果、解析和下一步复习建议。
 

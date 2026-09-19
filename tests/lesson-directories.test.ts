@@ -135,10 +135,44 @@ test("S1-04 supplies a guided input-output lesson and randomized choice quiz", a
   expect(source).toContain("请输入");
 });
 
+test("S1-05 supplies a guided conditional lesson with micro coding and randomized quiz", async () => {
+  const { source, manifest } = await expectImplementedInteractiveLesson("s1-05");
+
+  expect(manifest.faqTermIds).toContain("if-statement");
+  expect(manifest.faqTermIds).toContain("else-branch");
+  expect(manifest.faqTermIds).toContain("comparison");
+  expect(manifest.faqTermIds).toContain("equality");
+  expect(manifest.faqTermIds).toContain("logical-op");
+  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(source).toContain("必会");
+  expect(source).toContain("建议掌握");
+  expect(source).toContain("拓展");
+  expect(source).toContain('courseId: "S1-05"');
+  expect(source).toContain('type: "choice"');
+  expect(source).toContain("不会在浏览器里运行 C++");
+  expect(source).toContain("csp-cpp-s1-05-progress-v1");
+  expect(source).toContain("course-plan / 自编");
+  expect(source).toContain("题库暂时不可用");
+  expect(source).toContain("score == 100");
+  expect(source).toContain("score >= 90");
+  expect(source).toContain("score >= 60");
+  expect(source).toContain("score >= 0 && score <= 100");
+  // 微编程：亲手敲键盘，含兜底与移动端防干扰属性
+  expect(source).toContain('id="microIf"');
+  expect(source).toContain('id="microElseIf"');
+  expect(source).toContain('id="microCheckButton"');
+  expect(source).toContain('id="microHintButton"');
+  expect(source).toContain('id="microRefButton"');
+  expect(source).toContain('id="microResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('autocorrect="off"');
+  expect(source).toContain('spellcheck="false"');
+});
+
 test("the dashboard only exposes an interactive entry for implemented lessons", async () => {
   const dashboard = await Bun.file(`${import.meta.dir}/../index.html`).text();
 
-  expect(dashboard).toContain('const implementedInteractiveLessons = ["S1-01", "S1-02", "S1-03", "S1-04"]');
+  expect(dashboard).toContain('const implementedInteractiveLessons = ["S1-01", "S1-02", "S1-03", "S1-04", "S1-05"]');
   expect(dashboard).toContain(".lesson-entry[hidden] {");
   expect(dashboard).toContain("display: none;");
   expect(dashboard).toContain("互动课件正在制作");
