@@ -8,6 +8,7 @@
     "start": "bun scripts/dev.ts",
     "test": "bun test",
     "validate": "bun test",
-    "scaffold:lessons": "bun scripts/scaffold-lessons.ts"
+    "scaffold:lessons": "bun scripts/scaffold-lessons.ts",
+    "e2e:s1-01": "bun tests/e2e/s1-01-cdp.ts"
   }
 }

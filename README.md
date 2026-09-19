@@ -198,3 +198,11 @@ bun test
 ```
 
 除逐课用例之外，[`tests/lesson-contract.test.ts`](./tests/lesson-contract.test.ts) 会从 `index.html` 的 `courseData` 派生全部 40 节课，逐课校验互动页与随机小测的共同契约：题库来源与难度档位（必会 / 建议掌握 / 拓展）、选择题严格多于非选择题、题目字段与空题库提示、`awaiting-user-review` 标记、词条双向接线、本地进度键，以及“无视频资产、不在浏览器里运行 C++”边界。新增课节会自动落入校验范围。
+
+浏览器体验验收可以用真实浏览器自动重跑，同样不需要安装依赖（需要本机有 Chrome）：
+
+```bash
+bun run e2e:s1-01
+```
+
+脚本会自行启动开发服务器与无头 Chrome，按 [`tests/e2e/s1-01-manual-checklist.md`](./tests/e2e/s1-01-manual-checklist.md) 的五个场景完成 62 项检查（含跳过步骤、错误选项、刷新恢复、存储不可用与题库异常两条失败路径），结束后清理自己启动的进程。它不属于 `bun test`：断言依赖真实浏览器渲染。
