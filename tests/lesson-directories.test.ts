@@ -61,6 +61,15 @@ async function expectImplementedInteractiveLesson(directory: string) {
   expect(source).toContain("const questionPool");
   expect(source).toContain("function questionSetForSeed");
   expect(source).toContain("crypto.getRandomValues");
+  expect(source).toContain("function questionsAreValid");
+  expect(source).toContain("题库暂时不可用");
+  expect(source).toContain("题目待人工审校");
+  expect(source).not.toContain("已审校");
+  expect(source).not.toContain("经过审校");
+  expect(source).toContain('source: "course-plan / 自编"');
+  expect(source).not.toContain('source: "original"');
+  expect(source.split("questionsAreValid").length - 1).toBeGreaterThanOrEqual(3);
+  expect(source.split("questionPool.length === 0").length - 1).toBeGreaterThanOrEqual(2);
   expect(source).toContain("AudioContext");
   expect(source).toContain("prefers-reduced-motion");
   expect(source).toContain('aria-disabled="true"');
