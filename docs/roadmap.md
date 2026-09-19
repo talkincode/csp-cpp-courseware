@@ -175,6 +175,7 @@
 | 检验清单与学习进度保存 | 中 | ✅ | ✅ 存储失败不崩溃且保留当前会话状态 | 不适用：无账号 | ✅ 刷新后恢复；存储失败时明确提示并可继续学习 | [`E2E-03`](../tests/e2e/manual-checklist.md#e2e-03进度保存与恢复)、[`E2E-04`](../tests/e2e/manual-checklist.md#e2e-04浏览器存储不可用) |
 | 课程内容结构维护 | 中 | ✅ | ✅ 缺字段、重复 ID 或阶段失衡会失败 | 不适用：无账号 | 不适用：内容校验不修改运行态 | [`tests/curriculum.test.ts`](../tests/curriculum.test.ts) |
 | 每课目录与交付状态 | 中 | ✅ | ✅ 缺少课程目录或状态元数据会被校验发现 | 不适用：无账号 | 不适用：结构校验不修改运行态 | [`tests/lesson-directories.test.ts`](../tests/lesson-directories.test.ts)、`bun run scaffold:lessons --check` |
+| 每课互动页面脚本语法完整性 | 中 | ✅ | ✅ 首页与全部 40 课内嵌脚本逐一编译校验，语法错误会立即失败 | 不适用：无账号 | 不适用：静态语法校验不修改运行态 | [`tests/inline-script-syntax.test.ts`](../tests/inline-script-syntax.test.ts) |
 | S1-01 引导式在线学习界面 | 中 | ✅ 待体验确认 | ✅ 错误选择、未解锁任务和存储不可用均给出明确反馈 | 不适用：无账号 | ✅ 刷新后恢复任务与答题状态；存储失败时说明限制 | [`S1-01 E2E`](../tests/e2e/s1-01-manual-checklist.md) |
 | S1-02 引导式在线学习界面 | 中 | ✅ 待体验确认 | ✅ 错误类型、跳过声明/赋值和存储不可用均给出明确反馈 | 不适用：无账号 | ✅ 刷新后恢复任务与答题状态；存储失败时说明限制 | [`S1-02 E2E`](../tests/e2e/s1-02-manual-checklist.md) |
 | S1-03 引导式在线学习界面 | 中 | ✅ 待体验确认 | ✅ 错误公式、跳过整除/取模和存储不可用均给出明确反馈 | 不适用：无账号 | ✅ 刷新后恢复任务与答题状态；存储失败时说明限制 | [`S1-03 E2E`](../tests/e2e/s1-03-manual-checklist.md) |
