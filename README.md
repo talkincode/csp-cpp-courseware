@@ -13,7 +13,7 @@
 - 本地保存的逐项学习进度，不收集账号或个人信息；
 - 适合外部录课制作时使用的“视频组织建议”和移动端阅读布局。
 
-它目前用于确认课程规划，不代表每节课的在线学习页、视频和测验已经完成。后续交付范围与验收标准见 [`docs/roadmap.md`](./docs/roadmap.md)。
+它目前用于确认课程规划；每节课自己的在线学习页与随机测验已在 `lessons/<课程-id>/` 中实现（内容处于 `awaiting-user-review`，尚待人工审校），视频始终由仓库外流程负责。后续交付范围与验收标准见 [`docs/roadmap.md`](./docs/roadmap.md)。
 
 本地预览使用 Bun：
 
@@ -25,7 +25,7 @@ bun run dev
 
 ## 课件目录
 
-每节课都有自己的目录：`lessons/<小写课程-id>/`。全部 40 个目录及其 `lesson.json` 已由 Bun 脚手架建立；目前可体验的互动课件是：
+每节课都有自己的目录：`lessons/<小写课程-id>/`。全部 40 个目录及其 `lesson.json` 已由 Bun 脚手架建立；40 节互动课件与随机测验目前均已实现（内容 `awaiting-user-review`，视频始终为仓库外交付）：
 
 ```text
 lessons/s1-01/
@@ -133,9 +133,24 @@ lessons/s5-02/
 lessons/s5-03/
 ├── index.html   # 溢出/越界故障卡诊断、定位/改型/回归三步、比较符号与调试残留对照的互动学习与随机选择题小测
 └── lesson.json  # 本课的交付状态；视频明确为仓库外实现
+lessons/s5-04/
+├── index.html   # 暴力基线、子任务标注与复杂度升级对照的互动学习与随机选择题小测
+└── lesson.json  # 本课的交付状态；视频明确为仓库外实现
+lessons/s5-05/
+├── index.html   # 模拟赛提交顺序、自测表与时间记录对照的互动学习与随机选择题小测
+└── lesson.json  # 本课的交付状态；视频明确为仓库外实现
+lessons/s5-06/
+├── index.html   # 错误分类、边界数据与重做关键题对照的互动学习与随机选择题小测
+└── lesson.json  # 本课的交付状态；视频明确为仓库外实现
+lessons/s5-07/
+├── index.html   # 交叉检查、两次时间对照与稳定习惯判断的互动学习与随机选择题小测
+└── lesson.json  # 本课的交付状态；视频明确为仓库外实现
+lessons/s5-08/
+├── index.html   # 知识地图、薄弱模块标注与 CSP-S 衔接边界对照的互动学习与随机选择题小测
+└── lesson.json  # 本课的交付状态；视频明确为仓库外实现
 ```
 
-启动 `bun run dev` 后，打开 <http://localhost:4173/lessons/s1-01/>、<http://localhost:4173/lessons/s1-02/>、<http://localhost:4173/lessons/s1-03/>、<http://localhost:4173/lessons/s1-04/>、<http://localhost:4173/lessons/s1-05/>、<http://localhost:4173/lessons/s1-06/>、<http://localhost:4173/lessons/s1-07/>、<http://localhost:4173/lessons/s1-08/>、<http://localhost:4173/lessons/s2-01/>、<http://localhost:4173/lessons/s2-02/>、<http://localhost:4173/lessons/s2-03/>、<http://localhost:4173/lessons/s2-04/>、<http://localhost:4173/lessons/s2-05/>、<http://localhost:4173/lessons/s2-06/>、<http://localhost:4173/lessons/s2-07/>、<http://localhost:4173/lessons/s2-08/>、<http://localhost:4173/lessons/s3-01/>、<http://localhost:4173/lessons/s3-02/>、<http://localhost:4173/lessons/s3-03/>、<http://localhost:4173/lessons/s3-04/>、<http://localhost:4173/lessons/s3-05/>、<http://localhost:4173/lessons/s3-06/> 、<http://localhost:4173/lessons/s3-07/> 、<http://localhost:4173/lessons/s3-08/> 、<http://localhost:4173/lessons/s4-01/> 、<http://localhost:4173/lessons/s4-02/> 、<http://localhost:4173/lessons/s4-03/> 、<http://localhost:4173/lessons/s4-04/> 、<http://localhost:4173/lessons/s4-05/> 、<http://localhost:4173/lessons/s4-06/> 、<http://localhost:4173/lessons/s4-07/> 、<http://localhost:4173/lessons/s4-08/> 、 <http://localhost:4173/lessons/s5-01/> 、<http://localhost:4173/lessons/s5-02/> 或 <http://localhost:4173/lessons/s5-03/>。其余课程目录目前只保留元数据，尚未实现页面。
+启动 `bun run dev` 后，打开 <http://localhost:4173/lessons/s1-01/>、<http://localhost:4173/lessons/s1-02/>、<http://localhost:4173/lessons/s1-03/>、<http://localhost:4173/lessons/s1-04/>、<http://localhost:4173/lessons/s1-05/>、<http://localhost:4173/lessons/s1-06/>、<http://localhost:4173/lessons/s1-07/>、<http://localhost:4173/lessons/s1-08/>、<http://localhost:4173/lessons/s2-01/>、<http://localhost:4173/lessons/s2-02/>、<http://localhost:4173/lessons/s2-03/>、<http://localhost:4173/lessons/s2-04/>、<http://localhost:4173/lessons/s2-05/>、<http://localhost:4173/lessons/s2-06/>、<http://localhost:4173/lessons/s2-07/>、<http://localhost:4173/lessons/s2-08/>、<http://localhost:4173/lessons/s3-01/>、<http://localhost:4173/lessons/s3-02/>、<http://localhost:4173/lessons/s3-03/>、<http://localhost:4173/lessons/s3-04/>、<http://localhost:4173/lessons/s3-05/>、<http://localhost:4173/lessons/s3-06/> 、<http://localhost:4173/lessons/s3-07/> 、<http://localhost:4173/lessons/s3-08/> 、<http://localhost:4173/lessons/s4-01/> 、<http://localhost:4173/lessons/s4-02/> 、<http://localhost:4173/lessons/s4-03/> 、<http://localhost:4173/lessons/s4-04/> 、<http://localhost:4173/lessons/s4-05/> 、<http://localhost:4173/lessons/s4-06/> 、<http://localhost:4173/lessons/s4-07/> 、<http://localhost:4173/lessons/s4-08/> 、 <http://localhost:4173/lessons/s5-01/> 、<http://localhost:4173/lessons/s5-02/> 、<http://localhost:4173/lessons/s5-03/> 、<http://localhost:4173/lessons/s5-04/> 、<http://localhost:4173/lessons/s5-05/> 、<http://localhost:4173/lessons/s5-06/> 、<http://localhost:4173/lessons/s5-07/> 或 <http://localhost:4173/lessons/s5-08/>。全部 40 节课程目录均已实现互动学习页与随机测验，内容仍待人工审校。
 
 
 课件里的陌生词（例如 `g++`）可点开 [`glossary/faq.json`](./glossary/faq.json) 中的基础解释。后续课件出现同类概念时，也必须引用同一份词条表。
