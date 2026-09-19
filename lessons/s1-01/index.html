@@ -209,6 +209,35 @@
         transform: translateY(1px) scale(0.98);
       }
 
+      .level-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .level-chip {
+        padding: 5px 9px;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .level-chip.is-required {
+        color: var(--forest);
+        background: var(--orange-soft);
+      }
+
+      .level-chip.is-recommended {
+        color: var(--forest);
+        background: var(--mint);
+      }
+
+      .level-chip.is-extra {
+        color: #476056;
+        background: rgba(24, 55, 47, 0.1);
+      }
+
       .mission-slip {
         z-index: 1;
         align-self: end;
@@ -1030,6 +1059,11 @@
           <p>
             这一课不要求你背很多单词。你只要完成四个小任务：看懂程序入口、走一遍编译流程、修复一个小错误，再做一套随机小测。
           </p>
+          <div class="level-legend" aria-label="必会、建议掌握和拓展">
+            <span class="level-chip is-required">必会：main、#include、cout、分号排错</span>
+            <span class="level-chip is-recommended">建议掌握：编译工具 g++ 的名字与作用</span>
+            <span class="level-chip is-extra">拓展：在自己电脑上安装并配置编译器，本课不要求</span>
+          </div>
           <button id="beginButton" class="primary-action" type="button">开始第一个任务</button>
         </div>
         <aside class="mission-slip" aria-label="本课任务">
@@ -1094,6 +1128,7 @@
                 <span><button type="button" class="faq-term" data-faq="cout">cout</button> 把文字或结果显示到屏幕。</span>
               </div>
             </div>
+            <p class="guided-note"><strong>必会：</strong>#include、main、cout 这三个词现在就要记住它们各自的角色；先认清它们，后面的课才好往下走。</p>
             <button id="inspectSourceButton" class="secondary-action" type="button">点亮 main 入口</button>
             <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
@@ -1103,7 +1138,8 @@
             <p class="step-lead">
               电脑先看到的是给人看的 <button type="button" class="faq-term" data-faq="cpp-file">hello.cpp</button>；<button type="button" class="faq-term" data-faq="compile">编译</button>会把它翻译成电脑可以运行的程序。按从左到右的顺序点亮流程。后面出现的 <button type="button" class="faq-term" data-faq="gpp">g++</button> 只是这个翻译工具的名字。
             </p>
-            <p class="guided-note"><strong>这是概念演示，不是真正的在线编译器。</strong> 真实的 C++ 编译会在你的电脑工具中完成；这里帮你记住正确流程。</p>
+            <p class="guided-note"><strong>必会：</strong>写源文件 → 编译 → 运行的顺序不能颠倒，这是必会。<strong>建议掌握：</strong>知道 g++ 是常见编译工具的名字，属于建议掌握，暂时不需要记住它的具体参数。</p>
+            <p class="guided-note"><strong>这是概念演示，不是真正的在线编译器。</strong> 真实的 C++ 编译会在你的电脑工具中完成；这里帮你记住正确流程。<strong>拓展：</strong>在自己电脑上安装、配置 g++ 属于拓展内容，本课不要求。</p>
             <div class="flow-line" aria-label="源文件、编译、运行流程">
               <button id="saveSourceButton" class="flow-action" type="button">
                 <span class="flow-index">A</span>
@@ -1130,6 +1166,7 @@
             <p class="step-lead">
               C++ 中多数一行指令都要用 <button type="button" class="faq-term" data-faq="semicolon">;</button> 结束。下面这段代码在输出行少了一个分号；选出最小、最准确的修复方式。
             </p>
+            <p class="guided-note"><strong>必会：</strong>看到编译报错先找“少了分号”这类最常见原因，再动手改最小的一处，不要整段重写。</p>
             <div class="code-sheet" aria-label="有一个分号错误的 C++ 程序">
               <ol>
                 <li>#include &lt;iostream&gt;</li>
@@ -1179,43 +1216,63 @@
       const questionPool = [
         {
           id: "entry",
+          courseId: "S1-01",
           objective: "知道程序从哪里开始执行",
+          difficulty: "required",
+          type: "choice",
           prompt: "C++ 程序通常从哪一个函数开始执行？",
           options: ["main", "cout", "include", "return"],
           answer: 0,
           explanation: "main 是程序入口。cout 用来输出，include 引入工具，return 用来结束函数并返回结果。",
+          source: "course-plan / 自编",
         },
         {
           id: "source-file",
+          courseId: "S1-01",
           objective: "区分源文件与运行结果",
+          difficulty: "required",
+          type: "choice",
           prompt: "下面哪一个最像刚写好的 C++ 源文件名？",
           options: ["hello.cpp", "hello.exe", "hello.output", "hello.score"],
           answer: 0,
           explanation: ".cpp 是 C++ 源文件的常见扩展名；它还需要经过编译，才能变成可运行程序。",
+          source: "course-plan / 自编",
         },
         {
           id: "workflow",
+          courseId: "S1-01",
           objective: "记住写入、编译、运行的顺序",
+          difficulty: "required",
+          type: "choice",
           prompt: "把 C++ 程序显示到屏幕的正确顺序是？",
           options: ["写源文件 → 编译 → 运行", "运行 → 编译 → 写源文件", "编译 → 写源文件 → 运行", "写源文件 → 运行 → 编译"],
           answer: 0,
           explanation: "先有源文件，再由编译器翻译，最后才运行翻译后的程序。",
+          source: "course-plan / 自编",
         },
         {
           id: "cout",
+          courseId: "S1-01",
           objective: "识别最基本的输出工具",
+          difficulty: "recommended",
+          type: "choice",
           prompt: "想把“Hello”显示到屏幕，下面哪个工具最接近正确选择？",
           options: ["std::cout", "std::cin", "int", "main"],
           answer: 0,
           explanation: "std::cout 负责输出；std::cin 负责读入；int 和 main 分别承担类型与入口的角色。",
+          source: "course-plan / 自编",
         },
         {
           id: "semicolon",
+          courseId: "S1-01",
           objective: "认识分号的作用",
+          difficulty: "required",
+          type: "choice",
           prompt: "下面的输出语句少了什么最容易导致编译报错？",
           options: ["行末的分号 ;", "文件名中的 .cpp", "main 前面的 int", "双引号里的文字"],
           answer: 0,
           explanation: "这类语句通常要用分号结束。少了分号时，编译器会指出附近的语法问题。",
+          source: "course-plan / 自编",
         },
       ];
 

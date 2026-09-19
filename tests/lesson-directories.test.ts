@@ -72,7 +72,19 @@ async function expectImplementedInteractiveLesson(directory: string) {
 }
 
 test("the first lesson supplies a guided interactive page and randomized choice quiz", async () => {
-  await expectImplementedInteractiveLesson("s1-01");
+  const { source, manifest } = await expectImplementedInteractiveLesson("s1-01");
+
+  expect(manifest.faqTermIds).toContain("main");
+  expect(manifest.faqTermIds).toContain("include");
+  expect(manifest.faqTermIds).toContain("cout");
+  expect(source).toContain("必会");
+  expect(source).toContain("建议掌握");
+  expect(source).toContain("拓展");
+  expect(source).toContain('courseId: "S1-01"');
+  expect(source).toContain('difficulty: "required"');
+  expect(source).toContain('type: "choice"');
+  expect(source).toContain('source: "course-plan / 自编"');
+  expect(source).toContain("csp-cpp-s1-01-progress-v1");
 });
 
 test("S1-02 supplies a guided variable lesson and randomized choice quiz", async () => {
