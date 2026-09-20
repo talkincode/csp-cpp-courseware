@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,27 @@
               <div class="box-meta" id="variableMeta">先点“比较 3 和 1，交换”，看大的数往后走。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="swapMicro" hidden>
+              <p class="step-lead">
+                对照走完了，现在亲手把这个交换敲出来。相邻两格比出大小后，用 <button type="button" class="faq-term" data-faq="swap">交换</button> 把大的那个往后挪。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="相邻交换的脚手架，只留一空">
+                <ol>
+                  <li>int a[3] = {3, 1, 2};</li>
+                  <li class="focus-line">if (a[0] &gt; a[1]) <input id="swapInput" class="micro-input" type="text" value="" placeholder="swap( ? )" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="30" aria-label="在 if 后面写出把两格交换过来的写法" />; // 得到 1, 3, 2</li>
+                  <li>if (a[1] &gt; a[2]) swap(a[1], a[2]); // 得到 1, 2, 3</li>
+                  <li>// 现在已经从小到大</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="相邻交换的检查与兜底">
+                <button id="swapCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="swapHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="swapRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="swapResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="swapHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="swapRef" class="micro-ref" hidden>if (a[0] &gt; a[1]) swap(a[0], a[1]); // 大的 3 往后挪</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1539,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        swapDraft: "",
+        swapTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1563,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const swapMicro = document.querySelector("#swapMicro");
+      const swapInput = document.querySelector("#swapInput");
+      const swapHint = document.querySelector("#swapHint");
+      const swapRef = document.querySelector("#swapRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1596,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            swapDraft: typeof stored.swapDraft === "string" ? stored.swapDraft : "",
+            swapTyped: stored.swapTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1812,39 @@
         }
       }
 
+      function normalizeSwapInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkSwapFix(raw) {
+        const text = normalizeSwapInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下把这两格换过来的写法。想想交换是用哪个函数。" };
+        if (/[（），；：、。！？［］【】]/.test(text))
+          return { ok: false, message: "用了中文符号哦：括号和逗号都要半角，把输入法切到英文再敲一次。" };
+        if (text === "swap(a[0],a[1])" || text === "swap(a[1],a[0])") return { ok: true, message: "" };
+
+        const pair = text.match(/^swap\(([^,]+),([^,]+)\)$/);
+        if (pair && pair[1] === pair[2])
+          return { ok: false, message: "两格写的是同一个格子，换了等于没换。要比相邻的 a[0] 和 a[1]。" };
+        if (/^swap\(a\d/.test(text))
+          return { ok: false, message: "下标要写在半角方括号里：a[0]、a[1]，不是 a0、a1。" };
+        if (pair && /^a\[\d+\]$/.test(pair[1]) && /^a\[\d+\]$/.test(pair[2]))
+          return {
+            ok: false,
+            message: "这两格不相邻，中间还隔着别的数，跳着换会漏掉。这一步只换相邻两格：swap(a[0], a[1])。",
+          };
+        if (text.includes("="))
+          return {
+            ok: false,
+            message: "直接赋值会把原来那一格盖掉，两个格子会变成同一个值。要用 swap 交换，原来的值才不会丢。",
+          };
+        if (text === "swap" || text === "swap()")
+          return { ok: false, message: "还差要交换的两格：写成 swap(a[0], a[1]) 的样子。" };
+        if (text.startsWith("swap"))
+          return { ok: false, message: "swap( ) 里要写两个格子，用半角逗号分开：swap(a[0], a[1])。" };
+        return { ok: false, message: "这一空要写成 swap(a[0], a[1])：用它把相邻两格的值交换过来。" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1860,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "1, 2, 3";
           variableMeta.textContent = "相邻交换走完后，三个数已经从小到大。";
-          showFeedback(flowFeedback, "你已经走完 比较 3 和 1 → 比较 3 和 2 → 确认 1, 2, 3。下一步看 sort。");
+          showFeedback(
+            flowFeedback,
+            state.swapTyped
+              ? "你已经走完 比较 3 和 1 → 比较 3 和 2 → 确认 1, 2, 3，还亲手写出了交换。下一步看 sort。"
+              : "你已经走完 比较 3 和 1 → 比较 3 和 2 → 确认 1, 2, 3。现在在下面的空里亲手写出这个交换。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "1, 2, 3";
           variableMeta.textContent = "3 和 2 也交换了。下一步确认已经从小到大。";
@@ -1772,6 +1879,10 @@
           variableMeta.textContent = "先点“比较 3 和 1，交换”，看大的数往后走。";
           flowFeedback.textContent = "";
         }
+
+        if (swapMicro) swapMicro.hidden = !state.evenChecked;
+        if (swapInput && document.activeElement !== swapInput) swapInput.value = state.swapDraft ?? "";
+        swapInput?.classList.toggle("is-correct", state.swapTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2134,80 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这次对照已经走完，可以进入下一任务。");
+          announce(
+            state.swapTyped
+              ? "这次对照已经走完，可以进入下一任务。"
+              : "结果确认过了。亲手把交换写进下面的空里就能继续。",
+          );
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：3, 1, 2 经过相邻交换变成 1, 2, 3。下一步看 sort。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "结果确认过了，已经是 1, 2, 3。现在在下面的空里亲手写出这个交换。");
+        announce("3, 1, 2 已经变成 1, 2, 3。现在亲手写出把相邻两格换过来的写法：swap(a[0], a[1])。");
+        playSound("calm");
+      });
+
+      swapInput?.addEventListener("input", (event) => {
+        state.swapDraft = event.target.value;
+        state.swapTyped = false;
+        swapInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#swapCheckButton")?.addEventListener("click", () => {
+        const result = checkSwapFix(state.swapDraft);
+        if (!result.ok) {
+          showFeedback(swapHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          swapInput?.classList.add("is-wrong");
+          return;
+        }
+        swapInput?.classList.remove("is-wrong");
+        if (!state.swapTyped) {
+          state.swapTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：swap 让大的 3 往后挪，两个格子的值都没丢。下一步看 sort。");
+        }
+      });
+
+      document.querySelector("#swapHintButton")?.addEventListener("click", () => {
+        const text = normalizeSwapInput(state.swapDraft);
+        const hint = !text
+          ? "交换用的是 swap：括号里写两个格子，用半角逗号分开。这一步要换的是 a[0] 和 a[1]。"
+          : text.includes("swap(")
+            ? "已经有 swap( 了。检查里面是不是正好两个相邻格子 a[0] 和 a[1]，中间用半角逗号。"
+            : "这一空要的是 swap(a[0], a[1])：相邻比较之后，用它把两个格子的值换过来。";
+        showFeedback(swapHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#swapRefButton")?.addEventListener("click", () => {
+        if (swapRef) swapRef.hidden = !swapRef.hidden;
+        announce(swapRef && !swapRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#swapResetButton")?.addEventListener("click", () => {
+        state.swapDraft = "";
+        state.swapTyped = false;
+        if (swapHint) swapHint.textContent = "";
+        if (swapRef) swapRef.hidden = true;
+        swapInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (swapInput) swapInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
