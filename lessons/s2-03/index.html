@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,27 @@
               <div class="box-meta" id="variableMeta">先点“调用 isEven(4)”，确认把 4 传进去。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="callMicro" hidden>
+              <p class="step-lead">
+                调用走完了，现在亲手把这一空敲出来：<button type="button" class="faq-term" data-faq="function-definition">定义</button> 只写下规则，要用 <button type="button" class="faq-term" data-faq="function-call">调用</button> 才会真的跑一次。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="调用函数的脚手架，只留一空">
+                <ol>
+                  <li>bool isEven(int x) { // 只读：这是定义，写了它函数还不会自己跑</li>
+                  <li>  return x % 2 == 0;</li>
+                  <li>}</li>
+                  <li class="focus-line">bool ok = <input id="callInput" class="micro-input" type="text" value="" placeholder="isEven( ? )" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="24" aria-label="在等号右边写出调用 isEven 并传入 4 的写法" />; // 调用它，把最小示例里的 4 传进去</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="函数调用的检查与兜底">
+                <button id="callCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="callHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="callRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="callResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="callHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="callRef" class="micro-ref" hidden>bool ok = isEven(4); // 调用一次：函数名 + 半角小括号 + 参数</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1539,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        callDraft: "",
+        callTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1569,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const callMicro = document.querySelector("#callMicro");
+      const callInput = document.querySelector("#callInput");
+      const callHint = document.querySelector("#callHint");
+      const callRef = document.querySelector("#callRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1596,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            callDraft: typeof stored.callDraft === "string" ? stored.callDraft : "",
+            callTyped: stored.callTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1812,37 @@
         }
       }
 
+      function normalizeCallInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkCallFix(raw) {
+        const text = normalizeCallInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下调用：函数名后面跟一对半角小括号，把 4 传进去。" };
+        if (/[［］（）【】；：，、。！？]/.test(text))
+          return { ok: false, message: "用了中文符号哦：小括号要用半角 ( ) ，把输入法切到英文再敲一次。" };
+        if (/^(bool|int|void|long|double|char)isEven/.test(text))
+          return { ok: false, message: "这是定义，不是调用。定义只写下怎么做，要写 isEven(4) 才会真的跑一次。" };
+        if (!text.includes("(") || !text.endsWith(")"))
+          return { ok: false, message: "调用要带一对半角小括号：isEven(4)。只写函数名，函数不会自己跑起来。" };
+        if (!text.startsWith("isEven("))
+          return {
+            ok: false,
+            message: /^iseven\(/i.test(text)
+              ? "函数名大小写要一致：是 isEven，不是 iseven。"
+              : "调用要写成 isEven(4) 的样子：函数名 + 一对半角小括号，括号里放参数。",
+          };
+        if (!/^isEven\([^)]*\)$/.test(text))
+          return { ok: false, message: "调用要写成 isEven(4) 的样子：函数名 + 一对半角小括号，括号里放参数。" };
+
+        const argument = text.slice("isEven(".length, -1);
+        if (argument === "4") return { ok: true, message: "" };
+        return {
+          ok: false,
+          message: `这一空要传入最小示例里的 4：写成 isEven(4)，括号里换成 ${argument} 返回值就不是最小示例里的结果了。`,
+        };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1858,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "返回 true";
           variableMeta.textContent = "4 % 2 == 0，return 把 true 交回调用处。";
-          showFeedback(flowFeedback, "你已经走完 调用 → 参数 x → 返回值。下一步抽闰年判断。");
+          showFeedback(
+            flowFeedback,
+            state.callTyped
+              ? "你已经走完 调用 → 参数 x → 返回值，还亲手写出了调用。下一步抽闰年判断。"
+              : "你已经走完 调用 → 参数 x → 返回值。现在在下面的空里亲手写出这次调用。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "x = 4";
           variableMeta.textContent = "参数 x 拿到了 4。下一步看 return 交回什么。";
@@ -1772,6 +1877,10 @@
           variableMeta.textContent = "先点“调用 isEven(4)”，确认把 4 传进去。";
           flowFeedback.textContent = "";
         }
+
+        if (callMicro) callMicro.hidden = !state.evenChecked;
+        if (callInput && document.activeElement !== callInput) callInput.value = state.callDraft ?? "";
+        callInput?.classList.toggle("is-correct", state.callTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2132,76 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这次调用已经走完，可以进入下一任务。");
+          announce(state.callTyped ? "这次调用已经走完，可以进入下一任务。" : "返回值看过了。亲手把 isEven(4) 敲进下面的空里就能继续。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：调用把 4 交给 x，return 交回 true。下一步抽闰年判断。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "返回值看过了。现在在下面的空里亲手写出这次调用。");
+        announce("返回值看过了。现在亲手写出这次调用：isEven(4)。");
+        playSound("calm");
+      });
+
+      callInput?.addEventListener("input", (event) => {
+        state.callDraft = event.target.value;
+        state.callTyped = false;
+        callInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#callCheckButton")?.addEventListener("click", () => {
+        const result = checkCallFix(state.callDraft);
+        if (!result.ok) {
+          showFeedback(callHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          callInput?.classList.add("is-wrong");
+          return;
+        }
+        callInput?.classList.remove("is-wrong");
+        if (!state.callTyped) {
+          state.callTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：调用把 4 交给 x，还是你亲手写出来的。下一步抽闰年判断。");
+        }
+      });
+
+      document.querySelector("#callHintButton")?.addEventListener("click", () => {
+        const text = normalizeCallInput(state.callDraft);
+        const hint = !text
+          ? "调用长这样：函数名 + 半角小括号，括号里放 4。定义写了不会自己跑，要有调用。"
+          : text.includes("isEven(")
+            ? "已经有 isEven( 了。检查是不是用了半角小括号 ( ) ，括号里写上 4。"
+            : "这一空要的是 isEven(4)：函数名 isEven，加一对半角小括号，里面写 4。";
+        showFeedback(callHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#callRefButton")?.addEventListener("click", () => {
+        if (callRef) callRef.hidden = !callRef.hidden;
+        announce(callRef && !callRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#callResetButton")?.addEventListener("click", () => {
+        state.callDraft = "";
+        state.callTyped = false;
+        if (callHint) callHint.textContent = "";
+        if (callRef) callRef.hidden = true;
+        callInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (callInput) callInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

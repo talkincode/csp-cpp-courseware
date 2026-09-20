@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,27 @@
               <div class="box-meta" id="variableMeta">先点“看 s[0]”，确认第 1 个字符。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="lastCharMicro" hidden>
+              <p class="step-lead">
+                下标走完了，现在亲手把这个写法敲出来。<button type="button" class="faq-term" data-faq="string-index">字符串下标</button> 从 0 开始，最后一个字符的下标比长度小 1，写 <span class="inline-code">s[n]</span> 会越界。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="访问最后一个字符的脚手架，只留一空">
+                <ol>
+                  <li>string s = "Ada";</li>
+                  <li>int n = s.size(); // 3 个字符：下标 0、1、2</li>
+                  <li>// s[0] 是 'A'，s[1] 是 'd'，s[2] 是 'a'</li>
+                  <li class="focus-line">char last = <input id="lastCharInput" class="micro-input" type="text" value="" placeholder="s[ ? ]" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="20" aria-label="在等号右边写出访问最后一个字符的写法" />; // 记下最后一个字符</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="最后一个字符下标的检查与兜底">
+                <button id="lastCharCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="lastCharHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="lastCharRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="lastCharResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="lastCharHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="lastCharRef" class="micro-ref" hidden>char last = s[n - 1]; // 最后一个字符，n 变了也对</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1539,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        lastCharDraft: "",
+        lastCharTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1569,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const lastCharMicro = document.querySelector("#lastCharMicro");
+      const lastCharInput = document.querySelector("#lastCharInput");
+      const lastCharHint = document.querySelector("#lastCharHint");
+      const lastCharRef = document.querySelector("#lastCharRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1596,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            lastCharDraft: typeof stored.lastCharDraft === "string" ? stored.lastCharDraft : "",
+            lastCharTyped: stored.lastCharTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1812,38 @@
         }
       }
 
+      function normalizeIndexInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkLastCharFix(raw) {
+        const text = normalizeIndexInput(raw);
+        if (!text)
+          return { ok: false, message: "先在空里写下访问最后一个字符的写法。想想 s[0] 是第 1 个，最后一个该是多少。" };
+        if (/[［］（）【】；：，、。！？]/.test(text))
+          return { ok: false, message: "用了中文符号哦：方括号要用半角 [ ] ，把输入法切到英文再敲一次。" };
+        if (!/^s\[[^\]]+\]$/.test(text)) {
+          if (!text.includes("["))
+            return { ok: false, message: "还差一对半角方括号：字符串取字符要写成 s[ 下标 ] 的样子。" };
+          return { ok: false, message: "这一空要写成 s[ 下标 ]：字符串名 s，加一对半角方括号，下标写在里面。" };
+        }
+
+        const inner = text.slice(2, -1);
+        if (inner === "n-1") return { ok: true, message: "" };
+        if (inner === "n")
+          return { ok: false, message: "s[n] 是越界：长度为 n 时合法下标只到 n - 1，那个位置没有字符。" };
+        if (inner === "n+1")
+          return { ok: false, message: "s[n + 1] 比 s[n] 还往后，越界更远了。最后一个是 s[n - 1]。" };
+        if (inner === "0")
+          return { ok: false, message: "s[0] 是第 1 个字符，不是最后一个。最后一个比长度小 1，写成 s[n - 1]。" };
+        if (/^\d+$/.test(inner))
+          return {
+            ok: false,
+            message: `s[${inner}] 是把数字写死了，换个字符串就不对。最后一个字符写成 s[n - 1]，n 变了也对。`,
+          };
+        return { ok: false, message: "下标部分只要一个 n - 1：最后一个字符的下标比长度小 1。" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1859,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "s[2] = 'a'";
           variableMeta.textContent = "最后一个是 s[n - 1]。n = 3 时不要写 s[3]。";
-          showFeedback(flowFeedback, "你已经走完 s[0] → s[1] → s[n - 1]。下一步遍历并统计。");
+          showFeedback(
+            flowFeedback,
+            state.lastCharTyped
+              ? "你已经走完 s[0] → s[1] → s[n - 1]，还亲手写了出来。下一步遍历并统计。"
+              : "你已经走完 s[0] → s[1] → s[n - 1]。现在在下面的空里亲手写出这个访问写法。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "s[1] = 'd'";
           variableMeta.textContent = "第 2 个字符在 s[1]。下一步看最后一个 s[n - 1]。";
@@ -1772,6 +1878,11 @@
           variableMeta.textContent = "先点“看 s[0]”，确认第 1 个字符。";
           flowFeedback.textContent = "";
         }
+
+        if (lastCharMicro) lastCharMicro.hidden = !state.evenChecked;
+        if (lastCharInput && document.activeElement !== lastCharInput)
+          lastCharInput.value = state.lastCharDraft ?? "";
+        lastCharInput?.classList.toggle("is-correct", state.lastCharTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2134,76 @@
           return;
         }
         if (state.evenChecked) {
-          announce("字符已经走完，可以进入下一任务。");
+          announce(state.lastCharTyped ? "字符已经走完，可以进入下一任务。" : "最后一个字符看过了。亲手把 s[n - 1] 敲进下面的空里就能继续。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：最后一个是 s[n - 1]。下一步遍历并统计。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "最后一个字符看过了。现在在下面的空里亲手写出访问最后一个字符的写法。");
+        announce("最后一个字符看过了。现在亲手写出访问最后一个字符的写法：s[n - 1]。");
+        playSound("calm");
+      });
+
+      lastCharInput?.addEventListener("input", (event) => {
+        state.lastCharDraft = event.target.value;
+        state.lastCharTyped = false;
+        lastCharInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#lastCharCheckButton")?.addEventListener("click", () => {
+        const result = checkLastCharFix(state.lastCharDraft);
+        if (!result.ok) {
+          showFeedback(lastCharHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          lastCharInput?.classList.add("is-wrong");
+          return;
+        }
+        lastCharInput?.classList.remove("is-wrong");
+        if (!state.lastCharTyped) {
+          state.lastCharTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：最后一个是 s[n - 1]，还是你亲手写出来的。下一步遍历并统计。");
+        }
+      });
+
+      document.querySelector("#lastCharHintButton")?.addEventListener("click", () => {
+        const text = normalizeIndexInput(state.lastCharDraft);
+        const hint = !text
+          ? "下标从 0 开始，所以最后一个字符的下标比长度小 1：把 n - 1 写进方括号里。"
+          : text.includes("n-1")
+            ? "已经有 n - 1 了。检查是不是用了半角方括号 [ ] ，或者前面多了别的字。"
+            : "这一空要的是 s[n - 1]：字符串名 s，加一对半角方括号，里面写 n - 1。";
+        showFeedback(lastCharHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#lastCharRefButton")?.addEventListener("click", () => {
+        if (lastCharRef) lastCharRef.hidden = !lastCharRef.hidden;
+        announce(lastCharRef && !lastCharRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#lastCharResetButton")?.addEventListener("click", () => {
+        state.lastCharDraft = "";
+        state.lastCharTyped = false;
+        if (lastCharHint) lastCharHint.textContent = "";
+        if (lastCharRef) lastCharRef.hidden = true;
+        lastCharInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (lastCharInput) lastCharInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
