@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(340px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,35 @@
               <div class="box-meta" id="variableMeta">先点“缩小：把 n=5 的错误缩到 n=2 仍错”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="debugPrintMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在把“分段输出”落成一行代码：在循环里把这一轮的轮次 i 和当前算出来的和 prefix 都打到屏幕上，再和手算对照。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="求前缀和的脚手架，只留一空">
+                <ol>
+                  <li>// 现象：n=5，a=[1,1,2,3,3]，手算应是 10，程序却输出 9</li>
+                  <li>int a[5] = {1, 1, 2, 3, 3};</li>
+                  <li>int prefix = 0;                        // prefix：加到这一轮为止的和</li>
+                  <li>int main() {</li>
+                  <li>    for (int i = 1; i &lt;= 4; i += 1) {   // 可疑：这一轮该从哪里开始加？</li>
+                  <li class="focus-line">        <input id="debugPrintInput" class="micro-input" type="text" value="" placeholder="cout &lt;&lt; ____;" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="80" aria-label="写出分段输出的那一行" />   // 分段输出：把 i 和 prefix 都打出来</li>
+                  <li>        prefix += a[i];</li>
+                  <li>    }</li>
+                  <li>    cout &lt;&lt; prefix &lt;&lt; "\n";             // 输出 9</li>
+                  <li>    return 0;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="分段输出那一行的检查与兜底">
+                <button id="debugPrintCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="debugPrintHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="debugPrintRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="debugPrintResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="debugPrintHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="debugPrintRef" class="micro-ref" hidden>        cout &lt;&lt; i &lt;&lt; " " &lt;&lt; prefix &lt;&lt; "\n";   // 每一轮各占一行，才好和手算对照</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1547,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        debugPrintDraft: "",
+        debugPrintTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1498,6 +1569,10 @@
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
+      const debugPrintMicro = document.querySelector("#debugPrintMicro");
+      const debugPrintInput = document.querySelector("#debugPrintInput");
+      const debugPrintHint = document.querySelector("#debugPrintHint");
+      const debugPrintRef = document.querySelector("#debugPrintRef");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
       const quizForm = document.querySelector("#quizForm");
@@ -1529,6 +1604,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            debugPrintDraft: typeof stored.debugPrintDraft === "string" ? stored.debugPrintDraft : "",
+            debugPrintTyped: stored.debugPrintTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1604,16 +1681,95 @@
         });
       }
 
+      function normalizeDebugPrintInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkDebugPrint(raw) {
+        const text = normalizeDebugPrintInput(raw);
+        if (!text)
+          return {
+            ok: false,
+            message: "先在空里写出分段输出的那一行：把轮次 i 和当前的 prefix 都打出来，才能和手算对照。",
+          };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞％０-９]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：尖括号、引号和分号都要敲半角 < > \" ; 。" };
+        if (!text.endsWith(";"))
+          return { ok: false, message: "是不是漏了末尾的半角分号呀？C++ 每条语句末尾都要写 ; 。" };
+
+        const body = text.slice(0, -1);
+        if (/^cin/.test(body))
+          return {
+            ok: false,
+            message: "方向反了：cin 和 >> 是用来读入的。要把中间值打印出来看，得写 cout << i << \" \" << prefix;",
+          };
+        if (/^cout>>/.test(body))
+          return {
+            ok: false,
+            message: "输出用的是两个小于号 << ，>> 是读入方向。写成 cout << i << \" \" << prefix; 才打得出来。",
+          };
+
+        const printsRound = body.includes("<<i<") || body.endsWith("<<i");
+        const printsSum = body.includes("<<prefix<") || body.endsWith("<<prefix");
+
+        if (/<<a\[i\]/.test(body) && !printsSum)
+          return {
+            ok: false,
+            message: "打的是数组里的 a[i]，不是“加到这一轮为止的和”：要打 prefix，才能和手算的 prefix 对照。",
+          };
+        if (/^cout<<"i"/.test(body) && !printsRound)
+          return {
+            ok: false,
+            message: "“i” 一旦加上引号就变成固定文字：引号里是给眼睛看的文字，不带引号的 i 才是这一轮的真实轮次。",
+          };
+        if (/<<(i\+prefix|prefix\+i)<<|<<(i\+prefix|prefix\+i)$/.test(body))
+          return {
+            ok: false,
+            message: "这样只会打出一个相加后的数：i 和 prefix 各自是多少看不出来，也就判断不了从哪一轮开始不对。",
+          };
+        if (!printsRound && printsSum)
+          return {
+            ok: false,
+            message: "少了 i：只看 prefix 看不出这是第几轮加出来的。把轮次一起打出来，才知道循环从哪一轮开始不对。",
+          };
+        if (printsRound && !printsSum)
+          return {
+            ok: false,
+            message: "少了 prefix：只看到第几轮还不够，还要把这一轮算出来的和打出来，才能和手算比。",
+          };
+        if (!printsRound && !printsSum) {
+          if (/,/.test(body))
+            return {
+              ok: false,
+              message: "逗号不是连接符：cout << i, prefix; 只会打出 i 。两个值各接一个 << ，中间可以加引号里的空格。",
+            };
+          return {
+            ok: false,
+            message: "这一空要写成 cout << i << \" \" << prefix; ：把轮次 i 和当前的和 prefix 都打到屏幕上。",
+          };
+        }
+
+        const endsWithNewline = /(<<"\\n"|<<endl|<<'\\n')$/.test(body);
+        return {
+          ok: true,
+          message: endsWithNewline
+            ? ""
+            : "两个值都打出来了。再加一个换行（<< \"\\n\" 或 << endl）让每一轮各占一行，对照手算更清楚。",
+        };
+      }
+
       function conceptSolved() {
         return state.methodSolved && state.tieRuleSolved;
       }
 
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.toolsMatched, state.transitioned && state.debugPrintTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.debugPrintTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1772,6 +1928,12 @@
           variableMeta.textContent = "先点“缩小：把 n=5 的错误缩到 n=2 仍错”。";
           flowFeedback.textContent = "";
         }
+
+        if (debugPrintMicro) debugPrintMicro.hidden = !state.transitioned;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (debugPrintInput && document.activeElement !== debugPrintInput)
+          debugPrintInput.value = state.debugPrintDraft ?? "";
+        debugPrintInput?.classList.toggle("is-correct", state.debugPrintTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2190,75 @@
         }
 
         state.transitioned = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(
+          flowFeedback,
+          "三步走完了：缩小、分段输出、回归都对上了，错误就是循环从 i=1 开始、漏了 a[0]。现在在下面的空里亲手写出分段输出的那一行。",
+        );
+        announce("三步已经走完。现在亲手写出分段输出的那一行：把轮次 i 和当前的和 prefix 都打出来，对照手算。");
+        playSound("calm");
+      });
+
+      debugPrintInput?.addEventListener("input", (event) => {
+        state.debugPrintDraft = event.target.value;
+        state.debugPrintTyped = false;
+        debugPrintInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#debugPrintCheckButton")?.addEventListener("click", () => {
+        const result = checkDebugPrint(state.debugPrintDraft);
+        if (!result.ok) {
+          showFeedback(debugPrintHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          debugPrintInput?.classList.add("is-wrong");
+          return;
+        }
+        debugPrintInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(debugPrintHint, result.message);
+        if (!state.debugPrintTyped) {
+          state.debugPrintTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：分段输出那一行是你亲手写的。下一步看断言思路和差分检查。");
+        }
+      });
+
+      document.querySelector("#debugPrintHintButton")?.addEventListener("click", () => {
+        const text = normalizeDebugPrintInput(state.debugPrintDraft);
+        const hint = !text
+          ? "要写的是 cout << i << \" \" << prefix; ：先打轮次 i ，再打当前的和 prefix 。"
+          : text.includes("prefix")
+            ? "已经有 prefix 了。检查三样：轮次 i 也一起打；两个值各接一个 << ；末尾有半角分号。"
+            : "先写 cout << ，再把要看的两个值都接上：cout << i << \" \" << prefix; 。";
+        showFeedback(debugPrintHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#debugPrintRefButton")?.addEventListener("click", () => {
+        if (debugPrintRef) debugPrintRef.hidden = !debugPrintRef.hidden;
+        announce(debugPrintRef && !debugPrintRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#debugPrintResetButton")?.addEventListener("click", () => {
+        state.debugPrintDraft = "";
+        state.debugPrintTyped = false;
+        if (debugPrintHint) debugPrintHint.textContent = "";
+        if (debugPrintRef) debugPrintRef.hidden = true;
+        debugPrintInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (debugPrintInput) debugPrintInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：缩小、分段输出、回归都走完了。下一步看断言思路和差分检查。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

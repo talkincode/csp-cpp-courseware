@@ -9,8 +9,6 @@ const lessonsRoot = `${projectRoot}/lessons`;
 // 这样「补完一课却忘了从清单里划掉」和「新写一课却没有输入框」都会当场失败。
 const pendingTypedPractice = [
   "s5-01",
-  "s5-02",
-  "s5-03",
   "s5-04",
   "s5-05",
   "s5-06",

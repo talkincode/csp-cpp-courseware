@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(340px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,36 @@
               <div class="box-meta" id="variableMeta">先点“定位：找出哪个变量的类型装不下结果”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="sumTypeMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在把“改型”落成一行代码：给累加变量选一个装得下 10^10 的类型，并让它从 0 开始。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="累加求和的脚手架，只留一空">
+                <ol>
+                  <li>// 现象：n=100000，每项约 10^5，手算总和约 10^10，程序却输出负数</li>
+                  <li>int a[100005];</li>
+                  <li>int main() {</li>
+                  <li>    int n;</li>
+                  <li>    cin &gt;&gt; n;</li>
+                  <li>    for (int i = 0; i &lt; n; i += 1) cin &gt;&gt; a[i];</li>
+                  <li class="focus-line">    <input id="sumTypeInput" class="micro-input" type="text" value="" placeholder="____ 累加变量从 0 开始" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="80" aria-label="写出累加变量的那一行声明" />   // 改型：让 sum 装得下 10^10</li>
+                  <li>    for (int i = 0; i &lt; n; i += 1) {</li>
+                  <li>        sum += a[i];</li>
+                  <li>    }</li>
+                  <li>    cout &lt;&lt; sum &lt;&lt; "\n";</li>
+                  <li>    return 0;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="累加变量声明的检查与兜底">
+                <button id="sumTypeCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="sumTypeHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="sumTypeRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="sumTypeResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="sumTypeHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="sumTypeRef" class="micro-ref" hidden>    long long sum = 0;   // 类型、名字、初值、分号，四样都要对上</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1502,6 +1572,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        sumTypeDraft: "",
+        sumTypeTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1522,6 +1594,10 @@
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
+      const sumTypeMicro = document.querySelector("#sumTypeMicro");
+      const sumTypeInput = document.querySelector("#sumTypeInput");
+      const sumTypeHint = document.querySelector("#sumTypeHint");
+      const sumTypeRef = document.querySelector("#sumTypeRef");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
       const quizForm = document.querySelector("#quizForm");
@@ -1553,6 +1629,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            sumTypeDraft: typeof stored.sumTypeDraft === "string" ? stored.sumTypeDraft : "",
+            sumTypeTyped: stored.sumTypeTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1628,16 +1706,58 @@
         });
       }
 
+      function normalizeSumTypeInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkSumType(raw) {
+        const text = normalizeSumTypeInput(raw);
+        if (!text)
+          return { ok: false, message: "先在空里写下累加变量的声明：类型、名字、初值、分号，四样都要有。" };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊／·．“”‘’＜＞％０-９]/.test(text))
+          return { ok: false, message: "敲成中文或全角符号了：等号和分号要用半角的 = 和 ; 才认。" };
+        if (!text.endsWith(";"))
+          return { ok: false, message: "是不是漏了末尾的半角分号呀？声明也是一条语句，结尾要写 ; 。" };
+
+        const body = text.slice(0, -1);
+
+        if (/^double/.test(body))
+          return { ok: false, message: "double 是给小数用的：整数求和坚持用整数类型，不然大数会变成不精确的近似值。" };
+        if (/^unsignedint/.test(body))
+          return { ok: false, message: "unsigned int 只是把上限抬高一点，还是装不下 10^10 量级的和：要写 long long 。" };
+        if (/^int/.test(body))
+          return { ok: false, message: "int 还是装不下：int 大约到 2×10^9 ，这题的和约 10^10 ，早就越过去了。" };
+        if (/^long(?!long)/.test(body))
+          return { ok: false, message: "只写一个 long 不保险：它在不同平台上宽度不一样；累加和要写明确的 long long 。" };
+        if (/^longlong/.test(body)) {
+          if (/Sum/.test(body))
+            return { ok: false, message: "变量名大小写检查一下哦：脚手架里是小写 sum ，写成 Sum 会被当成另一个变量。" };
+          if (/,/.test(body))
+            return { ok: false, message: "声明里不用逗号：一行只声明一个变量，写成 long long sum = 0; 就好。" };
+          if (/=1/.test(body))
+            return { ok: false, message: "初值要从 0 开始：写成 1 会把总和整体多加 1 ，第一次累加就不对了。" };
+          if (/(0|0LL|0ll)$/.test(body)) return { ok: true, message: "" };
+          if (/=/.test(body))
+            return { ok: false, message: "等号后面就是初值：这里要写 0 ，让累加从零开始。" };
+          return { ok: false, message: "少了初始值：先写 = 0 再进循环，不然 sum 带着一个不确定的值开始加。" };
+        }
+        if (/^sum/.test(body))
+          return { ok: false, message: "少了类型：声明先写类型再写名字，光有 sum = 0; 编译器不知道要准备多大的柜子。" };
+        return { ok: false, message: "这一行要写成 long long sum = 0; ：类型、名字、初值、分号，四样都要对上。" };
+      }
+
       function conceptSolved() {
         return state.methodSolved && state.tieRuleSolved;
       }
 
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.toolsMatched, state.transitioned && state.sumTypeTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.sumTypeTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1796,6 +1916,11 @@
           variableMeta.textContent = "先点“定位：找出哪个变量的类型装不下结果”。";
           flowFeedback.textContent = "";
         }
+
+        if (sumTypeMicro) sumTypeMicro.hidden = !state.transitioned;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (sumTypeInput && document.activeElement !== sumTypeInput) sumTypeInput.value = state.sumTypeDraft ?? "";
+        sumTypeInput?.classList.toggle("is-correct", state.sumTypeTyped);
       }
 
       function renderDebugTask() {
@@ -2052,10 +2177,75 @@
         }
 
         state.transitioned = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(
+          flowFeedback,
+          "三步走完了：定位、改型、回归都对上了，问题就是 sum 用 int 存不下 10^10 量级的和。现在在下面的空里亲手写出改型后的那一行声明。",
+        );
+        announce("三步已经走完。现在亲手写出累加变量的那一行声明：类型、名字、初值、分号，四样都要对上。");
+        playSound("calm");
+      });
+
+      sumTypeInput?.addEventListener("input", (event) => {
+        state.sumTypeDraft = event.target.value;
+        state.sumTypeTyped = false;
+        sumTypeInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#sumTypeCheckButton")?.addEventListener("click", () => {
+        const result = checkSumType(state.sumTypeDraft);
+        if (!result.ok) {
+          showFeedback(sumTypeHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          sumTypeInput?.classList.add("is-wrong");
+          return;
+        }
+        sumTypeInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(sumTypeHint, result.message);
+        if (!state.sumTypeTyped) {
+          state.sumTypeTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：改型后的声明是你亲手写的。下一步看优先级、比较符号与调试残留。");
+        }
+      });
+
+      document.querySelector("#sumTypeHintButton")?.addEventListener("click", () => {
+        const text = normalizeSumTypeInput(state.sumTypeDraft);
+        const hint = !text
+          ? "要写的是 long long sum = 0; ：先写类型 long long ，再写名字 sum ，最后给初值 0 。"
+          : text.includes("longlong")
+            ? "类型对了。再检查三样：名字是小写 sum ；等号后面是 0 ；末尾有半角分号。"
+            : "回想“定位”那一步：int 大约到 2×10^9 ，这题的和约 10^10 。类型要换成能装下它的那个。";
+        showFeedback(sumTypeHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#sumTypeRefButton")?.addEventListener("click", () => {
+        if (sumTypeRef) sumTypeRef.hidden = !sumTypeRef.hidden;
+        announce(sumTypeRef && !sumTypeRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#sumTypeResetButton")?.addEventListener("click", () => {
+        state.sumTypeDraft = "";
+        state.sumTypeTyped = false;
+        if (sumTypeHint) sumTypeHint.textContent = "";
+        if (sumTypeRef) sumTypeRef.hidden = true;
+        sumTypeInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (sumTypeInput) sumTypeInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：定位、改型、回归都走完了。下一步看优先级、比较符号与调试残留。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
