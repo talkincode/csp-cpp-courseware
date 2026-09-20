@@ -1536,6 +1536,19 @@
           explanation: "这是建议掌握：1 和 2 都是整数，1 / 2 会丢掉小数，结果是 0。需要 0.5 时至少一边写成小数，例如 1.0 / 2。这不是现在的硬门槛。",
           source: "course-plan / 自编",
         },
+        {
+          id: "perimeter-translate",
+          courseId: "S1-03",
+          objectiveIndex: 0,
+          objective: "能把文字公式翻译成算式",
+          difficulty: "required",
+          type: "choice",
+          prompt: "文字写着「周长 = 两边之和再乘 2」。翻译成 C++ 表达式，哪一项对？",
+          options: ["2 * (length + width)", "length * width", "length + width + 2", "length * 2 + width"],
+          answer: 0,
+          explanation: "「两边之和再乘 2」要先把 length 和 width 加起来，再把整个和乘 2，所以写成 2 * (length + width)。length * width 是面积；length + width + 2 把「乘 2」听成了「加 2」；length * 2 + width 只把长乘了 2，宽没有乘。",
+          source: "course-plan / 自编",
+        },
       ];
 
       const defaultState = {

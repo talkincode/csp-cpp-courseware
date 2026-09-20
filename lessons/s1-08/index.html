@@ -1543,6 +1543,24 @@
           explanation: "先造最小数据，再分段输出中间值。gdb 是拓展，现在不用当硬门槛。",
           source: "course-plan / 自编",
         },
+        {
+          id: "checkable-habits",
+          courseId: "S1-08",
+          objectiveIndex: 1,
+          objective: "知道缩进和命名是给谁看的",
+          difficulty: "required",
+          type: "choice",
+          prompt: "关于缩进和命名，哪一项说法对？",
+          options: [
+            "它们是把代码写得方便检查的习惯，编译器不靠缩进和名字判断对错",
+            "缩进少一格，程序就会编译错误",
+            "变量名起得不好，程序一定会运行错误",
+            "只要缩进整齐，漏写分号也能通过编译",
+          ],
+          answer: 0,
+          explanation: "缩进和命名都是「可检查的书写习惯」：对齐了、名字起得能看懂，你自己和同学一眼就能看出谁在循环里面、变量记的是什么。但 C++ 不靠它们决定对错——漏写分号仍然是编译错误，缩进再整齐也救不回来。",
+          source: "course-plan / 自编",
+        },
       ];
 
       const defaultState = {
