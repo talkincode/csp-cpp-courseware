@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,27 @@
               <div class="box-meta" id="variableMeta">先点“调用 addOne(n)”，确认把 5 传进去。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="passParamMicro" hidden>
+              <p class="step-lead">
+                对照走完了，现在亲手把这个形参敲出来。函数体里写的是 <span class="inline-code">x = x + 1</span>，所以要的是 <button type="button" class="faq-term" data-faq="pass-by-value">值传递</button> 的一份副本，而不是外面的 <span class="inline-code">n</span>。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="值传递形参的脚手架，只留一空">
+                <ol>
+                  <li>void addOne(<input id="passParamInput" class="micro-input" type="text" value="" placeholder="int ?" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="20" aria-label="在括号里写出 addOne 的形参" />) {</li>
+                  <li class="focus-line">  x = x + 1; // 改的只是副本</li>
+                  <li>}</li>
+                  <li>int n = 5; addOne(n); // n 仍是 5</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="值传递形参的检查与兜底">
+                <button id="passParamCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="passParamHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="passParamRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="passParamResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="passParamHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="passParamRef" class="micro-ref" hidden>void addOne(int x) { x = x + 1; } // 形参写成 int x，外面的 n 不会被改动</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1539,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        passParamDraft: "",
+        passParamTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1563,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const passParamMicro = document.querySelector("#passParamMicro");
+      const passParamInput = document.querySelector("#passParamInput");
+      const passParamHint = document.querySelector("#passParamHint");
+      const passParamRef = document.querySelector("#passParamRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1596,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            passParamDraft: typeof stored.passParamDraft === "string" ? stored.passParamDraft : "",
+            passParamTyped: stored.passParamTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1812,41 @@
         }
       }
 
+      function normalizeParamInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkPassByValueFix(raw) {
+        const text = normalizeParamInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下 addOne 的形参。想想函数体里用的是哪个名字。" };
+        if (/[［］（）【】；：，、。！？＆]/.test(text))
+          return { ok: false, message: "用了中文符号哦：括号和冒号都要半角，把输入法切到英文再敲一次。" };
+        if (/[()]/.test(text))
+          return { ok: false, message: "这一空只要写括号里的形参：先写类型 int，再写参数名 x，不要把函数名和括号也写进来。" };
+        if (text.startsWith("int&"))
+          return {
+            ok: false,
+            message: "int &x 是引用，会真的改到外面的 n。这个任务要的是副本，写成 int x；引用是任务 3 的建议掌握。",
+          };
+        if (text.startsWith("int*"))
+          return {
+            ok: false,
+            message: "指针是拓展，而且函数体里写的是 x = x + 1，指针不能这样用。这一空写成 int x。",
+          };
+        if (text === "intx") return { ok: true, message: "" };
+        if (text.startsWith("int")) {
+          const name = text.slice(3);
+          if (!name) return { ok: false, message: "还差参数名：int 后面要写 x，函数体里的 x 就是它。" };
+          return {
+            ok: false,
+            message: `参数名要和函数体对上：里面写的是 x = x + 1，所以形参要叫 x，不是 ${name}。`,
+          };
+        }
+        if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(text))
+          return { ok: false, message: "C++ 的形参要先写类型：在名字前面补上 int，写成 int x。" };
+        return { ok: false, message: "这一空要写成 int x：先写类型 int，空一格，再写参数名 x。" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1862,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "n 仍是 5";
           variableMeta.textContent = "副本 x 变成了 6，外面的 n 还是 5。";
-          showFeedback(flowFeedback, "你已经走完 调用 → 副本 x → 外面的 n。下一步看同名和引用。");
+          showFeedback(
+            flowFeedback,
+            state.passParamTyped
+              ? "你已经走完 调用 → 副本 x → 外面的 n，还亲手写出了形参。下一步看同名和引用。"
+              : "你已经走完 调用 → 副本 x → 外面的 n。现在在下面的空里亲手写出这个形参。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "x = 6";
           variableMeta.textContent = "函数里的 x 是副本，已经加 1。下一步看外面的 n。";
@@ -1772,6 +1881,11 @@
           variableMeta.textContent = "先点“调用 addOne(n)”，确认把 5 传进去。";
           flowFeedback.textContent = "";
         }
+
+        if (passParamMicro) passParamMicro.hidden = !state.evenChecked;
+        if (passParamInput && document.activeElement !== passParamInput)
+          passParamInput.value = state.passParamDraft ?? "";
+        passParamInput?.classList.toggle("is-correct", state.passParamTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2137,84 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这次对照已经走完，可以进入下一任务。");
+          announce(
+            state.passParamTyped
+              ? "这次对照已经走完，可以进入下一任务。"
+              : "外面的 n 看过了。亲手把形参写进下面的空里就能继续。",
+          );
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：x 变成 6，n 仍是 5。下一步看同名和引用。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "外面的 n 看过了，仍是 5。现在在下面的空里亲手写出这个形参。");
+        announce("外面的 n 仍是 5。现在亲手写出 addOne 的形参：int x。");
+        playSound("calm");
+      });
+
+      passParamInput?.addEventListener("input", (event) => {
+        state.passParamDraft = event.target.value;
+        state.passParamTyped = false;
+        passParamInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#passParamCheckButton")?.addEventListener("click", () => {
+        const result = checkPassByValueFix(state.passParamDraft);
+        if (!result.ok) {
+          showFeedback(passParamHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          passParamInput?.classList.add("is-wrong");
+          return;
+        }
+        passParamInput?.classList.remove("is-wrong");
+        if (!state.passParamTyped) {
+          state.passParamTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：形参写成 int x，改的是副本，n 仍是 5。下一步看同名和引用。");
+        }
+      });
+
+      document.querySelector("#passParamHintButton")?.addEventListener("click", () => {
+        const text = normalizeParamInput(state.passParamDraft);
+        const hint = !text
+          ? "形参要先写类型再写名字：类型是 int，名字要和函数体里的 x 对上。"
+          : text.includes("&")
+            ? "多了一个 &。加上它就变成引用，会改到外面的 n；值传递只要 int x。"
+            : text === "intx"
+              ? "已经有 int 和 x 了。检查是不是用了半角括号，或者多了别的字。"
+              : "这一空要的是 int x：类型 int，空一格，参数名 x。";
+        showFeedback(passParamHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#passParamRefButton")?.addEventListener("click", () => {
+        if (passParamRef) passParamRef.hidden = !passParamRef.hidden;
+        announce(
+          passParamRef && !passParamRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。",
+        );
+        playSound("calm");
+      });
+
+      document.querySelector("#passParamResetButton")?.addEventListener("click", () => {
+        state.passParamDraft = "";
+        state.passParamTyped = false;
+        if (passParamHint) passParamHint.textContent = "";
+        if (passParamRef) passParamRef.hidden = true;
+        passParamInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (passParamInput) passParamInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

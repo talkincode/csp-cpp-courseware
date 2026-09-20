@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 /**
- * S2-01 / S2-02 / S2-03 微编程输入框浏览器自动化复验（零依赖）。
+ * S2-01 / S2-02 / S2-03 / S2-04 / S2-05 / S2-06 微编程输入框浏览器自动化复验（零依赖）。
  *
  * 用法：bun run e2e:s2-typed
  *
- * 脚本会自行启动开发服务器与无头 Chrome，验证这三课新加的「只读脚手架 + 一空」
+ * 脚本会自行启动开发服务器与无头 Chrome，验证这六课新加的「只读脚手架 + 一空」
  * 微编程练习：出现时机、真实键盘输入、错误指正、兜底按钮、草稿恢复与提交后解锁。
  * 它不在 `bun test` 范围内：需要真实浏览器，属于体验验收，不是单元测试。
  *
@@ -53,7 +53,7 @@ type LessonConfig = {
   scenario: string;
 };
 
-// 三课各自的一空答案与应当出现的指正；fullWidth / outOfBounds 用来验证失败路径。
+// 六课各自的一空答案与应当出现的指正；fullWidth / outOfBounds 用来验证失败路径。
 const lessons: LessonConfig[] = [
   {
     directory: "s2-01",
@@ -117,6 +117,69 @@ const lessons: LessonConfig[] = [
     outOfBoundsMessage: "括号",
     blankWant: "isEven(",
     scenario: "写出这次调用",
+  },
+  {
+    directory: "s2-04",
+    storageKey: "csp-cpp-s2-04-progress-v1",
+    micro: "passParamMicro",
+    input: "passParamInput",
+    check: "passParamCheckButton",
+    hint: "passParamHintButton",
+    ref: "passParamRefButton",
+    reset: "passParamResetButton",
+    hintPanel: "passParamHint",
+    refPanel: "passParamRef",
+    typedField: "passParamTyped",
+    draftField: "passParamDraft",
+    good: "int x",
+    fullWidth: "int x；",
+    fullWidthHint: "半角",
+    outOfBounds: "int &x",
+    outOfBoundsMessage: "引用",
+    blankWant: "int x",
+    scenario: "写出值传递的形参",
+  },
+  {
+    directory: "s2-05",
+    storageKey: "csp-cpp-s2-05-progress-v1",
+    micro: "memberMicro",
+    input: "memberInput",
+    check: "memberCheckButton",
+    hint: "memberHintButton",
+    ref: "memberRefButton",
+    reset: "memberResetButton",
+    hintPanel: "memberHint",
+    refPanel: "memberRef",
+    typedField: "memberTyped",
+    draftField: "memberDraft",
+    good: "a[0].score",
+    fullWidth: "a[0]．score",
+    fullWidthHint: "半角",
+    outOfBounds: "a[0].name",
+    outOfBoundsMessage: "score",
+    blankWant: "a[0]",
+    scenario: "写出读分数的成员访问",
+  },
+  {
+    directory: "s2-06",
+    storageKey: "csp-cpp-s2-06-progress-v1",
+    micro: "swapMicro",
+    input: "swapInput",
+    check: "swapCheckButton",
+    hint: "swapHintButton",
+    ref: "swapRefButton",
+    reset: "swapResetButton",
+    hintPanel: "swapHint",
+    refPanel: "swapRef",
+    typedField: "swapTyped",
+    draftField: "swapDraft",
+    good: "swap(a[0], a[1])",
+    fullWidth: "swap（a[0], a[1]）",
+    fullWidthHint: "半角",
+    outOfBounds: "swap(a[0], a[2])",
+    outOfBoundsMessage: "相邻",
+    blankWant: "swap(",
+    scenario: "写出相邻交换",
   },
 ];
 

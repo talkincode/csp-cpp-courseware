@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,27 @@
               <div class="box-meta" id="variableMeta">先点“定义 struct Student”，确认这张卡有 name 和 score 两格。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="memberMicro" hidden>
+              <p class="step-lead">
+                对照走完了，现在亲手把这个成员访问敲出来。这张卡上的两格要用 <button type="button" class="faq-term" data-faq="member-access">成员访问</button> 分别读写：先写下标找到第 1 位同学，再用半角点号接上要读的 <button type="button" class="faq-term" data-faq="member">成员</button>。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="成员访问的脚手架，只留一空">
+                <ol>
+                  <li>struct Student { string name; int score; };</li>
+                  <li>Student a[3];</li>
+                  <li>a[0].name = "小明"; a[0].score = 95;</li>
+                  <li class="focus-line">int best = <input id="memberInput" class="micro-input" type="text" value="" placeholder="a[ ? ]" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="24" aria-label="在等号右边写出读出第 1 位同学分数的写法" />; // 读出第 1 位同学的分数</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="成员访问的检查与兜底">
+                <button id="memberCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="memberHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="memberRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="memberResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="memberHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="memberRef" class="micro-ref" hidden>int best = a[0].score; // 点号读的是这张卡上的分数那一格</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1539,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        memberDraft: "",
+        memberTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1563,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const memberMicro = document.querySelector("#memberMicro");
+      const memberInput = document.querySelector("#memberInput");
+      const memberHint = document.querySelector("#memberHint");
+      const memberRef = document.querySelector("#memberRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1596,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            memberDraft: typeof stored.memberDraft === "string" ? stored.memberDraft : "",
+            memberTyped: stored.memberTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1812,36 @@
         }
       }
 
+      function normalizeMemberInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkMemberAccessFix(raw) {
+        const text = normalizeMemberInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下怎么读出第 1 位同学的分数。" };
+        if (/[．［］（）【】；：，、。！？]/.test(text))
+          return { ok: false, message: "用了中文符号哦：点号和方括号都要半角，把输入法切到英文再敲一次。" };
+        if (text === "a[0].score") return { ok: true, message: "" };
+        if (text.includes("->"))
+          return {
+            ok: false,
+            message: "-> 是指针用的（拓展）。结构体数组里的 a[0] 本身就是一张卡，用半角点号：a[0].score。",
+          };
+        if (text.endsWith(".name"))
+          return { ok: false, message: "name 那一格放的是姓名，这一空要的是分数，成员换成 .score。" };
+        if (/^a\[[^\]]+\]\.score$/.test(text))
+          return { ok: false, message: "这个下标读的是别的同学。第 1 位同学是 a[0]，写成 a[0].score。" };
+        if (/^a\[[^\]]+\][A-Za-z_]/.test(text))
+          return { ok: false, message: "卡片和成员之间要有一个半角点号：a[0] 和 score 用 . 连起来。" };
+        if (text.startsWith("a."))
+          return { ok: false, message: "a 是结构体数组，要先写下标：第 1 位是 a[0]，再写 .score。" };
+        if (/^a[^[]/.test(text) && text.includes("."))
+          return { ok: false, message: "下标要写在半角方括号里：第 1 位同学写成 a[0]，再用点号接上成员。" };
+        if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(text))
+          return { ok: false, message: "只写 score 找不到是哪张卡上的分数。要先写这张卡：a[0].score。" };
+        return { ok: false, message: "这一空要写成 卡片.成员：先写第 1 位同学 a[0]，再用半角点号接上 score。" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1857,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "score = 95";
           variableMeta.textContent = "name 和 score 是同一张卡上的两格，属于同一个人。";
-          showFeedback(flowFeedback, "你已经走完 定义 → 写入成员 → 读出这张卡。下一步看结构体数组。");
+          showFeedback(
+            flowFeedback,
+            state.memberTyped
+              ? "你已经走完 定义 → 写入成员 → 读出这张卡，还亲手写出了成员访问。下一步看结构体数组。"
+              : "你已经走完 定义 → 写入成员 → 读出这张卡。现在在下面的空里亲手写出这个成员访问。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "name = 小明";
           variableMeta.textContent = "成员已经写入。下一步读出这张卡，确认两格属于同一个人。";
@@ -1772,6 +1876,10 @@
           variableMeta.textContent = "先点“定义 struct Student”，确认这张卡有 name 和 score 两格。";
           flowFeedback.textContent = "";
         }
+
+        if (memberMicro) memberMicro.hidden = !state.evenChecked;
+        if (memberInput && document.activeElement !== memberInput) memberInput.value = state.memberDraft ?? "";
+        memberInput?.classList.toggle("is-correct", state.memberTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2131,80 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这次对照已经走完，可以进入下一任务。");
+          announce(
+            state.memberTyped
+              ? "这次对照已经走完，可以进入下一任务。"
+              : "这张卡读过了。亲手把成员访问写进下面的空里就能继续。",
+          );
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：name 和 score 是同一张卡上的两格。下一步看结构体数组。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "这张卡读出来了。现在在下面的空里亲手写出这个成员访问。");
+        announce("name 和 score 属于同一个人。现在亲手写出读出第 1 位同学分数的写法：a[0].score。");
+        playSound("calm");
+      });
+
+      memberInput?.addEventListener("input", (event) => {
+        state.memberDraft = event.target.value;
+        state.memberTyped = false;
+        memberInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#memberCheckButton")?.addEventListener("click", () => {
+        const result = checkMemberAccessFix(state.memberDraft);
+        if (!result.ok) {
+          showFeedback(memberHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          memberInput?.classList.add("is-wrong");
+          return;
+        }
+        memberInput?.classList.remove("is-wrong");
+        if (!state.memberTyped) {
+          state.memberTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：a[0].score 读出的是这张卡上的分数。下一步看结构体数组。");
+        }
+      });
+
+      document.querySelector("#memberHintButton")?.addEventListener("click", () => {
+        const text = normalizeMemberInput(state.memberDraft);
+        const hint = !text
+          ? "先写下标找到第 1 位同学，再用半角点号接上分数那一格：a[0] 加 .score。"
+          : text === "a[0].score"
+            ? "已经有 a[0].score 了。检查是不是用了半角方括号和点号，或者多了别的字。"
+            : "这一空要的是 a[0].score：结构体数组写下标 a[0]，再用半角点号接上 score。";
+        showFeedback(memberHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#memberRefButton")?.addEventListener("click", () => {
+        if (memberRef) memberRef.hidden = !memberRef.hidden;
+        announce(memberRef && !memberRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#memberResetButton")?.addEventListener("click", () => {
+        state.memberDraft = "";
+        state.memberTyped = false;
+        if (memberHint) memberHint.textContent = "";
+        if (memberRef) memberRef.hidden = true;
+        memberInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (memberInput) memberInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

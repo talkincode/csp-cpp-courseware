@@ -437,6 +437,14 @@ test("S2-04 supplies a guided scope-and-parameter lesson and randomized choice q
   expect(source).toContain("void addOne(int x)");
   expect(source).toContain("addOne(n)");
   expect(source).toContain("int &x");
+  // 微编程：走完值传递三步后亲手写出形参 int x
+  expect(source).toContain('id="passParamInput"');
+  expect(source).toContain('id="passParamCheckButton"');
+  expect(source).toContain('id="passParamHintButton"');
+  expect(source).toContain('id="passParamRefButton"');
+  expect(source).toContain('id="passParamResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S2-05 supplies a guided struct-and-modeling lesson and randomized choice quiz", async () => {
@@ -460,6 +468,14 @@ test("S2-05 supplies a guided struct-and-modeling lesson and randomized choice q
   expect(source).toContain("struct Student");
   expect(source).toContain("stu.score");
   expect(source).toContain("a[i].score");
+  // 微编程：走完读写三步后亲手写出成员访问 a[0].score
+  expect(source).toContain('id="memberInput"');
+  expect(source).toContain('id="memberCheckButton"');
+  expect(source).toContain('id="memberHintButton"');
+  expect(source).toContain('id="memberRefButton"');
+  expect(source).toContain('id="memberResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S2-06 supplies a guided sorting-and-comparison lesson and randomized choice quiz", async () => {
@@ -483,6 +499,14 @@ test("S2-06 supplies a guided sorting-and-comparison lesson and randomized choic
   expect(source).toContain("sort(a, a + n)");
   expect(source).toContain("3, 1, 2");
   expect(source).toContain("swap(a[0], a[1])");
+  // 微编程：走完相邻交换三步后亲手写出 swap(a[0], a[1])
+  expect(source).toContain('id="swapInput"');
+  expect(source).toContain('id="swapCheckButton"');
+  expect(source).toContain('id="swapHintButton"');
+  expect(source).toContain('id="swapRefButton"');
+  expect(source).toContain('id="swapResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S2-07 supplies a guided enumeration-and-simulation lesson and randomized choice quiz", async () => {
