@@ -1217,6 +1217,45 @@
           transition-duration: 1ms !important;
         }
       }
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
     </style>
   </head>
   <body data-faq-terms="for while loop-variable accumulation infinite-loop do-while">
@@ -1298,6 +1337,24 @@
               </div>
             </div>
             <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="loopMicro" hidden>
+              <p class="step-lead">都选对了。现在亲手写下循环表头：下面是只读脚手架，只留一空给你敲键盘。</p>
+              <div class="code-sheet" aria-label="循环表头脚手架，只留一空">
+                <ol>
+                  <li>int sum = 0;</li>
+                  <li class="focus-line"><input id="loopInput" class="micro-input" type="text" value="" placeholder="for (int i = 1; i <= n; i++)" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="45" aria-label="写下从 1 数到 n 的 for 循环表头" /></li>
+                  <li>&nbsp;&nbsp;sum += i;</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="循环表头的检查与兜底">
+                <button id="loopCheckButton" class="primary-action" type="button">检查这个表头</button>
+                <button id="loopHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="loopRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="loopResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="loopHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="loopRef" class="micro-ref" hidden>for (int i = 1; i &lt;= n; i++)</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="1" hidden>
@@ -1467,6 +1524,8 @@
         activeStep: 0,
         formulaChoices: {},
         formulasMatched: false,
+        loopTyped: false,
+        loopDraft: "",
         divided: false,
         remaindered: false,
         evenChecked: false,
@@ -1488,6 +1547,10 @@
       const stepButtons = [...document.querySelectorAll("[data-step]")];
       const taskProgress = document.querySelector("#taskProgress");
       const sourceFeedback = document.querySelector("#sourceFeedback");
+      const loopMicro = document.querySelector("#loopMicro");
+      const loopInput = document.querySelector("#loopInput");
+      const loopHint = document.querySelector("#loopHint");
+      const loopRef = document.querySelector("#loopRef");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
@@ -1518,6 +1581,8 @@
                 ? stored.formulaChoices
                 : {},
             formulasMatched: stored.formulasMatched === true,
+            loopTyped: stored.loopTyped === true,
+            loopDraft: typeof stored.loopDraft === "string" ? stored.loopDraft : "",
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
@@ -1601,11 +1666,11 @@
       }
 
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.formulasMatched && state.loopTyped, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched && state.loopTyped, state.evenChecked, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1731,8 +1796,11 @@
         });
 
         if (state.formulasMatched) {
-          showFeedback(sourceFeedback, "两种循环都选对了。求连续和用 for，次数未知再用 while。下一步已经点亮。");
+          showFeedback(sourceFeedback, "两种循环都选对了。求连续和用 for，次数未知再用 while。现在亲手写下循环表头。");
         }
+        if (loopMicro) loopMicro.hidden = !state.formulasMatched;
+        if (loopInput && document.activeElement !== loopInput) loopInput.value = state.loopDraft ?? "";
+        loopInput?.classList.toggle("is-correct", state.loopTyped);
       }
 
       function renderFlowTask() {
@@ -1784,6 +1852,27 @@
           debugFeedback.textContent = "";
           debugFeedback.dataset.tone = "";
         }
+      }
+
+      function normalizeLoopHeader(value) {
+        return (value ?? "").replace(/\u3000/g, " ").trim();
+      }
+
+      function checkLoopHeader(raw, varName) {
+        const text = normalizeLoopHeader(raw);
+        if (!text) return { ok: false, message: "先在空里写下循环表头试试，比如 for (int i = 1; i <= n; i++)。" };
+        if (/[一-龥、。！？；：（）]/.test(text)) return { ok: false, message: "用了中文符号哦：括号和分号都要用半角，把输入法切到英文再敲一次。" };
+        const compact = text.replace(/\s+/g, "");
+        if (compact === "for(int" + varName + "=1;" + varName + "<=n;" + varName + "++)") return { ok: true, message: "" };
+        if (!/^for\(/.test(compact)) return { ok: false, message: "次数确定的重复用 for 开头，while 留到次数未知时。" };
+        if (/\)\s*;\s*$/.test(text)) return { ok: false, message: "for 括号后面不用加分号哦，加了循环就空转了。" };
+        const declared = compact.match(/^for\(int([a-z])=1;/);
+        if (declared && declared[1] !== varName) return { ok: false, message: "这里数到 n 用 " + varName + "，把循环变量换成 " + varName + " 哦。" };
+        if (new RegExp(varName + "<n;").test(compact)) return { ok: false, message: "到 n 都要算进去，条件用 " + varName + " <= n，n 也要进去哦。" };
+        if (new RegExp(varName + "--").test(compact)) return { ok: false, message: "这里是从 1 往上数，用 " + varName + "++，不是 -- 哦。" };
+        if (!new RegExp(varName + "\\+\\+").test(compact)) return { ok: false, message: "每轮别忘了 " + varName + "++，不然数永远不变哦。" };
+        if (!/^for\(int[a-z]=1;[a-z]+<=n;[a-z]+\+\+\)$/.test(compact)) return { ok: false, message: "三段长这样：int " + varName + " = 1; " + varName + " <= n; " + varName + "++，三段之间用分号隔开。" };
+        return { ok: false, message: "再对照一下参考代码，看看哪一段不一样。" };
       }
 
       function questionsAreValid(questions) {
@@ -1963,10 +2052,11 @@
           const complete = Object.keys(correctFormulas).every((key) => state.formulaChoices[key] === correctFormulas[key]);
           if (complete) {
             state.formulasMatched = true;
-            state.activeStep = 1;
             saveState();
             render();
-            reward("任务 1 完成：循环都选对了。下一步走一遍累加。");
+            showFeedback(sourceFeedback, "两种循环都选对了。现在亲手写下循环表头。");
+            announce("两种循环都选对了。现在亲手写下循环表头。");
+            playSound("calm");
             return;
           }
 
@@ -1975,6 +2065,64 @@
           showFeedback(sourceFeedback, "这一项选对了。继续给剩下的循环做选择。");
           playSound("calm");
         });
+      });
+
+      loopInput?.addEventListener("input", (event) => {
+        state.loopDraft = event.target.value;
+        state.loopTyped = false;
+        loopInput.classList.remove("is-wrong");
+        saveState();
+        renderSourceTask();
+      });
+
+      document.querySelector("#loopCheckButton")?.addEventListener("click", () => {
+        const result = checkLoopHeader(state.loopDraft, "i");
+        if (!result.ok) {
+          showFeedback(sourceFeedback, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          loopInput?.classList.add("is-wrong");
+          return;
+        }
+        loopInput?.classList.remove("is-wrong");
+        if (!state.loopTyped) {
+          state.loopTyped = true;
+          state.activeStep = 1;
+          saveState();
+          render();
+          reward("任务 1 完成：循环都选对了，表头还是你亲手写的。下一步走一遍累加。");
+        }
+      });
+
+      document.querySelector("#loopHintButton")?.addEventListener("click", () => {
+        const text = normalizeLoopHeader(state.loopDraft);
+        const hint = !text
+          ? "三段长这样：int i = 1; i <= n; i++，外面套 for 加括号。"
+          : !/^for/.test(text.replace(/\s+/g, ""))
+            ? "次数确定的重复用 for 开头。"
+            : !text.includes("++")
+              ? "每轮 i 要加 1，别忘了 i++。"
+              : "对照参考代码看看：for (int i = 1; i <= n; i++)。";
+        showFeedback(loopHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#loopRefButton")?.addEventListener("click", () => {
+        if (loopRef) loopRef.hidden = !loopRef.hidden;
+        announce(loopRef && !loopRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#loopResetButton")?.addEventListener("click", () => {
+        state.loopDraft = "";
+        state.loopTyped = false;
+        if (loopHint) loopHint.textContent = "";
+        if (loopRef) loopRef.hidden = true;
+        saveState();
+        renderSourceTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelector("#divideButton").addEventListener("click", () => {

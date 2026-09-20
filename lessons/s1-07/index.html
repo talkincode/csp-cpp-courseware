@@ -1217,6 +1217,45 @@
           transition-duration: 1ms !important;
         }
       }
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
     </style>
   </head>
   <body data-faq-terms="nested-loop outer-loop inner-loop break continue">
@@ -1298,6 +1337,24 @@
               </div>
             </div>
             <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="colMicro" hidden>
+              <p class="step-lead">都选对了。现在亲手写下内层循环：下面是只读脚手架，只留一空给你敲键盘，列用 c。</p>
+              <div class="code-sheet" aria-label="内层循环脚手架，只留一空">
+                <ol>
+                  <li>for (int r = 1; r &lt;= n; r++) { // 外层管行</li>
+                  <li class="focus-line">&nbsp;&nbsp;<input id="colInput" class="micro-input" type="text" value="" placeholder="for (int c = 1; c <= n; c++)" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="45" aria-label="写下管列的内层 for 循环表头" /></li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="内层循环的检查与兜底">
+                <button id="colCheckButton" class="primary-action" type="button">检查这个表头</button>
+                <button id="colHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="colRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="colResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="colHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="colRef" class="micro-ref" hidden>for (int c = 1; c &lt;= n; c++)</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="1" hidden>
@@ -1472,6 +1529,8 @@
         activeStep: 0,
         formulaChoices: {},
         formulasMatched: false,
+        colTyped: false,
+        colDraft: "",
         divided: false,
         remaindered: false,
         evenChecked: false,
@@ -1493,6 +1552,10 @@
       const stepButtons = [...document.querySelectorAll("[data-step]")];
       const taskProgress = document.querySelector("#taskProgress");
       const sourceFeedback = document.querySelector("#sourceFeedback");
+      const colMicro = document.querySelector("#colMicro");
+      const colInput = document.querySelector("#colInput");
+      const colHint = document.querySelector("#colHint");
+      const colRef = document.querySelector("#colRef");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
@@ -1523,6 +1586,8 @@
                 ? stored.formulaChoices
                 : {},
             formulasMatched: stored.formulasMatched === true,
+            colTyped: stored.colTyped === true,
+            colDraft: typeof stored.colDraft === "string" ? stored.colDraft : "",
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
@@ -1606,11 +1671,11 @@
       }
 
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.formulasMatched && state.colTyped, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched && state.colTyped, state.evenChecked, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1736,8 +1801,11 @@
         });
 
         if (state.formulasMatched) {
-          showFeedback(sourceFeedback, "内外层都选对了。外层管行，内层管列。下一步已经点亮。");
+          showFeedback(sourceFeedback, "内外层都选对了。外层管行，内层管列。现在亲手写下内层循环。");
         }
+        if (colMicro) colMicro.hidden = !state.formulasMatched;
+        if (colInput && document.activeElement !== colInput) colInput.value = state.colDraft ?? "";
+        colInput?.classList.toggle("is-correct", state.colTyped);
       }
 
       function renderFlowTask() {
@@ -1789,6 +1857,27 @@
           debugFeedback.textContent = "";
           debugFeedback.dataset.tone = "";
         }
+      }
+
+      function normalizeLoopHeader(value) {
+        return (value ?? "").replace(/\u3000/g, " ").trim();
+      }
+
+      function checkLoopHeader(raw, varName) {
+        const text = normalizeLoopHeader(raw);
+        if (!text) return { ok: false, message: "先在空里写下内层循环表头试试，比如 for (int c = 1; c <= n; c++)。" };
+        if (/[一-龥、。！？；：（）]/.test(text)) return { ok: false, message: "用了中文符号哦：括号和分号都要用半角，把输入法切到英文再敲一次。" };
+        const compact = text.replace(/\s+/g, "");
+        if (compact === "for(int" + varName + "=1;" + varName + "<=n;" + varName + "++)") return { ok: true, message: "" };
+        if (!/^for\(/.test(compact)) return { ok: false, message: "内层也是循环，用 for 开头。" };
+        if (/\)\s*;\s*$/.test(text)) return { ok: false, message: "for 括号后面不用加分号哦，加了循环就空转了。" };
+        const declared = compact.match(/^for\(int([a-z])=1;/);
+        if (declared && declared[1] !== varName) return { ok: false, message: "内层管列用 " + varName + "，行才用 r 哦。" };
+        if (new RegExp(varName + "<n;").test(compact)) return { ok: false, message: "到 n 都要印进去，条件用 " + varName + " <= n，n 也要进去哦。" };
+        if (new RegExp(varName + "--").test(compact)) return { ok: false, message: "这里是从 1 往上数，用 " + varName + "++，不是 -- 哦。" };
+        if (!new RegExp(varName + "\\+\\+").test(compact)) return { ok: false, message: "每轮别忘了 " + varName + "++，不然列永远不变哦。" };
+        if (!/^for\(int[a-z]=1;[a-z]+<=n;[a-z]+\+\+\)$/.test(compact)) return { ok: false, message: "三段长这样：int " + varName + " = 1; " + varName + " <= n; " + varName + "++，三段之间用分号隔开。" };
+        return { ok: false, message: "再对照一下参考代码，看看哪一段不一样。" };
       }
 
       function questionsAreValid(questions) {
@@ -1968,10 +2057,11 @@
           const complete = Object.keys(correctFormulas).every((key) => state.formulaChoices[key] === correctFormulas[key]);
           if (complete) {
             state.formulasMatched = true;
-            state.activeStep = 1;
             saveState();
             render();
-            reward("任务 1 完成：内外层都选对了。下一步走一遍 3 行 3 列。");
+            showFeedback(sourceFeedback, "内外层都选对了。现在亲手写下内层循环。");
+            announce("内外层都选对了。现在亲手写下内层循环。");
+            playSound("calm");
             return;
           }
 
@@ -1980,6 +2070,64 @@
           showFeedback(sourceFeedback, "这一项选对了。继续给剩下的职责做选择。");
           playSound("calm");
         });
+      });
+
+      colInput?.addEventListener("input", (event) => {
+        state.colDraft = event.target.value;
+        state.colTyped = false;
+        colInput.classList.remove("is-wrong");
+        saveState();
+        renderSourceTask();
+      });
+
+      document.querySelector("#colCheckButton")?.addEventListener("click", () => {
+        const result = checkLoopHeader(state.colDraft, "c");
+        if (!result.ok) {
+          showFeedback(sourceFeedback, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          colInput?.classList.add("is-wrong");
+          return;
+        }
+        colInput?.classList.remove("is-wrong");
+        if (!state.colTyped) {
+          state.colTyped = true;
+          state.activeStep = 1;
+          saveState();
+          render();
+          reward("任务 1 完成：内外层都选对了，内层循环还是你亲手写的。下一步走一遍 3 行 3 列。");
+        }
+      });
+
+      document.querySelector("#colHintButton")?.addEventListener("click", () => {
+        const text = normalizeLoopHeader(state.colDraft);
+        const hint = !text
+          ? "内层管列：三段是 int c = 1; c <= n; c++，外面套 for 加括号。"
+          : !/^for/.test(text.replace(/\s+/g, ""))
+            ? "内层也是循环，用 for 开头，列用 c。"
+            : !text.includes("++")
+              ? "每轮 c 要加 1，别忘了 c++。"
+              : "对照参考代码看看：for (int c = 1; c <= n; c++)。";
+        showFeedback(colHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#colRefButton")?.addEventListener("click", () => {
+        if (colRef) colRef.hidden = !colRef.hidden;
+        announce(colRef && !colRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#colResetButton")?.addEventListener("click", () => {
+        state.colDraft = "";
+        state.colTyped = false;
+        if (colHint) colHint.textContent = "";
+        if (colRef) colRef.hidden = true;
+        saveState();
+        renderSourceTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelector("#divideButton").addEventListener("click", () => {

@@ -1217,6 +1217,45 @@
           transition-duration: 1ms !important;
         }
       }
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
     </style>
   </head>
   <body data-faq-terms="compile-error runtime-error wrong-answer indentation naming debug-print">
@@ -1337,6 +1376,22 @@
               <div class="box-meta" id="variableMeta">先点“读报错”，看编译器卡在哪。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="semiMicro" hidden>
+              <p class="step-lead">定位对了。现在亲手把这个分号补上：下面是只读脚手架，只留一空给你敲键盘。</p>
+              <div class="code-sheet" aria-label="补分号脚手架，只留一空">
+                <ol>
+                  <li>cout &lt;&lt; n<input id="semiInput" class="micro-input" type="text" value="" placeholder=";" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="10" aria-label="在 cout 这一行末尾补上分号" /></li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="补分号的检查与兜底">
+                <button id="semiCheckButton" class="primary-action" type="button">检查这个分号</button>
+                <button id="semiHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="semiRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="semiResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="semiHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="semiRef" class="micro-ref" hidden>cout &lt;&lt; n;</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1533,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        semiTyped: false,
+        semiDraft: "",
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1497,6 +1554,10 @@
       const taskProgress = document.querySelector("#taskProgress");
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
+      const semiMicro = document.querySelector("#semiMicro");
+      const semiInput = document.querySelector("#semiInput");
+      const semiHint = document.querySelector("#semiHint");
+      const semiRef = document.querySelector("#semiRef");
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
@@ -1529,6 +1590,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            semiTyped: stored.semiTyped === true,
+            semiDraft: typeof stored.semiDraft === "string" ? stored.semiDraft : "",
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1609,11 +1672,11 @@
       }
 
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.formulasMatched, state.evenChecked && state.semiTyped, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched, state.evenChecked && state.semiTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1755,10 +1818,14 @@
         remainderButton.classList.toggle("is-done", state.remaindered);
         evenButton.classList.toggle("is-done", state.evenChecked);
 
-        if (state.evenChecked) {
+        if (state.evenChecked && state.semiTyped) {
           variableValue.textContent = "cout << n;";
-          variableMeta.textContent = "语法错已定位：少写分号。这是编译错误，还没开始运行。";
-          showFeedback(flowFeedback, "你已经走完“读报错 → 点到那一行 → 确认类型”。下一步用小数据检查。");
+          variableMeta.textContent = "语法错已定位并亲手修好：少写分号。这是编译错误，还没开始运行。";
+          showFeedback(flowFeedback, "你已经走完“读报错 → 点到那一行 → 确认类型”，还亲手补上了分号。下一步用小数据检查。");
+        } else if (state.evenChecked) {
+          variableValue.textContent = "cout << n;";
+          variableMeta.textContent = "类型确认了：还没开始运行，是编译错误。";
+          showFeedback(flowFeedback, "类型确认了。现在亲手把漏掉的分号补上。");
         } else if (state.remaindered) {
           variableValue.textContent = "cout << n";
           variableMeta.textContent = "报错对着这一行。下一步确认：程序还没开始运行。";
@@ -1772,6 +1839,9 @@
           variableMeta.textContent = "先点“读报错”，看编译器卡在哪。";
           flowFeedback.textContent = "";
         }
+        if (semiMicro) semiMicro.hidden = !state.evenChecked;
+        if (semiInput && document.activeElement !== semiInput) semiInput.value = state.semiDraft ?? "";
+        semiInput?.classList.toggle("is-correct", state.semiTyped);
       }
 
       function renderDebugTask() {
@@ -1792,6 +1862,19 @@
           debugFeedback.textContent = "";
           debugFeedback.dataset.tone = "";
         }
+      }
+
+      function normalizeSemiInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").trim();
+      }
+
+      function checkSemiFix(raw) {
+        const text = normalizeSemiInput(raw);
+        if (!text) return { ok: false, message: "先在空里敲一个半角分号 ; 试试。" };
+        if (/[一-龥、。！？；：（）]/.test(text)) return { ok: false, message: "用了中文符号哦：分号要用半角 ; ，把输入法切到英文再敲一次。" };
+        if (text.replace(/\s+/g, "") === ";") return { ok: true, message: "" };
+        if (text.includes(";")) return { ok: false, message: "只需要一个分号哦，多余的字删掉吧。" };
+        return { ok: false, message: "这一空只要一个半角分号 ; ，报错 expected ';' 指的就是它。" };
       }
 
       function questionsAreValid(questions) {
@@ -2023,15 +2106,72 @@
           return;
         }
         if (state.evenChecked) {
-          announce("语法错已经定位，可以进入下一任务。");
+          announce(state.semiTyped ? "语法错已经定位，可以进入下一任务。" : "类型确认过了，亲手把分号补上就能继续。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
         render();
-        reward("任务 2 完成：cout << n 少分号是编译错误。下一步用小数据检查。");
+        showFeedback(flowFeedback, "类型确认了：还没开始运行，是编译错误。现在亲手把漏掉的分号补上。");
+        announce("类型确认了。现在亲手把漏掉的分号补上。");
+        playSound("calm");
+      });
+
+      semiInput?.addEventListener("input", (event) => {
+        state.semiDraft = event.target.value;
+        state.semiTyped = false;
+        semiInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#semiCheckButton")?.addEventListener("click", () => {
+        const result = checkSemiFix(state.semiDraft);
+        if (!result.ok) {
+          showFeedback(flowFeedback, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          semiInput?.classList.add("is-wrong");
+          return;
+        }
+        semiInput?.classList.remove("is-wrong");
+        if (!state.semiTyped) {
+          state.semiTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：cout << n 少分号是编译错误，还是你亲手补好的。下一步用小数据检查。");
+        }
+      });
+
+      document.querySelector("#semiHintButton")?.addEventListener("click", () => {
+        const text = normalizeSemiInput(state.semiDraft);
+        const hint = !text
+          ? "报错 expected ';' 就是答案：在 cout 这一行末尾敲一个 ; 就好。"
+          : text.includes(";")
+            ? "已经有半角分号了？看看前后是不是多了别的东西，只留一个 ; 就好。"
+            : "这一空只要一个半角分号 ; ，如果敲出来是；，先把输入法切到英文。";
+        showFeedback(semiHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#semiRefButton")?.addEventListener("click", () => {
+        if (semiRef) semiRef.hidden = !semiRef.hidden;
+        announce(semiRef && !semiRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#semiResetButton")?.addEventListener("click", () => {
+        state.semiDraft = "";
+        state.semiTyped = false;
+        if (semiHint) semiHint.textContent = "";
+        if (semiRef) semiRef.hidden = true;
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

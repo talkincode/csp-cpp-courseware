@@ -247,6 +247,14 @@ test("S1-06 supplies a guided loop lesson and randomized choice quiz", async () 
   expect(source).toContain("for (int i = 1; i <= n; i++)");
   expect(source).toContain("sum += i");
   expect(source).toContain("i++");
+  // 微编程：选对循环后亲手写 for 表头
+  expect(source).toContain('id="loopInput"');
+  expect(source).toContain('id="loopCheckButton"');
+  expect(source).toContain('id="loopHintButton"');
+  expect(source).toContain('id="loopRefButton"');
+  expect(source).toContain('id="loopResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S1-07 supplies a guided nested-loop lesson and randomized choice quiz", async () => {
@@ -270,6 +278,14 @@ test("S1-07 supplies a guided nested-loop lesson and randomized choice quiz", as
   expect(source).toContain("for (int r = 1; r <= n; r++)");
   expect(source).toContain("for (int c = 1; c <= n; c++)");
   expect(source).toContain("break");
+  // 微编程：选对职责后亲手写内层循环
+  expect(source).toContain('id="colInput"');
+  expect(source).toContain('id="colCheckButton"');
+  expect(source).toContain('id="colHintButton"');
+  expect(source).toContain('id="colRefButton"');
+  expect(source).toContain('id="colResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S1-08 supplies a guided debugging lesson and randomized choice quiz", async () => {
@@ -294,6 +310,14 @@ test("S1-08 supplies a guided debugging lesson and randomized choice quiz", asyn
   expect(source).toContain("cout << n");
   expect(source).toContain("n = 1");
   expect(source).toContain("gdb");
+  // 微编程：定位语法错后亲手补分号
+  expect(source).toContain('id="semiInput"');
+  expect(source).toContain('id="semiCheckButton"');
+  expect(source).toContain('id="semiHintButton"');
+  expect(source).toContain('id="semiRefButton"');
+  expect(source).toContain('id="semiResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S2-01 supplies a guided array lesson and randomized choice quiz", async () => {
