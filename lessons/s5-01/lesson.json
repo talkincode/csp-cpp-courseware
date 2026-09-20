@@ -19,5 +19,5 @@
     "owner": "external",
     "status": "not-managed-in-this-repository"
   },
-  "faqTermIds": ["timed-solving-flow", "problem-timing", "modeling-draft", "sample-check", "reserve-check-time"]
+  "faqTermIds": ["timed-solving-flow", "problem-timing", "modeling-draft", "sample-check", "reserve-check-time", "data-range", "out-of-bounds"]
 }

@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(150px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1219,7 +1259,7 @@
       }
     </style>
   </head>
-  <body data-faq-terms="fresh-problem-set cross-check baseline-comparison stable-habit">
+  <body data-faq-terms="fresh-problem-set cross-check baseline-comparison stable-habit long-long overflow">
     <header class="topbar">
       <a class="back-link" href="../../index.html">← 返回课程路线</a>
       <span class="course-marker">第五阶段 · S5-07 · 60 分钟</span>
@@ -1337,6 +1377,37 @@
               <div class="box-meta" id="variableMeta">先点“独立解题：完成新题组”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="crossCheckMicro" hidden>
+              <p class="step-lead">
+                三步走完了：没抄上次的代码、<button type="button" class="faq-term" data-faq="cross-check">交叉检查</button>做了两遍、上次的好习惯也带过来了。现在把交叉检查落到键盘上——程序已经算出 1 到 n 的和，再用一条独立公式手算一遍对账。这一步要小心<button type="button" class="faq-term" data-faq="overflow">溢出</button>：n 最大 100000，两个 int 相乘会算不下，所以要先写出 <button type="button" class="faq-term" data-faq="long-long">long long</button> 的 1LL。下面是只读脚手架，只留一空给你输入；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="交叉检查的程序骨架，只留一空">
+                <ol>
+                  <li>// 模拟赛二：程序已经算出 1 到 n 的和（n ≤ 100000）</li>
+                  <li>// 再换一条独立公式手算一遍，两边对上才敢提交</li>
+                  <li class="focus-line"><input id="crossCheckInput" class="micro-input" type="text" value="" placeholder="long long formula = ?" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="60" aria-label="写出交叉检查时用独立公式再算一遍的那一行" />   // 独立算的那一遍</li>
+                  <li>int main() {</li>
+                  <li>    int n;</li>
+                  <li>    cin &gt;&gt; n;</li>
+                  <li>    long long programAnswer = 0;</li>
+                  <li>    for (int i = 1; i &lt;= n; i += 1) programAnswer += i;</li>
+                  <li>    cout &lt;&lt; programAnswer &lt;&lt; "\n";</li>
+                  <li>    // 上面是程序算出来的结果，下面用另一条公式独立算一遍对账</li>
+                  <li>    // 两边一致，这一题的结果才可信</li>
+                  <li>    return 0;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="交叉检查那一空的检查与兜底">
+                <button id="crossCheckCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="crossCheckHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="crossCheckRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="crossCheckResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="crossCheckHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="crossCheckRef" class="micro-ref" hidden>long long formula = 1LL * n * (n + 1) / 2;   // 1LL 打头把乘法提到 long long，先乘后除，和程序那条加法路互不依赖</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1502,6 +1573,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        crossCheckDraft: "",
+        crossCheckTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1522,6 +1595,10 @@
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
+      const crossCheckMicro = document.querySelector("#crossCheckMicro");
+      const crossCheckInput = document.querySelector("#crossCheckInput");
+      const crossCheckHint = document.querySelector("#crossCheckHint");
+      const crossCheckRef = document.querySelector("#crossCheckRef");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
       const quizForm = document.querySelector("#quizForm");
@@ -1553,6 +1630,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            crossCheckDraft: typeof stored.crossCheckDraft === "string" ? stored.crossCheckDraft : "",
+            crossCheckTyped: stored.crossCheckTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1632,12 +1711,67 @@
         return state.methodSolved && state.tieRuleSolved;
       }
 
+      function normalizeCrossCheckInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, " ").trim();
+      }
+
+      function checkCrossCheckLine(raw) {
+        const text = normalizeCrossCheckInput(raw);
+        if (!text)
+          return {
+            ok: false,
+            message: "先在空里写出交叉检查用的那一行：换一条独立公式，把 1 到 n 的和再算一遍。",
+          };
+        if (/[（），；：。！？［］【】｛｝＝＋－＊／“”‘’＜＞％０-９]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：等号、星号、括号和分号都要敲半角，编译器才认识。" };
+
+        const hasSemicolon = /;\s*$/.test(text);
+        const declared = text.replace(/;\s*$/, "").match(/^long long formula\s*=\s*(.+)$/);
+
+        if (!declared)
+          return {
+            ok: false,
+            message: "少了声明：算式前面要有 long long formula = ，把这一遍独立算的结果存进 formula 才能和程序输出对照。",
+          };
+        if (!hasSemicolon)
+          return { ok: false, message: "漏了末尾的分号 ; ：这一行写完整要敲一个半角分号，编译器才知道语句到哪里结束。" };
+
+        const expression = declared[1].replace(/\s+/g, "");
+        if (expression === "1LL*n*(n+1)/2") return { ok: true, message: "" };
+        if (expression === "1LL*(n+1)*n/2")
+          return {
+            ok: true,
+            message: "写对了：乘法交换次序不影响结果，1LL 还在打头，这一遍独立算出来的数就能和程序输出对照上了。",
+          };
+        if (expression === "(n+1)/2*n")
+          return {
+            ok: false,
+            message: "先除以 2 会把小数丢掉：n 是偶数时 (n + 1) / 2 除不尽，结果会差一半，要先乘后除。",
+          };
+        if (expression === "n*n/2")
+          return {
+            ok: false,
+            message: "公式里少了 (n + 1) ：1 到 n 的和要首尾配对，写成 n * (n + 1) / 2 才对得上。",
+          };
+        if (!expression.includes("1LL"))
+          return {
+            ok: false,
+            message: "少了 1LL ：两个 int 相乘最多算到 2 亿多就会溢出，先写 1LL 把乘法提到 long long 里再算。",
+          };
+        return {
+          ok: false,
+          message: "再对照一下独立公式：long long formula = 1LL * n * (n + 1) / 2; —— 1LL 打头、先乘后除。",
+        };
+      }
+
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.toolsMatched, state.transitioned && state.crossCheckTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.crossCheckTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1782,7 +1916,7 @@
         if (state.transitioned) {
           variableValue.textContent = "已写下习惯记录：先排提交顺序已稳定，测边界数据还没稳定";
           variableMeta.textContent = "三步走完。独立解题、交叉检查、习惯记录都已就位。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步看看习惯还没稳定时该怎么处理。");
+          showFeedback(flowFeedback, "你已经按顺序走完。现在在下面的空里亲手写出交叉检查用的那一行。");
         } else if (state.initialized) {
           variableValue.textContent = "已交叉检查：T4 用时 22 分钟，比 S5-05 的 T1 略快，且同样写了自测表";
           variableMeta.textContent = "交叉检查做完了。下一步点“习惯记录：写下稳定与否”。";
@@ -1795,6 +1929,17 @@
           variableValue.textContent = "还没开始独立解题";
           variableMeta.textContent = "先点“独立解题：完成新题组”。";
           flowFeedback.textContent = "";
+        }
+
+        if (crossCheckMicro) {
+          crossCheckMicro.hidden = !state.transitioned;
+        }
+        // 正在输入时不要回填，否则光标会跳到末尾。
+        if (crossCheckInput && document.activeElement !== crossCheckInput) {
+          crossCheckInput.value = state.crossCheckDraft ?? "";
+        }
+        if (crossCheckInput) {
+          crossCheckInput.classList.toggle("is-correct", state.crossCheckTyped);
         }
       }
 
@@ -2052,10 +2197,80 @@
         }
 
         state.transitioned = true;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：新题组独立写完、交叉检查做了两遍、习惯记录也留下了。现在在下面的空里亲手写出交叉检查用的那一行。");
+        announce("三步已经走完。现在在下面的空里亲手写出交叉检查用的那一行：换一条独立公式再算一遍 1 到 n 的和。");
+        playSound("calm");
+      });
+
+      crossCheckInput?.addEventListener("input", (event) => {
+        state.crossCheckDraft = event.target.value;
+        state.crossCheckTyped = false;
+        crossCheckInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#crossCheckCheckButton")?.addEventListener("click", () => {
+        const result = checkCrossCheckLine(state.crossCheckDraft);
+        if (!result.ok) {
+          showFeedback(crossCheckHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          crossCheckInput?.classList.add("is-wrong");
+          return;
+        }
+        crossCheckInput?.classList.remove("is-wrong");
+        if (result.message) {
+          showFeedback(crossCheckHint, result.message);
+        }
+        if (state.crossCheckTyped) return;
+
+        state.crossCheckTyped = true;
         state.activeStep = 2;
         saveState();
         render();
-        reward("任务 2 完成：独立解题、交叉检查、习惯记录都走完了。下一步看看习惯还没稳定时该怎么处理。");
+        reward("任务 2 完成：交叉检查真的用另一条公式对了一遍账。下一步看看习惯还没稳定时该怎么处理。");
+      });
+
+      document.querySelector("#crossCheckHintButton")?.addEventListener("click", () => {
+        const text = normalizeCrossCheckInput(state.crossCheckDraft);
+        const hint = !text
+          ? "要写的是 long long formula = 1LL * n * (n + 1) / 2; ：1 到 n 的和用首尾配对来算。"
+          : text.includes("1LL")
+            ? "1LL 已经写上了。再核对两处：首尾配对要写成 (n + 1) ，而且要先乘后除，别先把 (n + 1) 除以 2。"
+            : "先写类型 long long ，名字 formula ，等号后面用 1LL 打头再乘 n 和 (n + 1) ，最后敲一个半角分号。";
+        showFeedback(crossCheckHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#crossCheckRefButton")?.addEventListener("click", () => {
+        if (!crossCheckRef) return;
+        const willOpen = crossCheckRef.hidden;
+        crossCheckRef.hidden = !willOpen;
+        const message = willOpen
+          ? "参考代码已展开：long long formula = 1LL * n * (n + 1) / 2; —— 1LL 把乘法提到 long long，先乘后除。"
+          : "参考代码已收起，再自己写一遍试试。";
+        showFeedback(crossCheckHint, message);
+        announce(message);
+      });
+
+      document.querySelector("#crossCheckResetButton")?.addEventListener("click", () => {
+        state.crossCheckDraft = "";
+        state.crossCheckTyped = false;
+        saveState();
+        // 按钮点击后浏览器不一定让输入框失焦，所以直接清空，而不是等 render 去覆盖。
+        if (crossCheckInput) {
+          crossCheckInput.value = "";
+          crossCheckInput.classList.remove("is-correct", "is-wrong");
+        }
+        if (crossCheckRef) crossCheckRef.hidden = true;
+        if (crossCheckHint) crossCheckHint.textContent = "";
+        showFeedback(crossCheckHint, "已清空这一空：再写一次交叉检查用的独立公式。");
+        announce("已清空填空，可以重新输入。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

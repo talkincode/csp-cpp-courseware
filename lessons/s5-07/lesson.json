@@ -19,5 +19,5 @@
     "owner": "external",
     "status": "not-managed-in-this-repository"
   },
-  "faqTermIds": ["fresh-problem-set", "cross-check", "baseline-comparison", "stable-habit"]
+  "faqTermIds": ["fresh-problem-set", "cross-check", "baseline-comparison", "stable-habit", "long-long", "overflow"]
 }

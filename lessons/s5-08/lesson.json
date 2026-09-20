@@ -19,5 +19,5 @@
     "owner": "external",
     "status": "not-managed-in-this-repository"
   },
-  "faqTermIds": ["knowledge-map", "weak-module", "pre-contest-checklist", "csp-s-boundary"]
+  "faqTermIds": ["knowledge-map", "weak-module", "pre-contest-checklist", "csp-s-boundary", "counting-array", "array-init"]
 }

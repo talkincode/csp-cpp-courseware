@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(150px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1219,7 +1259,7 @@
       }
     </style>
   </head>
-  <body data-faq-terms="timed-solving-flow problem-timing modeling-draft sample-check reserve-check-time">
+  <body data-faq-terms="timed-solving-flow problem-timing modeling-draft sample-check reserve-check-time data-range out-of-bounds">
     <header class="topbar">
       <a class="back-link" href="../../index.html">← 返回课程路线</a>
       <span class="course-marker">第五阶段 · S5-01 · 55 分钟</span>
@@ -1337,6 +1377,36 @@
               <div class="box-meta" id="variableMeta">先点“审题：圈范围并记下时间预算”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="arraySizeMicro" hidden>
+              <p class="step-lead">
+                三步走完了：范围圈出来了、草稿留下了、样例也对照过了。现在把审题的结果落到键盘上——题面给的<button type="button" class="faq-term" data-faq="data-range">数据范围</button>是 n ≤ 100000，这一行要按它决定数组开多大；开小了，读入时就会<button type="button" class="faq-term" data-faq="out-of-bounds">越界</button>。下面是只读脚手架，只留一空给你输入；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="限时训练题的程序骨架，只留一空">
+                <ol>
+                  <li>// 40 分钟训练题：读入 n 个数求最大值，n ≤ 100000（审题时圈出来的范围）</li>
+                  <li>// 下标从 1 开始用，所以最后一个下标是 n</li>
+                  <li class="focus-line"><input id="arraySizeInput" class="micro-input" type="text" value="" placeholder="int a[ ? ];" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="30" aria-label="写出按审题圈出的数据范围决定数组大小的那一行" />   // 格子数由审题时圈出的上限决定</li>
+                  <li>int main() {</li>
+                  <li>    int n;</li>
+                  <li>    cin &gt;&gt; n;</li>
+                  <li>    for (int i = 1; i &lt;= n; i += 1) cin &gt;&gt; a[i];</li>
+                  <li>    int best = a[1];</li>
+                  <li>    for (int i = 2; i &lt;= n; i += 1) if (a[i] &gt; best) best = a[i];</li>
+                  <li>    cout &lt;&lt; best &lt;&lt; "\n";</li>
+                  <li>    return 0;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="数组大小那一空的检查与兜底">
+                <button id="arraySizeCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="arraySizeHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="arraySizeRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="arraySizeResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="arraySizeHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="arraySizeRef" class="micro-ref" hidden>int a[100005];   // 审题圈出的上限是 100000，下标从 1 开始用，多开几位最后一格才不越界</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1548,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        arraySizeDraft: "",
+        arraySizeTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1498,6 +1570,10 @@
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
+      const arraySizeMicro = document.querySelector("#arraySizeMicro");
+      const arraySizeInput = document.querySelector("#arraySizeInput");
+      const arraySizeHint = document.querySelector("#arraySizeHint");
+      const arraySizeRef = document.querySelector("#arraySizeRef");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
       const quizForm = document.querySelector("#quizForm");
@@ -1529,6 +1605,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            arraySizeDraft: typeof stored.arraySizeDraft === "string" ? stored.arraySizeDraft : "",
+            arraySizeTyped: stored.arraySizeTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1686,61 @@
         return state.methodSolved && state.tieRuleSolved;
       }
 
+      function normalizeArraySizeInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, " ").trim();
+      }
+
+      function checkArraySizeLine(raw) {
+        const text = normalizeArraySizeInput(raw);
+        if (!text)
+          return {
+            ok: false,
+            message: "先在空里写出这一行：审题时圈出的上限是 n ≤ 100000，数组的格子数要按它来定。",
+          };
+        if (/[（），；：。！？［］【】｛｝＝＋－＊／“”‘’＜＞％０-９]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：方括号和分号都要敲半角 [ ] ; ，编译器才认识。" };
+        const sized = text.match(/^int\s+a\s*\[\s*(\d+)\s*\]\s*;\s*$/);
+        if (sized) {
+          const size = Number(sized[1]);
+          if (size > 100010)
+            return {
+              ok: true,
+              message: `开到 ${size} 格也能过：审题圈出的上限是 100000，多开几位写成 100005 就够用了。`,
+            };
+          if (size >= 100001) return { ok: true, message: "" };
+          if (size === 100000)
+            return {
+              ok: false,
+              message: "差一格：下标从 1 开始用，最后一个下标就是 100000，正好开 100000 会让最后一格越界，多开几位写成 100005。",
+            };
+          return {
+            ok: false,
+            message: `开得太小了：审题时圈出 n ≤ 100000，${size} 格装不下这么多数，读到后面就越界了。`,
+          };
+        }
+        if (/^int\s+a\s*\[\s*n\s*\]\s*;/.test(text))
+          return { ok: false, message: "数组大小不能用变量 n ：n 要到读入之后才知道，格子数得在写代码时就填一个够大的常数。" };
+        if (/^a\s*\[\s*\d+\s*\]\s*;/.test(text))
+          return { ok: false, message: "少了类型：数组要先写元素类型 int ，再写名字和方括号里的格子数。" };
+        if (/^int\s+a\s*\[\s*\d+\s*\]$/.test(text))
+          return { ok: false, message: "漏了末尾的分号 ; ：声明语句写完要敲一个半角分号。" };
+        return {
+          ok: false,
+          message: "这一空要写出存放数据的数组声明：类型 int 、名字 a 、方括号里填比 100000 大一点的格子数、末尾半角分号。",
+        };
+      }
+
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [
+          state.toolsMatched,
+          state.transitioned && state.arraySizeTyped,
+          conceptSolved(),
+          state.quizSubmitted,
+        ].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.arraySizeTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1758,7 +1885,7 @@
         if (state.transitioned) {
           variableValue.textContent = "已对照样例，准备做提交前检查";
           variableMeta.textContent = "三步走完。不要跳过样例这一步。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步确定如何预留检查时间，并且不跳过样例。");
+          showFeedback(flowFeedback, "你已经按顺序走完。现在在下面的空里亲手写出数组那一行。");
         } else if (state.initialized) {
           variableValue.textContent = "已写好建模草稿：已知、未知和打算";
           variableMeta.textContent = "草稿写清了。下一步点“对照：编码后先跑样例再提交”。";
@@ -1771,6 +1898,17 @@
           variableValue.textContent = "还没开始审题计时";
           variableMeta.textContent = "先点“审题：圈范围并记下时间预算”。";
           flowFeedback.textContent = "";
+        }
+
+        if (arraySizeMicro) {
+          arraySizeMicro.hidden = !state.transitioned;
+        }
+        // 正在输入时不要回填，否则光标会跳到末尾。
+        if (arraySizeInput && document.activeElement !== arraySizeInput) {
+          arraySizeInput.value = state.arraySizeDraft ?? "";
+        }
+        if (arraySizeInput) {
+          arraySizeInput.classList.toggle("is-correct", state.arraySizeTyped);
         }
       }
 
@@ -2028,10 +2166,83 @@
         }
 
         state.transitioned = true;
+        saveState();
+        renderFlowTask();
+        showFeedback(
+          flowFeedback,
+          "三步走完了：范围圈出来了、草稿留下了、样例也对照过了。现在在下面的空里亲手写出数组那一行。",
+        );
+        announce("三步已经走完。现在在下面的空里亲手写出数组那一行：按审题圈出的上限决定格子数。");
+        playSound("calm");
+      });
+
+      arraySizeInput?.addEventListener("input", (event) => {
+        state.arraySizeDraft = event.target.value;
+        state.arraySizeTyped = false;
+        arraySizeInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#arraySizeCheckButton")?.addEventListener("click", () => {
+        const result = checkArraySizeLine(state.arraySizeDraft);
+        if (!result.ok) {
+          showFeedback(arraySizeHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          arraySizeInput?.classList.add("is-wrong");
+          return;
+        }
+        arraySizeInput?.classList.remove("is-wrong");
+        if (result.message) {
+          showFeedback(arraySizeHint, result.message);
+        }
+        if (state.arraySizeTyped) return;
+
+        state.arraySizeTyped = true;
         state.activeStep = 2;
         saveState();
         render();
-        reward("任务 2 完成：审题、草稿、对照样例都走完了。下一步看如何预留检查时间。");
+        reward("任务 2 完成：审题圈出的范围落到了数组那一行。下一步看如何预留检查时间。");
+      });
+
+      document.querySelector("#arraySizeHintButton")?.addEventListener("click", () => {
+        const text = normalizeArraySizeInput(state.arraySizeDraft);
+        const hint = !text
+          ? "要写的是 int a[100005]; ：n 最大 100000，下标从 1 开始用，所以要比 100000 多开几位。"
+          : text.includes("100000")
+            ? "已经写出 100000 了。最后一格的下标就是 100000，再多开几位写成 100005 就不会越界。"
+            : "先写类型 int ，再写数组名 a ，方括号里填比 100000 大一点的格子数，最后敲一个半角分号。";
+        showFeedback(arraySizeHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#arraySizeRefButton")?.addEventListener("click", () => {
+        if (!arraySizeRef) return;
+        const willOpen = arraySizeRef.hidden;
+        arraySizeRef.hidden = !willOpen;
+        const message = willOpen
+          ? "参考代码已展开：int a[100005]; —— 审题圈出的上限是 100000，多开几位最后一格才不会越界。"
+          : "参考代码已收起，再自己写一遍试试。";
+        showFeedback(arraySizeHint, message);
+        announce(message);
+      });
+
+      document.querySelector("#arraySizeResetButton")?.addEventListener("click", () => {
+        state.arraySizeDraft = "";
+        state.arraySizeTyped = false;
+        saveState();
+        // 按钮点击后浏览器不一定让输入框失焦，所以直接清空，而不是等 render 去覆盖。
+        if (arraySizeInput) {
+          arraySizeInput.value = "";
+          arraySizeInput.classList.remove("is-correct", "is-wrong");
+        }
+        if (arraySizeRef) arraySizeRef.hidden = true;
+        if (arraySizeHint) arraySizeHint.textContent = "";
+        showFeedback(arraySizeHint, "已清空这一空：再写一次按数据范围定下来的数组那一行。");
+        announce("已清空填空，可以重新输入。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
