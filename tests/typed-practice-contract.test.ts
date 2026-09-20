@@ -7,14 +7,7 @@ const lessonsRoot = `${projectRoot}/lessons`;
 // AGENTS.md 的微编程要求：课件不得只靠点击流转，必须留输入框让学习者亲手敲代码。
 // 已经完成迁移的课件要一直守住完整契约；还没迁移的在下面显式登记，清单必须和现场精确一致——
 // 这样「补完一课却忘了从清单里划掉」和「新写一课却没有输入框」都会当场失败。
-const pendingTypedPractice = [
-  "s5-01",
-  "s5-04",
-  "s5-05",
-  "s5-06",
-  "s5-07",
-  "s5-08",
-];
+const pendingTypedPractice = ["s5-01", "s5-07", "s5-08"];
 
 // 属性值里可能含 >（例如 placeholder="score >= 90" 或 cin >>），
 // 所以不能用 [^>]* 截断，必须在一对引号之外找标签结尾。

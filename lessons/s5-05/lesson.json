@@ -19,5 +19,5 @@
     "owner": "external",
     "status": "not-managed-in-this-repository"
   },
-  "faqTermIds": ["mock-exam", "submission-order", "self-test-table", "time-log"]
+  "faqTermIds": ["mock-exam", "submission-order", "self-test-table", "time-log", "boundary-data", "equal-equal"]
 }

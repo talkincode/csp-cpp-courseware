@@ -19,5 +19,5 @@
     "owner": "external",
     "status": "not-managed-in-this-repository"
   },
-  "faqTermIds": ["brute-force-baseline", "subtask", "special-case", "complexity-upgrade", "pseudo-optimization", "diff-check"]
+  "faqTermIds": ["brute-force-baseline", "subtask", "special-case", "complexity-upgrade", "pseudo-optimization", "diff-check", "range-sum", "index-offset", "prefix-array"]
 }

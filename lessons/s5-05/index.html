@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(340px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1219,7 +1259,7 @@
       }
     </style>
   </head>
-  <body data-faq-terms="mock-exam submission-order self-test-table time-log">
+  <body data-faq-terms="mock-exam submission-order self-test-table time-log boundary-data equal-equal">
     <header class="topbar">
       <a class="back-link" href="../../index.html">← 返回课程路线</a>
       <span class="course-marker">第五阶段 · S5-05 · 55 分钟</span>
@@ -1337,6 +1377,35 @@
               <div class="box-meta" id="variableMeta">先点“浏览排序：排出提交顺序”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="emptyGuardMicro" hidden>
+              <p class="step-lead">
+                三步走完了：提交顺序排好、自测表填好、时间记录也看过。现在把自测表里那一行「n=0 还没测」补上——给 T2 加上<button type="button" class="faq-term" data-faq="boundary-data">边界数据</button>的处理。这一空要用<button type="button" class="faq-term" data-faq="equal-equal">双等号</button>判断个数是不是 0，下面是只读脚手架，只留一空给你输入；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="T2 空数据处理脚手架，只留一空">
+                <ol>
+                  <li>// 题目 T2：读入 n 个数，求它们的和（模拟赛里的第二题）</li>
+                  <li>int a[105];                       // 最多 100 个数，下标从 1 开始用</li>
+                  <li>int main() {</li>
+                  <li>    int n;</li>
+                  <li>    cin &gt;&gt; n;                      // 自测表里漏掉的正是 n = 0 这一组</li>
+                  <li class="focus-line">    <input id="emptyGuardInput" class="micro-input" type="text" value="" placeholder="if (n == 0) { ... }" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="70" aria-label="写出 n 等于 0 时输出 0 并马上结束程序的那一段" />  // 空数据必须在这里就处理掉，不能往下走</li>
+                  <li>    int sum = 0;</li>
+                  <li>    for (int i = 1; i &lt;= n; i += 1) { cin &gt;&gt; a[i]; sum += a[i]; }</li>
+                  <li>    cout &lt;&lt; sum &lt;&lt; "\n";</li>
+                  <li>    return 0;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="空数据那一空的检查与兜底">
+                <button id="emptyGuardCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="emptyGuardHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="emptyGuardRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="emptyGuardResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="emptyGuardHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="emptyGuardRef" class="micro-ref" hidden>    if (n == 0) { cout &lt;&lt; 0 &lt;&lt; "\n"; return 0; }   // 个数是 0 就直接输出 0 并结束，后面的 a[1] 不会被执行到</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1502,6 +1571,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        emptyGuardDraft: "",
+        emptyGuardTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1522,6 +1593,10 @@
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
+      const emptyGuardMicro = document.querySelector("#emptyGuardMicro");
+      const emptyGuardInput = document.querySelector("#emptyGuardInput");
+      const emptyGuardHint = document.querySelector("#emptyGuardHint");
+      const emptyGuardRef = document.querySelector("#emptyGuardRef");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
       const quizForm = document.querySelector("#quizForm");
@@ -1553,6 +1628,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            emptyGuardDraft: typeof stored.emptyGuardDraft === "string" ? stored.emptyGuardDraft : "",
+            emptyGuardTyped: stored.emptyGuardTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1628,16 +1705,59 @@
         });
       }
 
+      function normalizeEmptyGuardInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkEmptyGuardLine(raw) {
+        const text = normalizeEmptyGuardInput(raw);
+        // 左右花括号成对取出，下面用 braces[0] 比较条件后面有没有跟代码块。
+        const braces = "{}";
+        if (!text)
+          return {
+            ok: false,
+            message: "先在空里写出处理空数据的判断：这一组数据的个数是 0 的时候，要马上输出 0 并结束程序。",
+          };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞％０-９]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：小括号、双等号、花括号、分号都要敲半角 ( ) == { } ; 。" };
+        if (/^if\(n==0\)\{cout<<0<<"\\n";return0;\}$/.test(text) || /^if\(n==0\)\{cout<<0<<endl;return0;\}$/.test(text))
+          return { ok: true, message: "" };
+        if (/^if\(n=0\)/.test(text))
+          return { ok: false, message: "这里只写了一个等号：n = 0 是把 0 赋值给 n，判断相等要写两个等号的 n == 0 。" };
+        if (/^if\(n==1\)/.test(text))
+          return { ok: false, message: "真正会出问题的是 n=0 这一组：个数是 0 时一个数都读不进来，得先把它挡住。" };
+        if (/^if\(a\[1\]==0\)/.test(text))
+          return { ok: false, message: "比的是数组里的第一个数：空数据要看的是个数 n，一个数都没读进来的时候 a[1] 里还不是题目的数据。" };
+        if (/^if\(n>=0\)/.test(text))
+          return { ok: false, message: "这个条件太宽了：n >= 0 对正常数据也成立，程序会直接输出 0 交卷。要判断的是 n == 0 。" };
+        if (/^while/.test(text))
+          return { ok: false, message: "这里只需要判断一次：空数据只有“是”和“不是”两种，用 if 就够，while 会反复做同一件事。" };
+        if (text.charAt(text.indexOf(")") + 1) !== braces[0])
+          return { ok: false, message: "条件后面要接花括号：空数据这一组要连着做两件事（输出 0、结束程序），两句都要包进 { } 里。" };
+        if (!text.includes("return"))
+          return { ok: false, message: "还差 return 0; ：只输出 0 不结束的话，程序会接着往下读这组空数据。" };
+        if (!text.includes("cout"))
+          return { ok: false, message: "还差输出：空数据这一组的答案是 0，要用 cout << 0 打出来。" };
+        if (!text.slice(text.indexOf("cout"), text.indexOf("return")).includes(";"))
+          return { ok: false, message: "两句之间漏了半角分号 ; ：cout << 0 << \"\\n\" 和 return 0; 是两条语句，各写各的分号。" };
+        return { ok: false, message: "这一空要写成 if (n == 0) { cout << 0 << \"\\n\"; return 0; } ：先判断个数是不是 0 ，是就输出 0 并马上结束。" };
+      }
+
       function conceptSolved() {
         return state.methodSolved && state.tieRuleSolved;
       }
 
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [
+          state.toolsMatched,
+          state.transitioned && state.emptyGuardTyped,
+          conceptSolved(),
+          state.quizSubmitted,
+        ].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.emptyGuardTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1782,7 +1902,7 @@
         if (state.transitioned) {
           variableValue.textContent = "已查看时间记录：对照 120 分钟总时长，进度正常";
           variableMeta.textContent = "三步走完。提交顺序、自测表、时间记录都已就位。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步看看时间不够时该怎么处理。");
+          showFeedback(flowFeedback, "你已经按顺序走完。现在在下面的空里亲手补上漏测的 n=0 处理。");
         } else if (state.initialized) {
           variableValue.textContent = "已填写自测表：T1 样例通过、n=0 边界也测过，用时 25 分钟";
           variableMeta.textContent = "自测记录写清了。下一步点“时间检查：查看时间记录”。";
@@ -1795,6 +1915,17 @@
           variableValue.textContent = "还没排出提交顺序";
           variableMeta.textContent = "先点“浏览排序：排出提交顺序”。";
           flowFeedback.textContent = "";
+        }
+
+        if (emptyGuardMicro) {
+          emptyGuardMicro.hidden = !state.transitioned;
+        }
+        // 正在输入时不要覆盖，否则光标会被跳到末尾。
+        if (emptyGuardInput && document.activeElement !== emptyGuardInput) {
+          emptyGuardInput.value = state.emptyGuardDraft ?? "";
+        }
+        if (emptyGuardInput) {
+          emptyGuardInput.classList.toggle("is-correct", state.emptyGuardTyped);
         }
       }
 
@@ -2052,10 +2183,83 @@
         }
 
         state.transitioned = true;
+        saveState();
+        renderFlowTask();
+        showFeedback(
+          flowFeedback,
+          "三步走完了：提交顺序排好、自测表填好、时间记录也看过。现在在下面的空里亲手补上漏测的 n=0 处理。",
+        );
+        announce("三步已经走完。现在在下面的空里亲手写出处理空数据的那一段：个数是 0 时输出 0 并马上结束程序。");
+        playSound("calm");
+      });
+
+      emptyGuardInput?.addEventListener("input", (event) => {
+        state.emptyGuardDraft = event.target.value;
+        state.emptyGuardTyped = false;
+        emptyGuardInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#emptyGuardCheckButton")?.addEventListener("click", () => {
+        const result = checkEmptyGuardLine(state.emptyGuardDraft);
+        if (!result.ok) {
+          showFeedback(emptyGuardHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          emptyGuardInput?.classList.add("is-wrong");
+          return;
+        }
+        emptyGuardInput?.classList.remove("is-wrong");
+        if (result.message) {
+          showFeedback(emptyGuardHint, result.message);
+        }
+        if (state.emptyGuardTyped) return;
+
+        state.emptyGuardTyped = true;
         state.activeStep = 2;
         saveState();
         render();
-        reward("任务 2 完成：提交顺序、自测记录、时间检查都走完了。下一步看看时间不够时该怎么处理。");
+        reward("任务 2 完成：漏测的 n=0 处理是你亲手补上的，自测表才算真的填完。下一步看时间不够时怎么记录才诚实。");
+      });
+
+      document.querySelector("#emptyGuardHintButton")?.addEventListener("click", () => {
+        const text = normalizeEmptyGuardInput(state.emptyGuardDraft);
+        const hint = !text
+          ? "要写的是 if (n == 0) { cout << 0 << \"\\n\"; return 0; } ：先判断个数，再输出 0 并结束。"
+          : text.startsWith("if")
+            ? "开头对了。检查三样：判断用两个等号 n == 0 、两句都包在 { } 里、输出后面跟 return 0; 。"
+            : "先写 if 再写小括号，括号里判断个数 n 是不是等于 0 。";
+        showFeedback(emptyGuardHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#emptyGuardRefButton")?.addEventListener("click", () => {
+        if (!emptyGuardRef) return;
+        const willOpen = emptyGuardRef.hidden;
+        emptyGuardRef.hidden = !willOpen;
+        const message = willOpen
+          ? "参考代码已展开：空数据在循环之前就被挡住了，后面的 a[1] 根本不会执行到。"
+          : "参考代码已收起，再自己写一遍试试。";
+        showFeedback(emptyGuardHint, message);
+        announce(message);
+      });
+
+      document.querySelector("#emptyGuardResetButton")?.addEventListener("click", () => {
+        state.emptyGuardDraft = "";
+        state.emptyGuardTyped = false;
+        saveState();
+        // 按钮点击后浏览器不一定让输入框失焦，所以直接清空，而不是等 render 去覆盖。
+        if (emptyGuardInput) {
+          emptyGuardInput.value = "";
+          emptyGuardInput.classList.remove("is-correct", "is-wrong");
+        }
+        if (emptyGuardRef) emptyGuardRef.hidden = true;
+        if (emptyGuardHint) emptyGuardHint.textContent = "";
+        showFeedback(emptyGuardHint, "已清空这一空：再写一次处理 n = 0 的那一段。");
+        announce("已清空填空，可以重新输入。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

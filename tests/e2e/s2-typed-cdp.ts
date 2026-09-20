@@ -2,9 +2,9 @@
 /**
  * 手写填空微编程的浏览器自动化复验（零依赖）。
  *
- * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 八课）、bun run e2e:s4-typed（S4 八课）、bun run e2e:typed（全部）
+ * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 八课）、bun run e2e:s4-typed（S4 八课）、bun run e2e:s5-typed（S5 已迁移的五课）、bun run e2e:typed（全部）
  *
- * 这个脚本最早为 S2 八课而写，后来 S3 与 S4 的课沿用同一套课件样板，所以也一起跑；
+ * 这个脚本最早为 S2 八课而写，后来 S3、S4 与 S5 的课沿用同一套课件样板，所以也一起跑；
  * 用 CSP_E2E_LESSONS=s3-01,s3-03 可以只跑指定几课。
  *
  * 脚本会自行启动开发服务器与无头 Chrome，验证「只读脚手架 + 一空」的
@@ -59,7 +59,7 @@ type LessonConfig = {
   scenario: string;
 };
 
-// 八课各自的一空答案与应当出现的指正；fullWidth / outOfBounds 用来验证失败路径。
+// 已迁移的二十九课各自的一空答案与应当出现的指正；fullWidth / outOfBounds 用来验证失败路径。
 const lessons: LessonConfig[] = [
   {
     directory: "s2-01",
@@ -618,6 +618,81 @@ const lessons: LessonConfig[] = [
       '[data-quantity="boundsChoice"] [data-choice="is-bounds"]',
     ],
     scenario: "写出累加变量的那一行声明",
+  },
+  {
+    directory: "s5-04",
+    storageKey: "csp-cpp-s5-04-progress-v1",
+    micro: "rangeQueryMicro",
+    input: "rangeQueryInput",
+    check: "rangeQueryCheckButton",
+    hint: "rangeQueryHintButton",
+    ref: "rangeQueryRefButton",
+    reset: "rangeQueryResetButton",
+    hintPanel: "rangeQueryHint",
+    refPanel: "rangeQueryRef",
+    typedField: "rangeQueryTyped",
+    draftField: "rangeQueryDraft",
+    good: "sum[r] - sum[l - 1]",
+    fullWidth: "sum［r］－sum［l－1］",
+    fullWidthHint: "半角",
+    outOfBounds: "sum[r] - sum[l]",
+    outOfBoundsMessage: "伪优化",
+    blankWant: "sum[ r ] - sum[ ? ]",
+    taskOnePicks: [
+      '[data-quantity="startChoice"] [data-choice="write-baseline"]',
+      '[data-quantity="labelChoice"] [data-choice="label-limits"]',
+    ],
+    scenario: "写出升级后区间和的那一个算式",
+  },
+  {
+    directory: "s5-05",
+    storageKey: "csp-cpp-s5-05-progress-v1",
+    micro: "emptyGuardMicro",
+    input: "emptyGuardInput",
+    check: "emptyGuardCheckButton",
+    hint: "emptyGuardHintButton",
+    ref: "emptyGuardRefButton",
+    reset: "emptyGuardResetButton",
+    hintPanel: "emptyGuardHint",
+    refPanel: "emptyGuardRef",
+    typedField: "emptyGuardTyped",
+    draftField: "emptyGuardDraft",
+    good: 'if (n == 0) { cout << 0 << "\\n"; return 0; }',
+    fullWidth: 'if （n ＝＝ 0） ｛ cout ＜＜ 0 ＜＜ "\\n"； return 0； ｝',
+    fullWidthHint: "半角",
+    outOfBounds: 'if (n == 1) { cout << 0 << "\\n"; return 0; }',
+    outOfBoundsMessage: "n=0",
+    blankWant: "if ( n == 0 ) { ... }",
+    taskOnePicks: [
+      '[data-quantity="startChoice"] [data-choice="scan-and-order"]',
+      '[data-quantity="labelChoice"] [data-choice="log-self-test"]',
+    ],
+    scenario: "写出空数据时输出 0 并结束的那一段",
+  },
+  {
+    directory: "s5-06",
+    storageKey: "csp-cpp-s5-06-progress-v1",
+    micro: "loopBoundMicro",
+    input: "loopBoundInput",
+    check: "loopBoundCheckButton",
+    hint: "loopBoundHintButton",
+    ref: "loopBoundRefButton",
+    reset: "loopBoundResetButton",
+    hintPanel: "loopBoundHint",
+    refPanel: "loopBoundRef",
+    typedField: "loopBoundTyped",
+    draftField: "loopBoundDraft",
+    good: "i <= n",
+    fullWidth: "i ＜= n",
+    fullWidthHint: "半角",
+    outOfBounds: "i < n",
+    outOfBoundsMessage: "最后一个",
+    blankWant: "i ? n",
+    taskOnePicks: [
+      '[data-quantity="startChoice"] [data-choice="classify-first"]',
+      '[data-quantity="actionChoice"] [data-choice="write-fix-rule"]',
+    ],
+    scenario: "写出让循环走到最后一个下标的那一个条件",
   },
 ];
 

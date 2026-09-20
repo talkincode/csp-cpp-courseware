@@ -13,7 +13,7 @@
     "e2e:s2-typed": "CSP_E2E_LESSONS=s2-01,s2-02,s2-03,s2-04,s2-05,s2-06,s2-07,s2-08 bun tests/e2e/s2-typed-cdp.ts",
     "e2e:s3-typed": "CSP_E2E_LESSONS=s3-01,s3-02,s3-03,s3-04,s3-05,s3-06,s3-07,s3-08 bun tests/e2e/s2-typed-cdp.ts",
     "e2e:s4-typed": "CSP_E2E_LESSONS=s4-01,s4-02,s4-03,s4-04,s4-05,s4-06,s4-07,s4-08 bun tests/e2e/s2-typed-cdp.ts",
-    "e2e:s5-typed": "CSP_E2E_LESSONS=s5-02,s5-03 bun tests/e2e/s2-typed-cdp.ts",
+    "e2e:s5-typed": "CSP_E2E_LESSONS=s5-02,s5-03,s5-04,s5-05,s5-06 bun tests/e2e/s2-typed-cdp.ts",
     "e2e:typed": "bun tests/e2e/s2-typed-cdp.ts"
   }
 }

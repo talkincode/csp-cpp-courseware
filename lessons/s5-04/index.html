@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1219,7 +1259,7 @@
       }
     </style>
   </head>
-  <body data-faq-terms="brute-force-baseline subtask special-case complexity-upgrade pseudo-optimization diff-check">
+  <body data-faq-terms="brute-force-baseline subtask special-case complexity-upgrade pseudo-optimization diff-check range-sum index-offset prefix-array">
     <header class="topbar">
       <a class="back-link" href="../../index.html">← 返回课程路线</a>
       <span class="course-marker">第五阶段 · S5-04 · 55 分钟</span>
@@ -1337,6 +1377,33 @@
               <div class="box-meta" id="variableMeta">先点“基线：写出暴力并测试通过”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="rangeQueryMicro" hidden>
+              <p class="step-lead">
+                三步走完了：基线锁住了小数据的分数，特殊情况标注清楚，升级后的版本也保留了基线用来对拍。现在把<button type="button" class="faq-term" data-faq="range-sum">区间和</button>的查询算式亲手敲一遍，特别注意<button type="button" class="faq-term" data-faq="index-offset">下标偏移</button>那一格。下面是只读脚手架，<button type="button" class="faq-term" data-faq="prefix-array">前缀和数组</button>已经建好，只留一空给你输入；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="区间求和的前缀和脚手架，只留一空">
+                <ol>
+                  <li>// 题目：数组 a 长度 n，q 次查询每次给 l、r，求 a[l..r] 的和</li>
+                  <li>int a[6] = {0, 3, 1, 4, 1, 5};   // 下标从 1 开始用：a[1] 到 a[5]</li>
+                  <li>int sum[6];                       // sum[i] 表示 a[1] 到 a[i] 的和</li>
+                  <li>int main() {</li>
+                  <li>    for (int i = 1; i &lt;= 5; i += 1) sum[i] = sum[i - 1] + a[i];</li>
+                  <li>    int l = 2, r = 4;               // 查询 a[2..4]，手算应是 1 + 4 + 1 = 6</li>
+                  <li class="focus-line">    cout &lt;&lt; <input id="rangeQueryInput" class="micro-input" type="text" value="" placeholder="sum[ r ] - sum[ ? ]" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写出查询 a[l..r] 区间和的那一个算式" /> &lt;&lt; "\n";   // 一行查出 a[l..r] 的和</li>
+                  <li>    return 0;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="查询算式那一空的检查与兜底">
+                <button id="rangeQueryCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="rangeQueryHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="rangeQueryRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="rangeQueryResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="rangeQueryHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="rangeQueryRef" class="micro-ref" hidden>    cout &lt;&lt; sum[r] - sum[l - 1] &lt;&lt; "\n";   // 左端点减的是 l 前面那一格，别写成 sum[l]</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1502,6 +1569,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        rangeQueryDraft: "",
+        rangeQueryTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1522,6 +1591,10 @@
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
+      const rangeQueryMicro = document.querySelector("#rangeQueryMicro");
+      const rangeQueryInput = document.querySelector("#rangeQueryInput");
+      const rangeQueryHint = document.querySelector("#rangeQueryHint");
+      const rangeQueryRef = document.querySelector("#rangeQueryRef");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
       const quizForm = document.querySelector("#quizForm");
@@ -1553,6 +1626,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            rangeQueryDraft: typeof stored.rangeQueryDraft === "string" ? stored.rangeQueryDraft : "",
+            rangeQueryTyped: stored.rangeQueryTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1628,16 +1703,70 @@
         });
       }
 
+      function normalizeRangeQueryInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkRangeQueryLine(raw) {
+        const text = normalizeRangeQueryInput(raw);
+        if (!text)
+          return {
+            ok: false,
+            message: "先在空里写出这一行区间和的算式：从前缀和表里取出 a[l..r] 这一段的和。",
+          };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞％０-９]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：方括号、减号都要敲半角 [ ] - 。" };
+        if (/^cout/.test(text))
+          return {
+            ok: false,
+            message: "这一空只写算式：cout << 和末尾的分号已经在行上写好了，把要打印的算式填进去就行。",
+          };
+        if (/^sum\[r\]-sum\[l\]$/.test(text))
+          return {
+            ok: false,
+            message: "这就是课上说过的伪优化：sum[l] 会把 a[l] 也一起减掉。要减的是 l 前面那一段，写成 sum[l - 1] 。",
+          };
+        if (/^sum\[(l-1|l)\]-sum\[r\]$/.test(text))
+          return { ok: false, message: "减反了：被减数要放右端点，sum[l] - sum[r] 会算出负数。" };
+        if (/^sum\[r\]\+sum\[l-1\]$/.test(text))
+          return { ok: false, message: "用的是加法：这里要求一段连续区间的和，要用减法把前面那一段去掉。" };
+        if (/^sum\[r\]$/.test(text))
+          return { ok: false, message: "只有右端点：还差一个减号，减去 l 前面那一段才剩下 a[l..r] 。" };
+        if (/^sum\[l-1\]$/.test(text))
+          return { ok: false, message: "只有左端点之前那一段：还要用右端点 sum[r] 把它减掉，才得到区间和。" };
+        if (/^a\[r\]-a\[l-1\]$/.test(text))
+          return { ok: false, message: "两样都取自数组 a：单个元素相减不是区间和，要从前缀和表 sum 里取。" };
+        if (/^sum\[r\]-a\[l-1\]$/.test(text))
+          return { ok: false, message: "被减的那一项取错了：前缀和表和数组不能混着减，要写成 sum[l - 1] 。" };
+        if (/^sum\[n\]-sum\[l-1\]$/.test(text))
+          return { ok: false, message: "右端点用了数组长度 n：每次查询的右端点是输入里的 r，写 n 会把整段都算进去。" };
+        if (/^sum\[r\]-sum\[l-2\]$/.test(text))
+          return { ok: false, message: "多减了一格：sum[l - 2] 连 a[l - 1] 也去掉了，区间和会偏小。" };
+        if (/^sum\[r\]-sum\[l-1\]\+1$/.test(text))
+          return { ok: false, message: "多加了 1：两个前缀和相减已经把 a[l] 算进去了，再加 1 就比正确答案大。" };
+        if (/^sum\[r\]-sum\[l-1\]-1$/.test(text))
+          return { ok: false, message: "多减了 1：两个前缀和相减就是这段区间的和，不用再减。" };
+        if (/^sum\[r\]-sum\[l-1\];$/.test(text))
+          return { ok: true, message: "末尾的分号行上已经有了：这一空只填算式，照样算对。" };
+        if (/^sum\[r\]-sum\[l-1\]$/.test(text)) return { ok: true, message: "" };
+        return { ok: false, message: "这一空要写成 sum[r] - sum[l - 1]：左端点的前缀和要用 l 前面那一格。" };
+      }
+
       function conceptSolved() {
         return state.methodSolved && state.tieRuleSolved;
       }
 
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [
+          state.toolsMatched,
+          state.transitioned && state.rangeQueryTyped,
+          conceptSolved(),
+          state.quizSubmitted,
+        ].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.rangeQueryTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1782,7 +1911,7 @@
         if (state.transitioned) {
           variableValue.textContent = "已升级为前缀和：O(n+q)，查询变成 O(1)";
           variableMeta.textContent = "三步走完。基线仍保留，可随时用来对拍。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步识别伪优化，并确定升级后该怎么验证。");
+          showFeedback(flowFeedback, "你已经按顺序走完。现在在下面的空里亲手写出升级后的查询算式。");
         } else if (state.initialized) {
           variableValue.textContent = "已标注：l&gt;r 空区间输出 0；l==r 单点区间；n、q 小时基线可过";
           variableMeta.textContent = "适用范围与特殊情况写清了。下一步点“升级：换成前缀和，同时保留基线”。";
@@ -1795,6 +1924,17 @@
           variableValue.textContent = "还没开始写基线";
           variableMeta.textContent = "先点“基线：写出暴力并测试通过”。";
           flowFeedback.textContent = "";
+        }
+
+        if (rangeQueryMicro) {
+          rangeQueryMicro.hidden = !state.transitioned;
+        }
+        // 正在输入时不要覆盖，否则光标会被跳到末尾。
+        if (rangeQueryInput && document.activeElement !== rangeQueryInput) {
+          rangeQueryInput.value = state.rangeQueryDraft ?? "";
+        }
+        if (rangeQueryInput) {
+          rangeQueryInput.classList.toggle("is-correct", state.rangeQueryTyped);
         }
       }
 
@@ -2052,10 +2192,85 @@
         }
 
         state.transitioned = true;
+        saveState();
+        renderFlowTask();
+        showFeedback(
+          flowFeedback,
+          "三步走完了：基线锁住小数据的分数，特殊情况标注清楚，前缀和也保留了对拍参照。现在在下面的空里亲手写出升级后的查询算式。",
+        );
+        announce(
+          "三步已经走完。现在在下面的空里亲手写出前缀和的查询算式：从前缀和表里取出 a[l..r] 这一段的区间和。",
+        );
+        playSound("calm");
+      });
+
+      rangeQueryInput?.addEventListener("input", (event) => {
+        state.rangeQueryDraft = event.target.value;
+        state.rangeQueryTyped = false;
+        rangeQueryInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#rangeQueryCheckButton")?.addEventListener("click", () => {
+        const result = checkRangeQueryLine(state.rangeQueryDraft);
+        if (!result.ok) {
+          showFeedback(rangeQueryHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          rangeQueryInput?.classList.add("is-wrong");
+          return;
+        }
+        rangeQueryInput?.classList.remove("is-wrong");
+        if (result.message) {
+          showFeedback(rangeQueryHint, result.message);
+        }
+        if (state.rangeQueryTyped) return;
+
+        state.rangeQueryTyped = true;
         state.activeStep = 2;
         saveState();
         render();
-        reward("任务 2 完成：基线、标注、升级都走完了，前缀和查询变成了 O(1)。下一步识别伪优化并确定验证方式。");
+        reward("任务 2 完成：升级后的查询算式是你亲手写的。下一步识别伪优化并确定验证方式。");
+      });
+
+      document.querySelector("#rangeQueryHintButton")?.addEventListener("click", () => {
+        const text = normalizeRangeQueryInput(state.rangeQueryDraft);
+        const hint = !text
+          ? "要写的是 sum[r] - sum[l - 1] ：右端点的前缀和减去左端点前面那一格。"
+          : text.includes("sum[l]") && !text.includes("sum[l-1]")
+            ? "已经用上 sum[l] 了。再想想：要减掉的是不含 a[l] 的那一段，也就是 l 前面那一格。"
+            : "检查三样：右端点用 r、左端点减的是 l - 1 、两个下标都写在半角方括号 sum[ ] 里。";
+        showFeedback(rangeQueryHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#rangeQueryRefButton")?.addEventListener("click", () => {
+        if (!rangeQueryRef) return;
+        const willOpen = rangeQueryRef.hidden;
+        rangeQueryRef.hidden = !willOpen;
+        const message = willOpen
+          ? "参考代码已展开：compare 里的写法就是升级后的查询，仍可以和基线对拍。"
+          : "参考代码已收起，再自己敲一遍试试。";
+        showFeedback(rangeQueryHint, message);
+        announce(message);
+      });
+
+      document.querySelector("#rangeQueryResetButton")?.addEventListener("click", () => {
+        state.rangeQueryDraft = "";
+        state.rangeQueryTyped = false;
+        saveState();
+        // 按钮点击后浏览器不一定让输入框失焦，所以直接清空，而不是等 render 去覆盖。
+        if (rangeQueryInput) {
+          rangeQueryInput.value = "";
+          rangeQueryInput.classList.remove("is-correct", "is-wrong");
+        }
+        if (rangeQueryRef) rangeQueryRef.hidden = true;
+        if (rangeQueryHint) rangeQueryHint.textContent = "";
+        showFeedback(rangeQueryHint, "已清空这一空：再敲一次 sum[r] - sum[l - 1] 。");
+        announce("已清空填空，可以重新输入。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
