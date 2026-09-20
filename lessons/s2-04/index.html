@@ -1497,7 +1497,7 @@
             <form id="quizForm" class="quiz-form" aria-describedby="quizResult"></form>
             <div class="quiz-footer">
               <button id="submitQuizButton" class="primary-action" type="button">提交并查看解析</button>
-              <p id="quizResult" class="quiz-result" role="status" aria-live="polite"></p>
+              <p id="quizResult" class="quiz-result" role="status" aria-live="polite" tabindex="-1"></p>
             </div>
           </section>
 
@@ -2364,6 +2364,28 @@
         });
       });
 
+      // 作答会把题目区整块重渲染，刚答的那一项连同焦点一起消失；
+      // 按 name 与 value 找回同一项再聚焦，只用键盘或读屏的学习者才不会每答一题就掉回文档开头。
+      function focusQuizAnswer(name, value) {
+        const radios = quizForm.querySelectorAll('input[type="radio"]');
+
+        for (const radio of radios) {
+          if (radio.name === name && radio.value === value) {
+            radio.focus({ preventScroll: true });
+
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      // 提交成功后按钮会变成 disabled，浏览器随即把焦点丢回文档主体——正好是得分和逐题解析出现的那一刻。
+      // 把焦点交给结果区（role="status"，自带朗读），键盘学习者才不用从页首重新 Tab 十几个停靠点。
+      function focusQuizResult() {
+        quizResult.focus({ preventScroll: true });
+      }
+
       quizForm.addEventListener("change", (event) => {
         const input = event.target;
         if (!(input instanceof HTMLInputElement) || input.type !== "radio") return;
@@ -2371,6 +2393,7 @@
         state.answers[input.name] = Number(input.value);
         saveState();
         renderQuiz();
+        focusQuizAnswer(input.name, input.value);
         announce("答案已记录。三题都选完后可以提交查看解析。");
         playSound("calm");
       });
@@ -2381,6 +2404,7 @@
           announce("题库暂时不可用或题目无效。本次作答仍保留，请稍后重试。");
           playSound("error");
           renderQuiz();
+          focusQuizResult();
           return;
         }
 
@@ -2406,6 +2430,7 @@
           announce(`答对 ${score}/3。先看每题解析，再换一套题巩固。`);
           playSound("error");
         }
+        focusQuizResult();
       });
 
       document.querySelector("#newQuizButton").addEventListener("click", refreshQuiz);
