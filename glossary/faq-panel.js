@@ -207,6 +207,23 @@
       line-height: 1.6;
     }
 
+    .faq-retry {
+      margin: 0 20px 14px;
+      padding: 9px 12px;
+      color: #9f3b20;
+      background: #fff0d5;
+      border: 1px solid #e6612c;
+      border-radius: 5px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .faq-retry:hover {
+      color: #fffaf0;
+      background: #9f3b20;
+    }
+
     .faq-continue {
       margin: 0 20px 20px;
       padding: 10px 12px;
@@ -238,12 +255,13 @@
         <h2 id="faqPanelTitle" tabindex="-1">常见问题</h2>
         <button class="faq-close" type="button" data-faq-close>关闭</button>
       </div>
-      <p class="faq-status" data-faq-status>正在载入本课名词解释…</p>
+      <p class="faq-status" data-faq-status role="status" aria-live="polite">正在载入本课名词解释…</p>
       <div class="faq-list" data-faq-list hidden></div>
       <div class="faq-answer" data-faq-answer hidden></div>
       <p class="faq-remember" data-faq-remember hidden></p>
       <div class="faq-links" data-faq-links hidden></div>
       <p class="faq-empty" data-faq-empty hidden></p>
+      <button class="faq-retry" type="button" data-faq-retry hidden>重新载入词条表</button>
       <button class="faq-continue" type="button" data-faq-close>继续学习</button>
     </aside>
   `;
@@ -256,8 +274,11 @@
   const rememberNode = panel.querySelector("[data-faq-remember]");
   const linksNode = panel.querySelector("[data-faq-links]");
   const emptyNode = panel.querySelector("[data-faq-empty]");
+  const retryNode = panel.querySelector("[data-faq-retry]");
 
   let catalog = new Map();
+  let catalogState = "loading";
+  let loadingCatalog = false;
   let lastTrigger = null;
   let pendingTermId = null;
 
@@ -308,12 +329,16 @@
     pendingTermId = id;
     openPanel();
 
-    if (catalog.size === 0) {
-      statusNode.textContent = "正在载入本课名词解释…";
+    if (catalogState !== "ready") {
       answerNode.hidden = true;
       rememberNode.hidden = true;
       linksNode.hidden = true;
-      emptyNode.hidden = true;
+      if (catalogState === "failed") {
+        reportCatalogFailure();
+      } else {
+        statusNode.textContent = "正在载入本课名词解释…";
+        emptyNode.hidden = true;
+      }
       return;
     }
 
@@ -352,6 +377,46 @@
     panel.querySelector("#faqPanelTitle")?.focus?.();
   }
 
+  // 词条表载入失败必须当场说明，并留下重新载入的入口：全部 40 节课共用
+  // 这个面板，失败时不能只留一个空白面板，也不能让课件其他互动停摆。
+  function reportCatalogFailure() {
+    catalogState = "failed";
+    catalog = new Map();
+    statusNode.textContent = "常见问题表暂时无法载入，课件其他部分不受影响。";
+    listNode.hidden = true;
+    emptyNode.hidden = false;
+    emptyNode.textContent = "词条载入失败时，课件仍可继续。请确认本地服务正在运行，然后点“重新载入词条表”。";
+    retryNode.hidden = false;
+  }
+
+  function loadCatalog() {
+    if (loadingCatalog) return;
+    loadingCatalog = true;
+    catalogState = "loading";
+    retryNode.hidden = true;
+    statusNode.textContent = "正在载入本课名词解释…";
+    fetch(catalogUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error(`FAQ catalog HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((payload) => {
+        const terms = Array.isArray(payload?.terms) ? payload.terms : [];
+        catalog = new Map(terms.map((term) => [term.id, term]));
+        catalogState = "ready";
+        emptyNode.hidden = true;
+        statusNode.textContent = "点课件里带虚线的词，或点上方“常见问题”，只会看到基础解释。";
+        if (pendingTermId) showTerm(pendingTermId, lastTrigger);
+        else renderList(lessonTerms()[0]?.id);
+      })
+      .catch(() => {
+        reportCatalogFailure();
+      })
+      .finally(() => {
+        loadingCatalog = false;
+      });
+  }
+
   function bindCatalogButton() {
     const button = document.querySelector("#faqCatalogButton");
     if (!button) return;
@@ -361,7 +426,8 @@
       if (first) showTerm(first.id, button);
       else {
         openPanel();
-        statusNode.textContent = "常见问题表还没有载入。";
+        if (catalogState === "failed") reportCatalogFailure();
+        else statusNode.textContent = "常见问题表还没有载入。";
       }
     });
   }
@@ -386,21 +452,9 @@
 
   bindCatalogButton();
 
-  fetch(catalogUrl)
-    .then((response) => {
-      if (!response.ok) throw new Error(`FAQ catalog HTTP ${response.status}`);
-      return response.json();
-    })
-    .then((payload) => {
-      const terms = Array.isArray(payload?.terms) ? payload.terms : [];
-      catalog = new Map(terms.map((term) => [term.id, term]));
-      statusNode.textContent = "点课件里带虚线的词，或点上方“常见问题”，只会看到基础解释。";
-      if (pendingTermId) showTerm(pendingTermId, lastTrigger);
-      else renderList(lessonTerms()[0]?.id);
-    })
-    .catch(() => {
-      statusNode.textContent = "常见问题表暂时无法载入。";
-      emptyNode.hidden = false;
-      emptyNode.textContent = "词条载入失败时，课件仍可继续。请确认本地服务正在运行，然后刷新页面。";
-    });
+  retryNode.addEventListener("click", () => {
+    loadCatalog();
+  });
+
+  loadCatalog();
 })();
