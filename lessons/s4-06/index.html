@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(320px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,32 @@
               <div class="box-meta" id="variableMeta">先点“状态：先写出 dp[i] 的含义”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="transitionMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在把 dp 表的推导落成一行代码：位置 i 只有两种可能——<button type="button" class="faq-term" data-faq="pick-or-skip">选或不选</button> 它，两种里取金额更大的那个。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="打家劫舍 dp 的脚手架，只留一空">
+                <ol>
+                  <li>// nums 是每个位置的金额，dp[i] 是考虑前 i 个位置能拿到的最大金额</li>
+                  <li>int dp[100005];</li>
+                  <li>dp[0] = nums[0];                    // 初始化：只有一个位置时只能选它</li>
+                  <li>dp[1] = max(nums[0], nums[1]);      // 初始化：前两个位置只能选其中一个</li>
+                  <li>for (int i = 2; i &lt; n; i += 1) {</li>
+                  <li class="focus-line">    <input id="transitionInput" class="micro-input" type="text" value="" placeholder="dp[i] = ____;" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="60" aria-label="写出第 i 个位置的转移那一行" />   // 不选 i，或者选 i 再接上 i - 2 的结果</li>
+                  <li>}</li>
+                  <li>cout &lt;&lt; dp[n - 1];</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="转移那一行的检查与兜底">
+                <button id="transitionCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="transitionHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="transitionRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="transitionResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="transitionHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="transitionRef" class="micro-ref" hidden>    dp[i] = max(dp[i - 1], dp[i - 2] + nums[i]);   // 不选 i 就沿用 dp[i - 1]；选 i 就不能选 i - 1，要接 i - 2</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1544,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        transitionDraft: "",
+        transitionTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1568,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const transitionMicro = document.querySelector("#transitionMicro");
+      const transitionInput = document.querySelector("#transitionInput");
+      const transitionHint = document.querySelector("#transitionHint");
+      const transitionRef = document.querySelector("#transitionRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1601,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            transitionDraft: typeof stored.transitionDraft === "string" ? stored.transitionDraft : "",
+            transitionTyped: stored.transitionTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1604,16 +1678,70 @@
         });
       }
 
+      function normalizeTransitionInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkTransitionLine(raw) {
+        const text = normalizeTransitionInput(raw);
+        if (!text)
+          return {
+            ok: false,
+            message: "先在空里写出转移那一行：第 i 个位置可以不要，也可以要它再加上第 i - 2 个位置的结果。",
+          };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：小括号、等号、逗号和分号都要敲半角 ( ) = , ; 。" };
+        if (!text.endsWith(";"))
+          return { ok: false, message: "是不是漏了末尾的半角分号呀？C++ 每条语句末尾都要写 ; 。" };
+
+        const body = text.slice(0, -1);
+        if (/^dp\[i\]=max\(dp\[i-1\],dp\[i-2\]\+nums\[i\]\)$/.test(body)) return { ok: true, message: "" };
+        if (/^dp\[i\]=max\(dp\[i-2\]\+nums\[i\],dp\[i-1\]\)$/.test(body)) return { ok: true, message: "" };
+        if (/^dp\[i\]=dp\[i-1\]\+dp\[i-2\]$/.test(body))
+          return {
+            ok: false,
+            message: "两个 dp 不能相加：它们是二选一的两条路，要用 max 挑大的那个；拿第 i 个位置时还要加 nums[i] 。",
+          };
+        if (/^dp\[i\]=dp\[i-1\]\+dp\[i-2\]\+nums\[i\]$/.test(body))
+          return {
+            ok: false,
+            message: "三个数相加不等于答案：不要 i 是 dp[i - 1]，要 i 是 dp[i - 2] + nums[i] ，要用 max 在两者里挑大的。",
+          };
+        if (/^dp\[i\]=max\(dp\[i-1\],dp\[i-1\]\+nums\[i\]\)$/.test(body))
+          return { ok: false, message: "两边都用了 i - 1：这样等于允许相邻两家都被选走，要改成 i - 2 。" };
+        if (/^dp\[i\]=max\(dp\[i\+1\]/.test(body))
+          return { ok: false, message: "dp[i + 1] 比 i 大，还没算到那一格，转移只能回头用 i - 1 和 i - 2 。" };
+        if (/^dp\[i\]=max\(dp\[i-1\],dp\[i-2\]\+nums\[i\+1\]\)$/.test(body))
+          return { ok: false, message: "nums[i + 1] 越界了，会读到金额数组外面；第 i 个位置对应的是 nums[i] 。" };
+        if (/^dp\[i\]=max\(dp\[i-1\],dp\[i-2\]\)$/.test(body))
+          return { ok: false, message: "少了金额：选第 i 个位置时要把它的金额 nums[i] 加上去。" };
+        if (/^dp\[i\]=dp\[i-1\]\+nums\[i\]$/.test(body))
+          return { ok: false, message: "选了 i 就不能再选 i - 1，要接的是 i - 2 的结果：dp[i - 2] + nums[i] 。" };
+        if (/^dp\[i\]=dp\[i-2\]\+nums\[i\]$/.test(body))
+          return { ok: false, message: "漏了“不要 i”这条路：不选 i 时金额和 dp[i - 1] 一样，也要放进 max 一起比。" };
+        if (/^max\(dp\[i-1\]/.test(body))
+          return { ok: false, message: "少了等号左边：这一行是在给 dp[i] 赋值，要写成 dp[i] = max(...) 。" };
+        if (/^dp\[i\]=/.test(body))
+          return {
+            ok: false,
+            message: "等号右边还没对上：不要 i 用 dp[i - 1]，要 i 用 dp[i - 2] + nums[i] ，两边用 max 挑大的。",
+          };
+
+        return { ok: false, message: "这一空要写成 dp[i] = max(dp[i - 1], dp[i - 2] + nums[i]); ：不选 i 沿用 dp[i - 1]，选 i 就接 i - 2 。" };
+      }
+
       function conceptSolved() {
         return state.methodSolved && state.tieRuleSolved;
       }
 
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.toolsMatched, state.transitioned && state.transitionTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.transitionTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1772,6 +1900,11 @@
           variableMeta.textContent = "先点“状态：先写出 dp[i] 的含义”。";
           flowFeedback.textContent = "";
         }
+
+        if (transitionMicro) transitionMicro.hidden = !state.transitioned;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (transitionInput && document.activeElement !== transitionInput) transitionInput.value = state.transitionDraft ?? "";
+        transitionInput?.classList.toggle("is-correct", state.transitionTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2161,72 @@
         }
 
         state.transitioned = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：状态定义、初始化、转移都对上了，dp = [3, 7, 7, 13]。现在在下面的空里亲手写出转移那一行。");
+        announce("三步已经走完。现在亲手写出转移那一行：第 i 个位置可以不要，也可以要它再加上第 i - 2 个位置的结果。");
+        playSound("calm");
+      });
+
+      transitionInput?.addEventListener("input", (event) => {
+        state.transitionDraft = event.target.value;
+        state.transitionTyped = false;
+        transitionInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#transitionCheckButton")?.addEventListener("click", () => {
+        const result = checkTransitionLine(state.transitionDraft);
+        if (!result.ok) {
+          showFeedback(transitionHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          transitionInput?.classList.add("is-wrong");
+          return;
+        }
+        transitionInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(transitionHint, result.message);
+        if (!state.transitionTyped) {
+          state.transitionTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：转移那一行是你亲手写的。下一步确定处理思路和两个边界。");
+        }
+      });
+
+      document.querySelector("#transitionHintButton")?.addEventListener("click", () => {
+        const text = normalizeTransitionInput(state.transitionDraft);
+        const hint = !text
+          ? "要写的是 dp[i] = max(dp[i - 1], dp[i - 2] + nums[i]); ：不要 i 用 dp[i - 1]，要 i 用 dp[i - 2] + nums[i] 。"
+          : text.includes("max")
+            ? "已经有 max 了。检查三样：左边是 dp[i]、两个选项是 dp[i - 1] 和 dp[i - 2] + nums[i] 、最后别忘了半角分号。"
+            : "先写等号左边 dp[i] = ，再用 max 在 dp[i - 1] 和 dp[i - 2] + nums[i] 里挑大的那个。";
+        showFeedback(transitionHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#transitionRefButton")?.addEventListener("click", () => {
+        if (transitionRef) transitionRef.hidden = !transitionRef.hidden;
+        announce(transitionRef && !transitionRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#transitionResetButton")?.addEventListener("click", () => {
+        state.transitionDraft = "";
+        state.transitionTyped = false;
+        if (transitionHint) transitionHint.textContent = "";
+        if (transitionRef) transitionRef.hidden = true;
+        transitionInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (transitionInput) transitionInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：状态、初始化、转移都走完了，dp[3] = 13。下一步看处理思路和边界。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

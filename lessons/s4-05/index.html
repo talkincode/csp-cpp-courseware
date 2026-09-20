@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(320px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,34 @@
               <div class="box-meta" id="variableMeta">先点“排序：把成绩从小到大排列”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="countMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在把“扫描时统计次数”落成一行代码：分数范围只有 0~100，读入时就用 <button type="button" class="faq-term" data-faq="counting-array">计数数组</button> 同步统计，比排完序再回头数更省事。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="分数统计的脚手架，只留一空">
+                <ol>
+                  <li>// cnt[v] 记录分数 v 出现过几次，分数范围 0~100 开得下</li>
+                  <li>int cnt[101] = {0};</li>
+                  <li>int n; cin &gt;&gt; n;</li>
+                  <li>for (int i = 1; i &lt;= n; i += 1) {</li>
+                  <li>    int score; cin &gt;&gt; score;</li>
+                  <li class="focus-line">    <input id="countInput" class="micro-input" type="text" value="" placeholder="____ ;" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写出读入这个分数时同步统计出现次数的那一行" />   // 读入时同步统计这个分数</li>
+                  <li>}</li>
+                  <li>int best = 0;</li>
+                  <li>for (int v = 1; v &lt;= 100; v += 1) { if (cnt[v] &gt; cnt[best]) best = v; }   // 并列时保留数值更小的分数</li>
+                  <li>cout &lt;&lt; best &lt;&lt; " " &lt;&lt; cnt[best];</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="统计那一行的检查与兜底">
+                <button id="countCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="countHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="countRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="countResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="countHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="countRef" class="micro-ref" hidden>    cnt[score]++;   // 读入这个分数时，把它对应的格子加一</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1546,8 @@
         sorted: false,
         scanned: false,
         recorded: false,
+        countDraft: "",
+        countTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1570,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const countMicro = document.querySelector("#countMicro");
+      const countInput = document.querySelector("#countInput");
+      const countHint = document.querySelector("#countHint");
+      const countRef = document.querySelector("#countRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1603,8 @@
             sorted: stored.sorted === true,
             scanned: stored.scanned === true,
             recorded: stored.recorded === true,
+            countDraft: typeof stored.countDraft === "string" ? stored.countDraft : "",
+            countTyped: stored.countTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1684,48 @@
         return state.methodSolved && state.tieRuleSolved;
       }
 
+      function normalizeCountInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkCountLine(raw) {
+        const text = normalizeCountInput(raw);
+        if (!text) return { ok: false, message: "先在空里写出统计那一行：读入这个分数时，就把它的出现次数加一。" };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：方括号、加号和分号都要敲半角 [ + ; 。" };
+        if (!text.endsWith(";"))
+          return { ok: false, message: "是不是漏了末尾的半角分号呀？C++ 每条语句末尾都要写 ; 。" };
+
+        const body = text.slice(0, -1);
+        if (/^cnt\[score\]\+\+$/.test(body)) return { ok: true, message: "" };
+        if (/^cnt\[score\]\+=1$/.test(body)) return { ok: true, message: "" };
+        if (/^cnt\[score\]=cnt\[score\]\+1$/.test(body)) return { ok: true, message: "" };
+        if (/^cnt\[score\]=1$/.test(body))
+          return { ok: false, message: "这样每次读入都会把前面数好的次数覆盖掉：累加要写 cnt[score]++ 或 cnt[score] += 1 。" };
+        if (/^score\+\+$/.test(body))
+          return { ok: false, message: "加的是分数自己：要加的是这个分数的计数格子 cnt[score] 。" };
+        if (/^cnt\[i\]\+\+$/.test(body))
+          return { ok: false, message: "i 只是第几个学生，不是分数：要统计的是分数 score 出现的次数，写成 cnt[score]++ 。" };
+        if (/^cnt\+\+$/.test(body))
+          return { ok: false, message: "少了方括号里的下标：计数数组要写明统计哪个分数，写成 cnt[score]++ 。" };
+        if (/^cin>>score$/.test(body))
+          return { ok: false, message: "这一行不用再读一次：上面的 cin >> score 已经读完了，这里是把这次读到的分数记进计数数组。" };
+        if (/^cnt\[score\]--$/.test(body))
+          return { ok: false, message: "符号弄反了：出现次数只会越加越多，要写 ++ 或 += 1 。" };
+        if (/^cnt\[score\]\+1$/.test(body))
+          return { ok: false, message: "算出了加一的结果，但没有存回去：要写成 cnt[score]++ 或 cnt[score] += 1 。" };
+
+        return { ok: false, message: "这一空要写成 cnt[score]++;：读入这个分数时，把它对应的格子加一。" };
+      }
+
       function unlockedStepCount() {
-        return [state.toolsMatched, state.recorded, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.toolsMatched, state.recorded && state.countTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.recorded, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.recorded && state.countTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1758,7 +1870,7 @@
         if (state.recorded) {
           variableValue.textContent = "78 85 85 90 90 90；90 出现 3 次，最高频";
           variableMeta.textContent = "三步走完。不要跳过“记录”这一步。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步确定处理思路和两个边界。");
+          showFeedback(flowFeedback, "你已经按顺序走完。下一步在下面的空里亲手写出统计那一行。");
         } else if (state.scanned) {
           variableValue.textContent = "已数出 78(1) 85(2) 90(3)";
           variableMeta.textContent = "扫描统计写清了。下一步点“记录：更新出现次数最多的分数”。";
@@ -1772,6 +1884,11 @@
           variableMeta.textContent = "先点“排序：把成绩从小到大排列”。";
           flowFeedback.textContent = "";
         }
+
+        if (countMicro) countMicro.hidden = !state.recorded;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (countInput && document.activeElement !== countInput) countInput.value = state.countDraft ?? "";
+        countInput?.classList.toggle("is-correct", state.countTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2145,72 @@
         }
 
         state.recorded = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：排序、扫描、记录都对上了。现在在下面的空里亲手写出统计那一行。");
+        announce("三步已经走完。现在亲手写出统计那一行：读入这个分数时，把它对应的格子加一。");
+        playSound("calm");
+      });
+
+      countInput?.addEventListener("input", (event) => {
+        state.countDraft = event.target.value;
+        state.countTyped = false;
+        countInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#countCheckButton")?.addEventListener("click", () => {
+        const result = checkCountLine(state.countDraft);
+        if (!result.ok) {
+          showFeedback(countHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          countInput?.classList.add("is-wrong");
+          return;
+        }
+        countInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(countHint, result.message);
+        if (!state.countTyped) {
+          state.countTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：统计那一行是你亲手写的。下一步确定处理思路和两个边界。");
+        }
+      });
+
+      document.querySelector("#countHintButton")?.addEventListener("click", () => {
+        const text = normalizeCountInput(state.countDraft);
+        const hint = !text
+          ? "要写的是 cnt[score]++;：方括号里放刚读到的分数，把它那一格加一，末尾别忘了半角分号。"
+          : text.includes("cnt")
+            ? "已经写到 cnt 了。检查三样：方括号里是刚读到的 score、用 ++ 累加而不是直接赋值、末尾半角分号。"
+            : "这一空要的是 cnt[score]++;：读入这个分数时，把它对应的计数格子加一。";
+        showFeedback(countHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#countRefButton")?.addEventListener("click", () => {
+        if (countRef) countRef.hidden = !countRef.hidden;
+        announce(countRef && !countRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#countResetButton")?.addEventListener("click", () => {
+        state.countDraft = "";
+        state.countTyped = false;
+        if (countHint) countHint.textContent = "";
+        if (countRef) countRef.hidden = true;
+        countInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (countInput) countInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：排序、扫描、记录都走完了。下一步看处理思路和边界。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

@@ -54,6 +54,8 @@ type LessonConfig = {
   outOfBounds: string;
   outOfBoundsMessage: string;
   blankWant: string;
+  // 任务 1 里要点对的两处选择；多数课沿用同一套标记，个别课的行名不同，需要逐课声明。
+  taskOnePicks?: string[];
   scenario: string;
 };
 
@@ -458,6 +460,71 @@ const lessons: LessonConfig[] = [
     blankWant: "if (____)",
     scenario: "写出判断这次操作能不能做的那一行",
   },
+  {
+    directory: "s4-04",
+    storageKey: "csp-cpp-s4-04-progress-v1",
+    micro: "pruneMicro",
+    input: "pruneInput",
+    check: "pruneCheckButton",
+    hint: "pruneHintButton",
+    ref: "pruneRefButton",
+    reset: "pruneResetButton",
+    hintPanel: "pruneHint",
+    refPanel: "pruneRef",
+    typedField: "pruneTyped",
+    draftField: "pruneDraft",
+    good: "if (sum > target) return;",
+    fullWidth: "if （sum ＞ target） return；",
+    fullWidthHint: "半角",
+    outOfBounds: "if (sum >= target) return;",
+    outOfBoundsMessage: "边界差一点",
+    blankWant: "if (sum ____ target) return;",
+    scenario: "写出剪枝那一行",
+  },
+  {
+    directory: "s4-05",
+    storageKey: "csp-cpp-s4-05-progress-v1",
+    micro: "countMicro",
+    input: "countInput",
+    check: "countCheckButton",
+    hint: "countHintButton",
+    ref: "countRefButton",
+    reset: "countResetButton",
+    hintPanel: "countHint",
+    refPanel: "countRef",
+    typedField: "countTyped",
+    draftField: "countDraft",
+    good: "cnt[score]++;",
+    fullWidth: "cnt［score］＋＋；",
+    fullWidthHint: "半角",
+    outOfBounds: "cnt[score] = 1;",
+    outOfBoundsMessage: "覆盖",
+    blankWant: "cnt[score]____;",
+    taskOnePicks: ['[data-quantity="rangeTool"] [data-choice="counting"]', '[data-quantity="dupTool"] [data-choice="sortScan"]'],
+    scenario: "写出把这次读到的分数记进计数数组的那一行",
+  },
+  {
+    directory: "s4-06",
+    storageKey: "csp-cpp-s4-06-progress-v1",
+    micro: "transitionMicro",
+    input: "transitionInput",
+    check: "transitionCheckButton",
+    hint: "transitionHintButton",
+    ref: "transitionRefButton",
+    reset: "transitionResetButton",
+    hintPanel: "transitionHint",
+    refPanel: "transitionRef",
+    typedField: "transitionTyped",
+    draftField: "transitionDraft",
+    good: "dp[i] = max(dp[i - 1], dp[i - 2] + nums[i]);",
+    fullWidth: "dp［i］＝max（dp［i－1］，dp［i－2］＋nums［i］）；",
+    fullWidthHint: "半角",
+    outOfBounds: "dp[i] = max(dp[i - 1], dp[i - 2]);",
+    outOfBoundsMessage: "少了金额",
+    blankWant: "dp[i] = max(dp[i - 1], ____);",
+    taskOnePicks: ['[data-quantity="stateTool"] [data-choice="define-dp"]', '[data-quantity="pickTool"] [data-choice="pick-or-skip"]'],
+    scenario: "写出打家劫舍的转移那一行",
+  },
 ];
 
 // 默认跑全部；CSP_E2E_LESSONS=s3-01,s3-03 可以只跑指定几课。
@@ -712,9 +779,16 @@ try {
     await client.evaluate(lessonReady);
 
     // 任务 1：两处选择都选对，任务 2 才会点亮
+    const taskOnePicks = lesson.taskOnePicks ?? [
+      '[data-quantity="passFail"] [data-choice="compare"]',
+      '[data-quantity="grade"] [data-choice="three-way"]',
+    ];
     await client.evaluate(`(() => {
-      document.querySelector('[data-quantity="passFail"] [data-choice="compare"]').click();
-      document.querySelector('[data-quantity="grade"] [data-choice="three-way"]').click();
+      for (const selector of ${JSON.stringify(taskOnePicks)}) {
+        const button = document.querySelector(selector);
+        if (!button) throw new Error("任务 1 找不到按钮：" + selector);
+        button.click();
+      }
       return true;
     })()`);
 
