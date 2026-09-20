@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1339,6 +1379,28 @@
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
+            <div id="factMicro" hidden>
+              <p class="step-lead">
+                三层调用追踪完了，现在亲手把阶乘的 <button type="button" class="faq-term" data-faq="recursive-call">递归调用</button> 那一行敲出来：当前这一层乘上更小一号的同类问题。下面是只读脚手架，<button type="button" class="faq-term" data-faq="base-case">递归边界</button> 已经写好，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="阶乘递归的脚手架，只留一空">
+                <ol>
+                  <li>int fact(int n) {</li>
+                  <li>  if (n == 1) return 1;   // 边界：到 1 就停</li>
+                  <li class="focus-line">  return <input id="factInput" class="micro-input" type="text" value="" placeholder="n ? fact( )" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="用 n 和 fact 写出阶乘的递归调用" />;   // 3! = 3 * 2!</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="阶乘递归写法的检查与兜底">
+                <button id="factCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="factHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="factRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="factResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="factHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="factRef" class="micro-ref" hidden>  return n * fact(n - 1); // 3! = 3 * 2!：当前层乘上更小一号的同类问题</pre>
+            </div>
+
           <section class="step-panel" data-panel="2" hidden>
             <h2>任务 3：用同样想法写阶乘，并看忘写边界会怎样</h2>
             <p class="step-lead">
@@ -1478,6 +1540,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        factDraft: "",
+        factTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1564,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const factMicro = document.querySelector("#factMicro");
+      const factInput = document.querySelector("#factInput");
+      const factHint = document.querySelector("#factHint");
+      const factRef = document.querySelector("#factRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1597,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            factDraft: typeof stored.factDraft === "string" ? stored.factDraft : "",
+            factTyped: stored.factTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1813,33 @@
         }
       }
 
+      function normalizeFactInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "").replace(/;$/, "");
+      }
+
+      function checkFactFix(raw) {
+        const text = normalizeFactInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下阶乘的递归调用：当前这一层要乘上更小的同类问题。" };
+        if (/[（），；：、。！？［］【】＝×＊＋－]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：括号和减号都要敲半角 ( ) -，函数名 fact 也要用半角字母。" };
+        if (/^n\*fact\(n-1\)$/.test(text)) return { ok: true, message: "" };
+        if (/^fact\(n-1\)\*n$/.test(text)) return { ok: true, message: "" };
+
+        if (/^n\*fact\(n\)$/.test(text) || /^fact\(n\)\*n$/.test(text))
+          return { ok: false, message: "括号里还是 n，问题没有变小，永远到不了边界。要调用更小一号的 n - 1。" };
+        if (/^n\*fact\(n-2\)$/.test(text) || /^fact\(n-2\)\*n$/.test(text))
+          return { ok: false, message: "每次只少 1：写 n - 2 会跳过一个数，中间那一层就漏掉了。" };
+        if (/^fact\(n-1\)$/.test(text))
+          return { ok: false, message: "只留下了更小的问题，忘了把当前这一层乘进去。阶乘要把 n 乘上。" };
+        if (/^n\+fact\(n-1\)$/.test(text) || /^fact\(n-1\)\+n$/.test(text))
+          return { ok: false, message: "这里是乘法关系：3! = 3 × 2!，不是相加。" };
+        if (text.includes("fact") && !text.includes("*"))
+          return { ok: false, message: "已经会调用自己了，还差乘法：中间要用半角的 * 把当前层乘上去。" };
+        if (!text.includes("fact"))
+          return { ok: false, message: "这一空要再调用函数自己：函数名是 fact，参数比现在小一号。" };
+        return { ok: false, message: "这一空要写成 n * fact(n - 1)：当前层乘上更小一号的同类问题。" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1855,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "到达 countdown(1)，边界返回";
           variableMeta.textContent = "三层任务卡：3、2、1。n==1 不再往下调用。";
-          showFeedback(flowFeedback, "你已经追踪完三层。下一步用同样想法写阶乘。");
+          showFeedback(
+            flowFeedback,
+            state.factTyped
+              ? "你已经追踪完三层，还亲手写出了阶乘的递归调用。下一步看忘写边界会怎样。"
+              : "你已经追踪完三层。现在在下面的空里亲手写出阶乘的递归调用：n 乘上 n - 1 的结果。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "栈上有 countdown(3)、countdown(2)";
           variableMeta.textContent = "还没到边界。下一步必须进入 countdown(1)。";
@@ -1772,6 +1874,10 @@
           variableMeta.textContent = "先点“进入 countdown(3)，再调用 countdown(2)”。";
           flowFeedback.textContent = "";
         }
+
+        if (factMicro) factMicro.hidden = !state.evenChecked;
+        if (factInput && document.activeElement !== factInput) factInput.value = state.factDraft ?? "";
+        factInput?.classList.toggle("is-correct", state.factTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2129,76 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这三层调用已经走完，可以进入下一任务。");
+          announce("这三层调用已经走完，在下面的空里写出阶乘的递归调用。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：countdown(3)→countdown(2)→countdown(1)，边界处返回。下一步看阶乘。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "三层走完了：countdown(3)→countdown(2)→countdown(1)，到边界就返回。现在在下面的空里亲手写出阶乘的递归调用。");
+        announce("三层调用走完，边界处返回。现在亲手写出阶乘的递归调用：n 乘上 n - 1 的阶乘。");
+        playSound("calm");
+      });
+
+      factInput?.addEventListener("input", (event) => {
+        state.factDraft = event.target.value;
+        state.factTyped = false;
+        factInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#factCheckButton")?.addEventListener("click", () => {
+        const result = checkFactFix(state.factDraft);
+        if (!result.ok) {
+          showFeedback(factHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          factInput?.classList.add("is-wrong");
+          return;
+        }
+        factInput?.classList.remove("is-wrong");
+        if (!state.factTyped) {
+          state.factTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：n * fact(n - 1) 这一行是你亲手写的。下一步看忘写边界会怎样。");
+        }
+      });
+
+      document.querySelector("#factHintButton")?.addEventListener("click", () => {
+        const text = normalizeFactInput(state.factDraft);
+        const hint = !text
+          ? "想一想 3! = 3 × 2!：当前这一层是 3，更小一号的同类问题是 2!，也就是 fact(2)。"
+          : text.includes("fact")
+            ? "已经会调用自己了。检查两件事：括号里是不是 n - 1，前面有没有乘上当前层的 n。"
+            : "这一空要的是 n * fact(n - 1)：先乘当前层，再调用更小一号的阶乘。";
+        showFeedback(factHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#factRefButton")?.addEventListener("click", () => {
+        if (factRef) factRef.hidden = !factRef.hidden;
+        announce(factRef && !factRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#factResetButton")?.addEventListener("click", () => {
+        state.factDraft = "";
+        state.factTyped = false;
+        if (factHint) factHint.textContent = "";
+        if (factRef) factRef.hidden = true;
+        factInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (factInput) factInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

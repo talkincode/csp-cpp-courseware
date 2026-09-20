@@ -10,6 +10,8 @@
     "validate": "bun test",
     "scaffold:lessons": "bun scripts/scaffold-lessons.ts",
     "e2e:s1-01": "bun tests/e2e/s1-01-cdp.ts",
-    "e2e:s2-typed": "bun tests/e2e/s2-typed-cdp.ts"
+    "e2e:s2-typed": "CSP_E2E_LESSONS=s2-01,s2-02,s2-03,s2-04,s2-05,s2-06,s2-07,s2-08 bun tests/e2e/s2-typed-cdp.ts",
+    "e2e:s3-typed": "CSP_E2E_LESSONS=s3-01,s3-02,s3-03 bun tests/e2e/s2-typed-cdp.ts",
+    "e2e:typed": "bun tests/e2e/s2-typed-cdp.ts"
   }
 }

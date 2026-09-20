@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,28 @@
               <div class="box-meta" id="variableMeta">先点“看 125 % 10 = 5，还剩 12”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="digitMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在亲手把取个位的那一行敲出来。十进制里最右边那一位就是 <button type="button" class="faq-term" data-faq="digit">数位</button> 的个位，用 <button type="button" class="faq-term" data-faq="modulo">取模 %</button> 留下的余数拿出来。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="取个位的脚手架，只留一空">
+                <ol>
+                  <li>int x = 125;</li>
+                  <li class="focus-line">int digit = <input id="digitInput" class="micro-input" type="text" value="" placeholder="x ? 10" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="24" aria-label="用 x 和 10 写出取出个位的算式" />;  // 取出个位</li>
+                  <li>cout &lt;&lt; digit;   // 屏幕上出现 5</li>
+                  <li>x = x / 10;      // 去掉个位，x 变成 12</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="取个位算式的检查与兜底">
+                <button id="digitCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="digitHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="digitRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="digitResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="digitHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="digitRef" class="micro-ref" hidden>int digit = x % 10; // x = 125 时结果是 5：% 拿余数，10 决定取的是十进制个位</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1540,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        digitDraft: "",
+        digitTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1564,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const digitMicro = document.querySelector("#digitMicro");
+      const digitInput = document.querySelector("#digitInput");
+      const digitHint = document.querySelector("#digitHint");
+      const digitRef = document.querySelector("#digitRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1597,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            digitDraft: typeof stored.digitDraft === "string" ? stored.digitDraft : "",
+            digitTyped: stored.digitTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1813,30 @@
         }
       }
 
+      function normalizeDigitInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "").replace(/;$/, "");
+      }
+
+      function checkDigitFix(raw) {
+        const text = normalizeDigitInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下取出个位的算式：想“125 除以 10 还余下多少”。" };
+        if (/[％（），；：、。！？［］【】＝×＊＋－]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：取模要敲半角的 %（Shift + 5），10 也要用半角数字。" };
+        if (text === "x%10") return { ok: true, message: "" };
+
+        if (/^x\/10$/.test(text))
+          return { ok: false, message: "x / 10 是去掉个位，不是取个位。这一空要留下最右边那一位，用余数。" };
+        if (/^x%100$/.test(text))
+          return { ok: false, message: "余 100 拿到的是最后两位，不是个位。个位只跟 10 有关。" };
+        if (/^x%2$/.test(text)) return { ok: false, message: "余 2 只能分奇偶。要取出十进制的个位，除数得写 10。" };
+        if (/^x\*10$|^x\+10$|^x-10$/.test(text))
+          return { ok: false, message: "这样会让数值变大或变小，取不出某一位。取位要用余数 %。" };
+        if (/^x%$/.test(text)) return { ok: false, message: "有取模号了，还差除数：个位要写 10。" };
+        if (text.includes("%") && !text.includes("10"))
+          return { ok: false, message: "除数要写 10：十进制每一位的基数是 10，% 10 才是个位。" };
+        return { ok: false, message: "这一空要写成 x % 10：% 拿余数，10 决定取的是十进制个位。" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1852,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "各位 5、2、1，n 变成 0";
           variableMeta.textContent = "循环不变量：还没拆完的部分仍在 n 里。n=0 就停。";
-          showFeedback(flowFeedback, "你已经拆完 125。下一步用同样的余数想法求 GCD。");
+          showFeedback(
+            flowFeedback,
+            state.digitTyped
+              ? "你已经拆完 125，还亲手写出了取个位的算式。下一步用同样的余数想法求 GCD。"
+              : "你已经拆完 125。现在在下面的空里亲手写出取个位的算式：125 除以 10 余下多少。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "已取出 5、2，还剩 1";
           variableMeta.textContent = "十位变成了新的个位。下一步必须看到 1 / 10 = 0。";
@@ -1772,6 +1871,10 @@
           variableMeta.textContent = "先点“看 125 % 10 = 5，还剩 12”。";
           flowFeedback.textContent = "";
         }
+
+        if (digitMicro) digitMicro.hidden = !state.evenChecked;
+        if (digitInput && document.activeElement !== digitInput) digitInput.value = state.digitDraft ?? "";
+        digitInput?.classList.toggle("is-correct", state.digitTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2126,76 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这次拆位已经走完，可以进入下一任务。");
+          announce("这次拆位已经走完，在下面的空里写出取个位的算式。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：125 拆成 5、2、1，n 变成 0 就停。下一步求 GCD。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：125 拆成 5、2、1，1 / 10 得到 0 就停。现在在下面的空里亲手写出取个位的算式。");
+        announce("125 拆成 5、2、1，n 变成 0 就停。现在亲手写出取个位的算式：x 除以 10 余下多少。");
+        playSound("calm");
+      });
+
+      digitInput?.addEventListener("input", (event) => {
+        state.digitDraft = event.target.value;
+        state.digitTyped = false;
+        digitInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#digitCheckButton")?.addEventListener("click", () => {
+        const result = checkDigitFix(state.digitDraft);
+        if (!result.ok) {
+          showFeedback(digitHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          digitInput?.classList.add("is-wrong");
+          return;
+        }
+        digitInput?.classList.remove("is-wrong");
+        if (!state.digitTyped) {
+          state.digitTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：取个位的算式 x % 10 是你亲手写出来的。下一步用同样的余数想法求 GCD。");
+        }
+      });
+
+      document.querySelector("#digitHintButton")?.addEventListener("click", () => {
+        const text = normalizeDigitInput(state.digitDraft);
+        const hint = !text
+          ? "想一想：125 除以 10 得 12 还余 5。那个余数就是最右边那一位。"
+          : text.includes("%")
+            ? "已经有取模号了。检查除数是不是 10，两边都用半角字符。"
+            : "这一空要的是 x % 10：% 拿余数，10 决定取的是十进制个位。";
+        showFeedback(digitHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#digitRefButton")?.addEventListener("click", () => {
+        if (digitRef) digitRef.hidden = !digitRef.hidden;
+        announce(digitRef && !digitRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#digitResetButton")?.addEventListener("click", () => {
+        state.digitDraft = "";
+        state.digitTyped = false;
+        if (digitHint) digitHint.textContent = "";
+        if (digitRef) digitRef.hidden = true;
+        digitInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (digitInput) digitInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

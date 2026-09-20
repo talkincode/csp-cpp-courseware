@@ -1,10 +1,13 @@
 #!/usr/bin/env bun
 /**
- * S2-01 至 S2-08 微编程输入框浏览器自动化复验（零依赖）。
+ * 手写填空微编程的浏览器自动化复验（零依赖）。
  *
- * 用法：bun run e2e:s2-typed
+ * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 前三课）、bun run e2e:typed（全部）
  *
- * 脚本会自行启动开发服务器与无头 Chrome，验证这八课新加的「只读脚手架 + 一空」
+ * 这个脚本最早为 S2 八课而写，后来 S3 的课沿用同一套课件样板，所以也一起跑；
+ * 用 CSP_E2E_LESSONS=s3-01,s3-03 可以只跑指定几课。
+ *
+ * 脚本会自行启动开发服务器与无头 Chrome，验证「只读脚手架 + 一空」的
  * 微编程练习：出现时机、真实键盘输入、错误指正、兜底按钮、草稿恢复与提交后解锁。
  * 它不在 `bun test` 范围内：需要真实浏览器，属于体验验收，不是单元测试。
  *
@@ -13,6 +16,7 @@
  *   CSP_E2E_CDP_PORT  无头 Chrome 的调试端口（默认 9343）
  *   CSP_E2E_CHROME    Chrome 可执行文件路径
  *   CSP_E2E_ORIGIN    复用已在运行的服务地址（设置后不自行启动服务器）
+ *   CSP_E2E_LESSONS   只跑指定课程，逗号分隔（如 s3-01,s3-02）
  */
 
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
@@ -223,7 +227,85 @@ const lessons: LessonConfig[] = [
     blankWant: "n *",
     scenario: "写出双层循环的次数算式",
   },
+  {
+    directory: "s3-01",
+    storageKey: "csp-cpp-s3-01-progress-v1",
+    micro: "digitMicro",
+    input: "digitInput",
+    check: "digitCheckButton",
+    hint: "digitHintButton",
+    ref: "digitRefButton",
+    reset: "digitResetButton",
+    hintPanel: "digitHint",
+    refPanel: "digitRef",
+    typedField: "digitTyped",
+    draftField: "digitDraft",
+    good: "x % 10",
+    fullWidth: "x ％ 10",
+    fullWidthHint: "半角",
+    outOfBounds: "x / 10",
+    outOfBoundsMessage: "去掉个位",
+    blankWant: "x % 10",
+    scenario: "写出取出十进制个位的算式",
+  },
+  {
+    directory: "s3-02",
+    storageKey: "csp-cpp-s3-02-progress-v1",
+    micro: "factMicro",
+    input: "factInput",
+    check: "factCheckButton",
+    hint: "factHintButton",
+    ref: "factRefButton",
+    reset: "factResetButton",
+    hintPanel: "factHint",
+    refPanel: "factRef",
+    typedField: "factTyped",
+    draftField: "factDraft",
+    good: "n * fact(n - 1)",
+    fullWidth: "n ＊ fact（n - 1）",
+    fullWidthHint: "半角",
+    outOfBounds: "n * fact(n)",
+    outOfBoundsMessage: "边界",
+    blankWant: "n * fact(",
+    scenario: "写出阶乘的递归调用",
+  },
+  {
+    directory: "s3-03",
+    storageKey: "csp-cpp-s3-03-progress-v1",
+    micro: "midMicro",
+    input: "midInput",
+    check: "midCheckButton",
+    hint: "midHintButton",
+    ref: "midRefButton",
+    reset: "midResetButton",
+    hintPanel: "midHint",
+    refPanel: "midRef",
+    typedField: "midTyped",
+    draftField: "midDraft",
+    good: "(left + right) / 2",
+    fullWidth: "（left ＋ right）／ 2",
+    fullWidthHint: "半角",
+    outOfBounds: "left + right / 2",
+    outOfBoundsMessage: "少了括号",
+    blankWant: "(left + right) / 2",
+    scenario: "写出二分的中点算式",
+  },
 ];
+
+// 默认跑全部；CSP_E2E_LESSONS=s3-01,s3-03 可以只跑指定几课。
+const requestedLessons = (Bun.env.CSP_E2E_LESSONS ?? "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter((value) => value.length > 0);
+const unknownLessons = requestedLessons.filter((value) => !lessons.some((lesson) => lesson.directory === value));
+
+if (unknownLessons.length > 0) {
+  console.error(`CSP_E2E_LESSONS 里有不认识的课程：${unknownLessons.join(", ")}`);
+  process.exit(1);
+}
+
+const selectedLessons =
+  requestedLessons.length > 0 ? lessons.filter((lesson) => requestedLessons.includes(lesson.directory)) : lessons;
 
 type Check = { name: string; ok: boolean; detail: string };
 const checks: Check[] = [];
@@ -450,7 +532,7 @@ try {
   await ensureChrome();
   client = await Cdp.attach(cdpPort);
 
-  for (const lesson of lessons) {
+  for (const lesson of selectedLessons) {
     section(`E2E-${lesson.directory} 微编程：${lesson.scenario}`);
 
     await client.send("Page.navigate", { url: `${origin}/lessons/${lesson.directory}/` });
