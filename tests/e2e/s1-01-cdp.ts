@@ -379,6 +379,56 @@ try {
   check("外链为 https 且新标签打开", faq.links.length > 0 && faq.links.every((href: string) => href.startsWith("https://")) && faq.targets.every((target: string) => target === "_blank"), JSON.stringify(faq.links));
   check("面板提供关闭入口", faq.closeButton === true, "");
 
+  section("E2E-S1-01-07 词条载入失败与恢复");
+  // 词条表面板由全部 40 节课共用，所以这条失败路径属于共享能力：载入失败时
+  // 必须当场说明“这次没载入成功”、给出重新载入入口，并且不中断课件其他互动。
+  await client.send("Network.enable");
+  await client.send("Network.setBlockedURLs", { urls: ["*/glossary/faq.json"] });
+  await visit(client);
+  const catalogFailed = await client.evaluateJson<any>(`(async () => {
+    const out = {};
+    document.querySelector("#faqCatalogButton").click();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const status = document.querySelector("[data-faq-status]");
+    const retry = document.querySelector("[data-faq-retry]");
+    const empty = document.querySelector("[data-faq-empty]");
+    out.status = status.textContent.trim();
+    out.role = status.getAttribute("role");
+    out.live = status.getAttribute("aria-live");
+    out.retryExists = !!retry;
+    out.retryVisible = retry ? !retry.hidden : false;
+    out.emptyText = empty.hidden ? "" : empty.textContent.trim();
+    document.querySelector("#inspectSourceButton").click();
+    out.pageFeedback = document.querySelector("#sourceFeedback").textContent.trim();
+    return JSON.stringify(out);
+  })()`);
+
+  check("词条表载入失败时当场说明", catalogFailed.status.includes("无法载入") && !catalogFailed.status.includes("点课件里带虚线的词"), catalogFailed.status.slice(0, 32));
+  check("给出重新载入词条表的入口", catalogFailed.retryExists === true && catalogFailed.retryVisible === true, `可见=${catalogFailed.retryVisible}`);
+  check("失败说明里保留继续学习的出口", catalogFailed.emptyText.includes("仍可继续"), catalogFailed.emptyText.slice(0, 32));
+  check("载入结果向辅助技术播报", catalogFailed.role === "status" && catalogFailed.live === "polite", `${catalogFailed.role}/${catalogFailed.live}`);
+  check("词条表不可用时课件其他互动照常", catalogFailed.pageFeedback.includes("找到了"), catalogFailed.pageFeedback.slice(0, 20));
+
+  await client.send("Network.setBlockedURLs", { urls: [] });
+  const catalogRecovered = await client.evaluateJson<any>(`(async () => {
+    const out = {};
+    document.querySelector('[data-faq="main"]').click();
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    document.querySelector("[data-faq-retry]").click();
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    const retry = document.querySelector("[data-faq-retry]");
+    out.status = document.querySelector("[data-faq-status]").textContent.trim();
+    out.remember = document.querySelector("[data-faq-remember]").textContent.trim();
+    out.retryHidden = retry.hidden;
+    out.emptyHidden = document.querySelector("[data-faq-empty]").hidden;
+    out.chips = document.querySelectorAll("[data-faq-list] [data-faq]").length;
+    return JSON.stringify(out);
+  })()`);
+
+  check("重新载入后回到学习者刚才想看的词条", catalogRecovered.status.includes("程序开始干活的地方") && catalogRecovered.remember.includes("现在记住"), catalogRecovered.status.slice(0, 24));
+  check("恢复后收起重新载入入口", catalogRecovered.retryHidden === true && catalogRecovered.emptyHidden === true, `hidden=${catalogRecovered.retryHidden}`);
+  check("恢复后词条可以继续点选", catalogRecovered.chips > 0, `词条 ${catalogRecovered.chips} 个`);
+
   section("E2E-S1-01-03 刷新恢复（存储可用）");
   await visit(client);
   const restored = await client.evaluateJson<any>(`(() => {

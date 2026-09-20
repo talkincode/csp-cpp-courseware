@@ -153,7 +153,7 @@ lessons/s5-08/
 启动 `bun run dev` 后，打开 <http://localhost:4173/lessons/s1-01/>、<http://localhost:4173/lessons/s1-02/>、<http://localhost:4173/lessons/s1-03/>、<http://localhost:4173/lessons/s1-04/>、<http://localhost:4173/lessons/s1-05/>、<http://localhost:4173/lessons/s1-06/>、<http://localhost:4173/lessons/s1-07/>、<http://localhost:4173/lessons/s1-08/>、<http://localhost:4173/lessons/s2-01/>、<http://localhost:4173/lessons/s2-02/>、<http://localhost:4173/lessons/s2-03/>、<http://localhost:4173/lessons/s2-04/>、<http://localhost:4173/lessons/s2-05/>、<http://localhost:4173/lessons/s2-06/>、<http://localhost:4173/lessons/s2-07/>、<http://localhost:4173/lessons/s2-08/>、<http://localhost:4173/lessons/s3-01/>、<http://localhost:4173/lessons/s3-02/>、<http://localhost:4173/lessons/s3-03/>、<http://localhost:4173/lessons/s3-04/>、<http://localhost:4173/lessons/s3-05/>、<http://localhost:4173/lessons/s3-06/> 、<http://localhost:4173/lessons/s3-07/> 、<http://localhost:4173/lessons/s3-08/> 、<http://localhost:4173/lessons/s4-01/> 、<http://localhost:4173/lessons/s4-02/> 、<http://localhost:4173/lessons/s4-03/> 、<http://localhost:4173/lessons/s4-04/> 、<http://localhost:4173/lessons/s4-05/> 、<http://localhost:4173/lessons/s4-06/> 、<http://localhost:4173/lessons/s4-07/> 、<http://localhost:4173/lessons/s4-08/> 、 <http://localhost:4173/lessons/s5-01/> 、<http://localhost:4173/lessons/s5-02/> 、<http://localhost:4173/lessons/s5-03/> 、<http://localhost:4173/lessons/s5-04/> 、<http://localhost:4173/lessons/s5-05/> 、<http://localhost:4173/lessons/s5-06/> 、<http://localhost:4173/lessons/s5-07/> 或 <http://localhost:4173/lessons/s5-08/>。全部 40 节课程目录均已实现互动学习页与随机测验，内容仍待人工审校。
 
 
-课件里的陌生词（例如 `g++`）可点开 [`glossary/faq.json`](./glossary/faq.json) 中的基础解释。后续课件出现同类概念时，也必须引用同一份词条表。
+课件里的陌生词（例如 `g++`）可点开 [`glossary/faq.json`](./glossary/faq.json) 中的基础解释。后续课件出现同类概念时，也必须引用同一份词条表。词条面板由全部课程共用：词条表载入失败（含返回 HTTP 错误）时当场说明、给出“重新载入词条表”入口，恢复后回到刚才点开的词条，课件其他互动不受影响。
 
 ## 五阶段课程路线
 
@@ -199,10 +199,12 @@ bun test
 
 除逐课用例之外，[`tests/lesson-contract.test.ts`](./tests/lesson-contract.test.ts) 会从 `index.html` 的 `courseData` 派生全部 40 节课，逐课校验互动页与随机小测的共同契约：题库来源与难度档位（必会 / 建议掌握 / 拓展）、选择题严格多于非选择题、题目字段与空题库提示、`awaiting-user-review` 标记、词条双向接线、本地进度键，以及“无视频资产、不在浏览器里运行 C++”边界。新增课节会自动落入校验范围。
 
+共享词条面板的失败与恢复契约由 [`tests/faq-panel-recovery.test.ts`](./tests/faq-panel-recovery.test.ts) 覆盖：词条表载入失败（含 HTTP 错误）必须当场说明、给出重新载入入口、向辅助技术播报，且不中断课件其他互动；重新载入成功后回到学习者刚才点开的词条。这条契约由全部 40 节课共用。
+
 浏览器体验验收可以用真实浏览器自动重跑，同样不需要安装依赖（需要本机有 Chrome）：
 
 ```bash
 bun run e2e:s1-01
 ```
 
-脚本会自行启动开发服务器与无头 Chrome，按 [`tests/e2e/s1-01-manual-checklist.md`](./tests/e2e/s1-01-manual-checklist.md) 的六个场景完成 72 项检查（含跳过步骤、错误选项、刷新恢复、存储不可用与会话中途保存失败后的重试，以及题库异常两条失败路径），结束后清理自己启动的进程。它不属于 `bun test`：断言依赖真实浏览器渲染。
+脚本会自行启动开发服务器与无头 Chrome，按 [`tests/e2e/s1-01-manual-checklist.md`](./tests/e2e/s1-01-manual-checklist.md) 的七个场景完成 81 项检查（含跳过步骤、错误选项、刷新恢复、存储不可用与会话中途保存失败后的重试、词条表载入失败与重新载入，以及题库异常两条失败路径），结束后清理自己启动的进程。它不属于 `bun test`：断言依赖真实浏览器渲染。
