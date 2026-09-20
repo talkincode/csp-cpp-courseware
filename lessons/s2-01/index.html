@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,27 @@
               <div class="box-meta" id="variableMeta">先点“看 a[0]”，确认第 1 个成绩。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="lastIndexMicro" hidden>
+              <p class="step-lead">
+                下标走完了，现在亲手把这个写法敲出来。<button type="button" class="faq-term" data-faq="subscript">下标</button> 从 0 开始，所以最后一个格子的下标比长度小 1，写 <span class="inline-code">a[n]</span> 会 <button type="button" class="faq-term" data-faq="out-of-bounds">越界</button>。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="访问最后一个元素的脚手架，只留一空">
+                <ol>
+                  <li>int n = 4;</li>
+                  <li>int a[n]; // 4 个格子：下标 0、1、2、3</li>
+                  <li>a[0] = 3; a[1] = 8; a[2] = 5; a[3] = 2;</li>
+                  <li class="focus-line">int last = <input id="lastIndexInput" class="micro-input" type="text" value="" placeholder="a[ ? ]" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="20" aria-label="在等号右边写出访问最后一个成绩的写法" />; // 记下最后一个成绩</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="最后一个元素下标的检查与兜底">
+                <button id="lastIndexCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="lastIndexHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="lastIndexRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="lastIndexResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="lastIndexHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="lastIndexRef" class="micro-ref" hidden>int last = a[n - 1]; // 最后一个成绩，n 变了也对</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1539,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        lastIndexDraft: "",
+        lastIndexTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1569,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const lastIndexMicro = document.querySelector("#lastIndexMicro");
+      const lastIndexInput = document.querySelector("#lastIndexInput");
+      const lastIndexHint = document.querySelector("#lastIndexHint");
+      const lastIndexRef = document.querySelector("#lastIndexRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1596,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            lastIndexDraft: typeof stored.lastIndexDraft === "string" ? stored.lastIndexDraft : "",
+            lastIndexTyped: stored.lastIndexTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1812,38 @@
         }
       }
 
+      function normalizeIndexInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkLastIndexFix(raw) {
+        const text = normalizeIndexInput(raw);
+        if (!text)
+          return { ok: false, message: "先在空里写下访问最后一个成绩的写法。想想 a[0] 是第 1 个，最后一个该是多少。" };
+        if (/[［］（）【】；：，、。！？]/.test(text))
+          return { ok: false, message: "用了中文符号哦：方括号要用半角 [ ] ，把输入法切到英文再敲一次。" };
+        if (!/^a\[[^\]]+\]$/.test(text)) {
+          if (!text.includes("["))
+            return { ok: false, message: "还差一对半角方括号：数组取元素要写成 a[ 下标 ] 的样子。" };
+          return { ok: false, message: "这一空要写成 a[ 下标 ]：数组名 a，加一对半角方括号，下标写在里面。" };
+        }
+
+        const inner = text.slice(2, -1);
+        if (inner === "n-1") return { ok: true, message: "" };
+        if (inner === "n")
+          return { ok: false, message: "a[n] 是越界：长度为 n 时合法下标只到 n - 1，那个格子不存在。" };
+        if (inner === "n+1")
+          return { ok: false, message: "a[n + 1] 比 a[n] 还往后，越界更远了。最后一个是 a[n - 1]。" };
+        if (inner === "0")
+          return { ok: false, message: "a[0] 是第 1 个成绩，不是最后一个。最后一个比长度小 1，写成 a[n - 1]。" };
+        if (/^\d+$/.test(inner))
+          return {
+            ok: false,
+            message: `a[${inner}] 是把数字写死了，换个 n 就不对。最后一个格子写成 a[n - 1]，n 变了也对。`,
+          };
+        return { ok: false, message: "下标部分只要一个 n - 1：最后一个格子的下标比长度小 1。" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1859,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "a[3] = 2";
           variableMeta.textContent = "最后一个是 a[n - 1]。n = 4 时不要写 a[4]。";
-          showFeedback(flowFeedback, "你已经走完 a[0] → a[1] → a[n - 1]。下一步遍历求最大值。");
+          showFeedback(
+            flowFeedback,
+            state.lastIndexTyped
+              ? "你已经走完 a[0] → a[1] → a[n - 1]，还亲手写了出来。下一步遍历求最大值。"
+              : "你已经走完 a[0] → a[1] → a[n - 1]。现在在下面的空里亲手写出这个访问写法。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "a[1] = 8";
           variableMeta.textContent = "第 2 个成绩在 a[1]。下一步看最后一个 a[n - 1]。";
@@ -1772,6 +1878,11 @@
           variableMeta.textContent = "先点“看 a[0]”，确认第 1 个成绩。";
           flowFeedback.textContent = "";
         }
+
+        if (lastIndexMicro) lastIndexMicro.hidden = !state.evenChecked;
+        if (lastIndexInput && document.activeElement !== lastIndexInput)
+          lastIndexInput.value = state.lastIndexDraft ?? "";
+        lastIndexInput?.classList.toggle("is-correct", state.lastIndexTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2134,76 @@
           return;
         }
         if (state.evenChecked) {
-          announce("下标已经走完，可以进入下一任务。");
+          announce(state.lastIndexTyped ? "下标已经走完，可以进入下一任务。" : "最后一个格子看过了。亲手把 a[n - 1] 敲进下面的空里就能继续。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：最后一个是 a[n - 1]。下一步遍历求最大值。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "最后一个格子看过了。现在在下面的空里亲手写出访问最后一个成绩的写法。");
+        announce("最后一个格子看过了。现在亲手写出访问最后一个成绩的写法：a[n - 1]。");
+        playSound("calm");
+      });
+
+      lastIndexInput?.addEventListener("input", (event) => {
+        state.lastIndexDraft = event.target.value;
+        state.lastIndexTyped = false;
+        lastIndexInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#lastIndexCheckButton")?.addEventListener("click", () => {
+        const result = checkLastIndexFix(state.lastIndexDraft);
+        if (!result.ok) {
+          showFeedback(lastIndexHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          lastIndexInput?.classList.add("is-wrong");
+          return;
+        }
+        lastIndexInput?.classList.remove("is-wrong");
+        if (!state.lastIndexTyped) {
+          state.lastIndexTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：最后一个是 a[n - 1]，还是你亲手写出来的。下一步遍历求最大值。");
+        }
+      });
+
+      document.querySelector("#lastIndexHintButton")?.addEventListener("click", () => {
+        const text = normalizeIndexInput(state.lastIndexDraft);
+        const hint = !text
+          ? "下标从 0 开始，所以最后一个的下标比长度小 1：把 n - 1 写进方括号里。"
+          : text.includes("n-1")
+            ? "已经有 n - 1 了。检查是不是用了半角方括号 [ ] ，或者前面多了别的字。"
+            : "这一空要的是 a[n - 1]：数组名 a，加一对半角方括号，里面写 n - 1。";
+        showFeedback(lastIndexHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#lastIndexRefButton")?.addEventListener("click", () => {
+        if (lastIndexRef) lastIndexRef.hidden = !lastIndexRef.hidden;
+        announce(lastIndexRef && !lastIndexRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#lastIndexResetButton")?.addEventListener("click", () => {
+        state.lastIndexDraft = "";
+        state.lastIndexTyped = false;
+        if (lastIndexHint) lastIndexHint.textContent = "";
+        if (lastIndexRef) lastIndexRef.hidden = true;
+        lastIndexInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (lastIndexInput) lastIndexInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

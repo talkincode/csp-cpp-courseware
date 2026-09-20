@@ -9,6 +9,7 @@
     "test": "bun test",
     "validate": "bun test",
     "scaffold:lessons": "bun scripts/scaffold-lessons.ts",
-    "e2e:s1-01": "bun tests/e2e/s1-01-cdp.ts"
+    "e2e:s1-01": "bun tests/e2e/s1-01-cdp.ts",
+    "e2e:s2-typed": "bun tests/e2e/s2-typed-cdp.ts"
   }
 }

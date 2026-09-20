@@ -341,6 +341,14 @@ test("S2-01 supplies a guided array lesson and randomized choice quiz", async ()
   expect(source).toContain("int a[n]");
   expect(source).toContain("a[0]");
   expect(source).toContain("a[n - 1]");
+  // 微编程：走完下标后亲手写下访问最后一个格子的写法
+  expect(source).toContain('id="lastIndexInput"');
+  expect(source).toContain('id="lastIndexCheckButton"');
+  expect(source).toContain('id="lastIndexHintButton"');
+  expect(source).toContain('id="lastIndexRefButton"');
+  expect(source).toContain('id="lastIndexResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S2-02 supplies a guided string lesson and randomized choice quiz", async () => {
@@ -366,6 +374,14 @@ test("S2-02 supplies a guided string lesson and randomized choice quiz", async (
   expect(source).toContain("s.size()");
   expect(source).toContain("s[0]");
   expect(source).toContain("s[n - 1]");
+  // 微编程：走完字符下标后亲手写下访问最后一个字符的写法
+  expect(source).toContain('id="lastCharInput"');
+  expect(source).toContain('id="lastCharCheckButton"');
+  expect(source).toContain('id="lastCharHintButton"');
+  expect(source).toContain('id="lastCharRefButton"');
+  expect(source).toContain('id="lastCharResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S2-03 supplies a guided function lesson and randomized choice quiz", async () => {
@@ -390,6 +406,14 @@ test("S2-03 supplies a guided function lesson and randomized choice quiz", async
   expect(source).toContain("return x % 2 == 0");
   expect(source).toContain("isEven(4)");
   expect(source).toContain("isLeap");
+  // 微编程：走完调用过程后亲手写下这次调用
+  expect(source).toContain('id="callInput"');
+  expect(source).toContain('id="callCheckButton"');
+  expect(source).toContain('id="callHintButton"');
+  expect(source).toContain('id="callRefButton"');
+  expect(source).toContain('id="callResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S2-04 supplies a guided scope-and-parameter lesson and randomized choice quiz", async () => {
