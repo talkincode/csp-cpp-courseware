@@ -1176,6 +1176,45 @@
           transition-duration: 1ms !important;
         }
       }
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
     </style>
   </head>
   <body data-faq-terms="variable int long-long double char assignment overflow">
@@ -1293,6 +1332,23 @@
               <div class="box-value" id="variableValue">（还没声明）</div>
               <div class="box-meta" id="variableMeta">先点“声明变量”，给盒子起名字并选定类型。</div>
             </aside>
+            <div id="updateMicro" hidden>
+              <p class="step-lead">更新演示看完了。现在亲手写下这行更新：下面是只读脚手架，只留一空给你敲键盘。</p>
+              <div class="code-sheet" aria-label="更新语句脚手架，只留一空">
+                <ol>
+                  <li>int score = 80;</li>
+                  <li class="focus-line"><input id="updateInput" class="micro-input" type="text" value="" placeholder="score = score + 15;" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写下把 score 加上 15 的更新语句" /></li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="更新语句的检查与兜底">
+                <button id="updateCheckButton" class="primary-action" type="button">检查这行更新</button>
+                <button id="updateHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="updateRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="updateResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="updateHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="updateRef" class="micro-ref" hidden>score = score + 15;</pre>
+            </div>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
@@ -1438,6 +1494,8 @@
         declared: false,
         assigned: false,
         updated: false,
+        updateTyped: false,
+        updateDraft: "",
         charSolved: false,
         rangeSolved: false,
         quizSeed: createSeed(),
@@ -1460,6 +1518,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const updateMicro = document.querySelector("#updateMicro");
+      const updateInput = document.querySelector("#updateInput");
+      const updateHint = document.querySelector("#updateHint");
+      const updateRef = document.querySelector("#updateRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1489,6 +1551,8 @@
             declared: stored.declared === true,
             assigned: stored.assigned === true,
             updated: stored.updated === true,
+            updateTyped: stored.updateTyped === true,
+            updateDraft: typeof stored.updateDraft === "string" ? stored.updateDraft : "",
             charSolved: stored.charSolved === true,
             rangeSolved: stored.rangeSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1569,11 +1633,11 @@
       }
 
       function unlockedStepCount() {
-        return [state.typesMatched, state.updated, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.typesMatched, state.updated && state.updateTyped, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.typesMatched, state.updated, conceptSolved()][step] ?? false;
+        return [true, state.typesMatched, state.updated && state.updateTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1715,10 +1779,14 @@
         compileButton.classList.toggle("is-done", state.assigned);
         runButton.classList.toggle("is-done", state.updated);
 
-        if (state.updated) {
+        if (state.updated && state.updateTyped) {
           variableValue.textContent = "95";
           variableMeta.textContent = "名字 score · 类型 int · 80 加 15 后放回盒子。";
-          showFeedback(flowFeedback, "你已经走完“声明 → 赋值 → 更新”。盒子里现在是 95。");
+          showFeedback(flowFeedback, "你已经走完“声明 → 赋值 → 更新”，还亲手写下了更新语句。盒子里现在是 95。");
+        } else if (state.updated) {
+          variableValue.textContent = "95";
+          variableMeta.textContent = "名字 score · 类型 int · 更新演示看完了。";
+          showFeedback(flowFeedback, "更新演示看完了：取出 80 加 15 再放回去。现在亲手写下这行更新。");
         } else if (state.assigned) {
           variableValue.textContent = "80";
           variableMeta.textContent = "名字 score · 类型 int · 已经放进 80，下一步把它累加。";
@@ -1732,6 +1800,9 @@
           variableMeta.textContent = "先点“声明变量”，给盒子起名字并选定类型。";
           flowFeedback.textContent = "";
         }
+        if (updateMicro) updateMicro.hidden = !state.updated;
+        if (updateInput && document.activeElement !== updateInput) updateInput.value = state.updateDraft ?? "";
+        updateInput?.classList.toggle("is-correct", state.updateTyped);
       }
 
       function renderDebugTask() {
@@ -1752,6 +1823,23 @@
           debugFeedback.textContent = "";
           debugFeedback.dataset.tone = "";
         }
+      }
+
+      function normalizeUpdateLine(value) {
+        return (value ?? "").replace(/\u3000/g, " ").trim();
+      }
+
+      function checkUpdateLine(raw) {
+        const text = normalizeUpdateLine(raw);
+        if (!text) return { ok: false, message: "先在空里写下更新语句试试，比如 score = score + 15;" };
+        if (/[一-龥、。！？；：（）]/.test(text)) return { ok: false, message: "用了中文符号哦：分号和加号都要用半角，把输入法切到英文再敲一次。" };
+        if (/==/.test(text)) return { ok: false, message: "这里是把新值放进变量，用单个 =，不是比较的 == 哦。" };
+        if (!text.includes(";")) return { ok: false, message: "语句末尾少了半角分号 ; 哦。" };
+        if (!/;\s*$/.test(text)) return { ok: false, message: "分号要写在语句最后哦。" };
+        if (!/score/.test(text)) return { ok: false, message: "更新的是 score，语句里要有 score 哦。" };
+        if (text.replace(/\s+/g, "") === "score=score+15;") return { ok: true, message: "" };
+        if (!/15/.test(text)) return { ok: false, message: "数字是 15 哦：把 80 加上 15 再放回去。" };
+        return { ok: false, message: "再对照一下：写成 score = score + 15; 的样子。" };
       }
 
       function questionsAreValid(questions) {
@@ -1988,10 +2076,70 @@
         }
 
         state.updated = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：变量从空盒子变成了 95。");
+        renderFlowTask();
+        renderSteps();
+        announce("更新演示看完了。现在亲手写下这行更新语句。");
+        playSound("calm");
+      });
+
+      updateInput?.addEventListener("input", (event) => {
+        state.updateDraft = event.target.value;
+        state.updateTyped = false;
+        updateInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#updateCheckButton")?.addEventListener("click", () => {
+        const result = checkUpdateLine(state.updateDraft);
+        if (!result.ok) {
+          showFeedback(flowFeedback, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          updateInput?.classList.add("is-wrong");
+          return;
+        }
+        updateInput?.classList.remove("is-wrong");
+        if (!state.updateTyped) {
+          state.updateTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：变量从空盒子变成了 95，还是你亲手写的更新。");
+        }
+      });
+
+      document.querySelector("#updateHintButton")?.addEventListener("click", () => {
+        const text = normalizeUpdateLine(state.updateDraft);
+        const hint = !text
+          ? "先写 score，再写 =，然后写 score + 15，最后别忘了分号。"
+          : text.includes("==")
+            ? "更新用单个 = 就好，== 是比较相等。"
+            : !text.includes(";")
+              ? "语句末尾补一个半角分号 ; 。"
+              : "对照参考代码看看：score = score + 15;";
+        showFeedback(updateHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#updateRefButton")?.addEventListener("click", () => {
+        if (updateRef) updateRef.hidden = !updateRef.hidden;
+        announce(updateRef && !updateRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#updateResetButton")?.addEventListener("click", () => {
+        state.updateDraft = "";
+        state.updateTyped = false;
+        if (updateHint) updateHint.textContent = "";
+        if (updateRef) updateRef.hidden = true;
+        saveState();
+        renderFlowTask();
+        renderSteps();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

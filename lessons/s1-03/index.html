@@ -1217,6 +1217,45 @@
           transition-duration: 1ms !important;
         }
       }
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
     </style>
   </head>
   <body data-faq-terms="expression integer-division modulo precedence parentheses">
@@ -1298,6 +1337,23 @@
               </div>
             </div>
             <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="avgMicro" hidden>
+              <p class="step-lead">都选对了。现在亲手写下平均数算式：下面是只读脚手架，只留一空给你敲键盘。</p>
+              <div class="code-sheet" aria-label="平均数算式脚手架，只留一空">
+                <ol>
+                  <li>int a = 7, b = 8;</li>
+                  <li class="focus-line">double avg = <input id="avgInput" class="micro-input" type="text" value="" placeholder="(a + b) / 2" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="30" aria-label="写下 a 和 b 的平均数算式" />;</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="平均数算式的检查与兜底">
+                <button id="avgCheckButton" class="primary-action" type="button">检查这个算式</button>
+                <button id="avgHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="avgRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="avgResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="avgHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="avgRef" class="micro-ref" hidden>double avg = (a + b) / 2;</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="1" hidden>
@@ -1467,6 +1523,8 @@
         activeStep: 0,
         formulaChoices: {},
         formulasMatched: false,
+        avgTyped: false,
+        avgDraft: "",
         divided: false,
         remaindered: false,
         evenChecked: false,
@@ -1488,6 +1546,10 @@
       const stepButtons = [...document.querySelectorAll("[data-step]")];
       const taskProgress = document.querySelector("#taskProgress");
       const sourceFeedback = document.querySelector("#sourceFeedback");
+      const avgMicro = document.querySelector("#avgMicro");
+      const avgInput = document.querySelector("#avgInput");
+      const avgHint = document.querySelector("#avgHint");
+      const avgRef = document.querySelector("#avgRef");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
@@ -1518,6 +1580,8 @@
                 ? stored.formulaChoices
                 : {},
             formulasMatched: stored.formulasMatched === true,
+            avgTyped: stored.avgTyped === true,
+            avgDraft: typeof stored.avgDraft === "string" ? stored.avgDraft : "",
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
@@ -1601,11 +1665,11 @@
       }
 
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.formulasMatched && state.avgTyped, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched && state.avgTyped, state.evenChecked, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1731,8 +1795,11 @@
         });
 
         if (state.formulasMatched) {
-          showFeedback(sourceFeedback, "两个公式都选对了。周长要加括号，平均数也要先加再除。下一步已经点亮。");
+          showFeedback(sourceFeedback, "两个公式都选对了。周长要加括号，平均数也要先加再除。现在亲手写下平均数算式。");
         }
+        if (avgMicro) avgMicro.hidden = !state.formulasMatched;
+        if (avgInput && document.activeElement !== avgInput) avgInput.value = state.avgDraft ?? "";
+        avgInput?.classList.toggle("is-correct", state.avgTyped);
       }
 
       function renderFlowTask() {
@@ -1784,6 +1851,23 @@
           debugFeedback.textContent = "";
           debugFeedback.dataset.tone = "";
         }
+      }
+
+      function normalizeAvgExpression(value) {
+        return (value ?? "").replace(/\u3000/g, " ").trim();
+      }
+
+      function checkAvgExpression(raw) {
+        const text = normalizeAvgExpression(raw);
+        if (!text) return { ok: false, message: "先在空里写下平均数算式试试，比如 (a + b) / 2。" };
+        if (/[一-龥、。！？；：（）]/.test(text)) return { ok: false, message: "用了中文符号哦：括号和加号都要用半角，把输入法切到英文再敲一次。" };
+        const compact = text.replace(/\s+/g, "");
+        if (compact === "(a+b)/2" || compact === "(a+b)/2.0") return { ok: true, message: "" };
+        if (/^a\+b\/2(\.0)?$/.test(compact)) return { ok: false, message: "先加再除：加法要先算，给 a + b 加括号哦。" };
+        if (compact.includes("*")) return { ok: false, message: "平均数是先加再除，不是相乘哦。" };
+        if (!compact.includes("/")) return { ok: false, message: "平均数要除以 2，算式里要有 / 哦。" };
+        if (!compact.includes("(")) return { ok: false, message: "不加括号会先算除法：给 a + b 加上括号。" };
+        return { ok: false, message: "再对照一下：写成 (a + b) / 2 的样子。" };
       }
 
       function questionsAreValid(questions) {
@@ -1963,10 +2047,11 @@
           const complete = Object.keys(correctFormulas).every((key) => state.formulaChoices[key] === correctFormulas[key]);
           if (complete) {
             state.formulasMatched = true;
-            state.activeStep = 1;
             saveState();
             render();
-            reward("任务 1 完成：周长和平均数都选对了。下一步看整除和余数。");
+            showFeedback(sourceFeedback, "两个公式都选对了。现在亲手写下平均数算式。");
+            announce("两个公式都选对了。现在亲手写下平均数算式。");
+            playSound("calm");
             return;
           }
 
@@ -1975,6 +2060,62 @@
           showFeedback(sourceFeedback, "这一项选对了。继续给剩下的公式做选择。");
           playSound("calm");
         });
+      });
+
+      avgInput?.addEventListener("input", (event) => {
+        state.avgDraft = event.target.value;
+        state.avgTyped = false;
+        avgInput.classList.remove("is-wrong");
+        saveState();
+        renderSourceTask();
+      });
+
+      document.querySelector("#avgCheckButton")?.addEventListener("click", () => {
+        const result = checkAvgExpression(state.avgDraft);
+        if (!result.ok) {
+          showFeedback(sourceFeedback, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          avgInput?.classList.add("is-wrong");
+          return;
+        }
+        avgInput?.classList.remove("is-wrong");
+        if (!state.avgTyped) {
+          state.avgTyped = true;
+          state.activeStep = 1;
+          saveState();
+          render();
+          reward("任务 1 完成：周长和平均数都选对了，平均数还是你亲手写的。下一步看整除和余数。");
+        }
+      });
+
+      document.querySelector("#avgHintButton")?.addEventListener("click", () => {
+        const text = normalizeAvgExpression(state.avgDraft);
+        const hint = !text
+          ? "先写左括号，然后写 a + b，再写右括号，最后写 / 2。"
+          : !text.includes("(")
+            ? "不加括号会先算除法：给 a + b 加上括号。"
+            : "对照参考代码看看：(a + b) / 2。";
+        showFeedback(avgHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#avgRefButton")?.addEventListener("click", () => {
+        if (avgRef) avgRef.hidden = !avgRef.hidden;
+        announce(avgRef && !avgRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#avgResetButton")?.addEventListener("click", () => {
+        state.avgDraft = "";
+        state.avgTyped = false;
+        if (avgHint) avgHint.textContent = "";
+        if (avgRef) avgRef.hidden = true;
+        saveState();
+        renderSourceTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelector("#divideButton").addEventListener("click", () => {
