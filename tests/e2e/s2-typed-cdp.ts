@@ -2,7 +2,7 @@
 /**
  * 手写填空微编程的浏览器自动化复验（零依赖）。
  *
- * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 前三课）、bun run e2e:typed（全部）
+ * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 前六课）、bun run e2e:typed（全部）
  *
  * 这个脚本最早为 S2 八课而写，后来 S3 的课沿用同一套课件样板，所以也一起跑；
  * 用 CSP_E2E_LESSONS=s3-01,s3-03 可以只跑指定几课。
@@ -289,6 +289,69 @@ const lessons: LessonConfig[] = [
     outOfBoundsMessage: "少了括号",
     blankWant: "(left + right) / 2",
     scenario: "写出二分的中点算式",
+  },
+  {
+    directory: "s3-04",
+    storageKey: "csp-cpp-s3-04-progress-v1",
+    micro: "prefixMicro",
+    input: "prefixInput",
+    check: "prefixCheckButton",
+    hint: "prefixHintButton",
+    ref: "prefixRefButton",
+    reset: "prefixResetButton",
+    hintPanel: "prefixHint",
+    refPanel: "prefixRef",
+    typedField: "prefixTyped",
+    draftField: "prefixDraft",
+    good: "sum[i] = sum[i - 1] + a[i]",
+    fullWidth: "sum［i］ ＝ sum［i － 1］ ＋ a［i］",
+    fullWidthHint: "半角",
+    outOfBounds: "sum[i] = sum[i] + a[i]",
+    outOfBoundsMessage: "少减了",
+    blankWant: "sum[i] = sum[i - 1] + a[i]",
+    scenario: "写出填表（前缀和）语句",
+  },
+  {
+    directory: "s3-05",
+    storageKey: "csp-cpp-s3-05-progress-v1",
+    micro: "windowMicro",
+    input: "windowInput",
+    check: "windowCheckButton",
+    hint: "windowHintButton",
+    ref: "windowRefButton",
+    reset: "windowResetButton",
+    hintPanel: "windowHint",
+    refPanel: "windowRef",
+    typedField: "windowTyped",
+    draftField: "windowDraft",
+    good: "right++; sum += a[right];",
+    fullWidth: "right＋＋； sum ＋= a［right］；",
+    fullWidthHint: "半角",
+    outOfBounds: "sum += a[right]; right++;",
+    outOfBoundsMessage: "顺序反了",
+    blankWant: "right++; sum += a[right];",
+    scenario: "写出扩大窗口的两步",
+  },
+  {
+    directory: "s3-06",
+    storageKey: "csp-cpp-s3-06-progress-v1",
+    micro: "greedyMicro",
+    input: "greedyInput",
+    check: "greedyCheckButton",
+    hint: "greedyHintButton",
+    ref: "greedyRefButton",
+    reset: "greedyResetButton",
+    hintPanel: "greedyHint",
+    refPanel: "greedyRef",
+    typedField: "greedyTyped",
+    draftField: "greedyDraft",
+    good: "sort(a + 1, a + 4, by_end)",
+    fullWidth: "sort（a ＋ 1， a ＋ 4， by_end）",
+    fullWidthHint: "半角",
+    outOfBounds: "sort(a + 1, a + 4, by_start)",
+    outOfBoundsMessage: "开始时间",
+    blankWant: "sort(a + 1, a + 4, by_end)",
+    scenario: "写出按结束时间排序的那一行",
   },
 ];
 
@@ -632,7 +695,7 @@ try {
     check(
       `${lesson.directory} 语义错误被点出原因（${lesson.outOfBoundsMessage}）且不算完成`,
       String(semantic.feedback).includes(lesson.outOfBoundsMessage) && semanticState[lesson.typedField] !== true,
-      `feedback=${String(semantic.feedback).slice(0, 80)}`,
+      `feedback=${String(semantic.feedback).slice(0, 80)} draft=${JSON.stringify(String(semanticState[lesson.draftField]))}`,
     );
 
     // 提示按钮：卡壳时有渐进线索

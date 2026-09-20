@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(280px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1339,6 +1379,30 @@
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
+            <div id="windowMicro" hidden>
+              <p class="step-lead">
+                窗口扩完了，现在亲手把扩大窗口的那一行敲出来：先移动 <button type="button" class="faq-term" data-faq="right-pointer">右端点</button>，再把新纳入的数折进 <button type="button" class="faq-term" data-faq="sliding-window">滑动窗口</button> 的和。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="滑动窗口扩大窗口的脚手架，只留一空">
+                <ol>
+                  <li>int a[4] = {0, 1, 2, 3};  // a[1..3]</li>
+                  <li>int left = 1, right = 0, sum = 0;</li>
+                  <li>while (right &lt; 3) {</li>
+                  <li class="focus-line">  <input id="windowInput" class="micro-input" type="text" value="" placeholder="right___; sum ___ a[right];" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写出扩大窗口时移动右端点并把新数累加进窗口和的那一行" />;   // 扩大窗口</li>
+                  <li>  if (sum &gt; 3) { sum -= a[left]; left++; }</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="扩大窗口语句的检查与兜底">
+                <button id="windowCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="windowHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="windowRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="windowResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="windowHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="windowRef" class="micro-ref" hidden>  right++; sum += a[right]; // right 从 0 走到 1，sum 从 0 变成 1</pre>
+            </div>
+
           <section class="step-panel" data-panel="2" hidden>
             <h2>任务 3：核对空窗口、满窗口，以及下一步怎么走</h2>
             <p class="step-lead">
@@ -1478,6 +1542,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        windowDraft: "",
+        windowTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1572,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const windowMicro = document.querySelector("#windowMicro");
+      const windowInput = document.querySelector("#windowInput");
+      const windowHint = document.querySelector("#windowHint");
+      const windowRef = document.querySelector("#windowRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1599,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            windowDraft: typeof stored.windowDraft === "string" ? stored.windowDraft : "",
+            windowTyped: stored.windowTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1680,49 @@
         return state.precedenceSolved && state.parensSolved;
       }
 
+      function normalizeWindowInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "").replace(/;$/, "");
+      }
+
+      function checkWindowMove(raw) {
+        const text = normalizeWindowInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下扩大窗口的两步：先移动右端点，再把新纳入的数加进窗口和。" };
+        if (/[（），；：、。！？［］【】＝＋－×＊]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：加号、分号、方括号都要敲半角 + ; [ ]。" };
+        if (text === "right++;sum+=a[right]") return { ok: true, message: "" };
+
+        if (/^sum\+=a\[right\];right\+\+$/.test(text))
+          return { ok: false, message: "顺序反了：先加再移，加进去的还是上一格，新纳入的数会被漏掉。要先 right++ 再 sum += a[right]。" };
+        if (/^right\+\+;sum-=a\[right\]$/.test(text))
+          return { ok: false, message: "用了减号：纳入新数要累加。减是缩窗口时丢掉左端点用的，写在下一步的 if 里。" };
+        if (/^right\+\+;sum\+=a\[left\]$/.test(text))
+          return { ok: false, message: "下标用错了：新纳入的是 a[right]，a[left] 是窗口左端点，加它等于把同一个数算了两次。" };
+        if (/^right\+\+$/.test(text))
+          return { ok: false, message: "右端点移了，但新数还没进窗口和：还要写 sum += a[right]。" };
+        if (/^sum\+=a\[right\]$/.test(text))
+          return { ok: false, message: "right++ 还没写：不移动右端点，加的还是旧窗口最右边那一格。" };
+        if (/^left\+\+;sum\+=a\[left\]$/.test(text))
+          return { ok: false, message: "移错指针了：扩大窗口要移 right，left++ 是缩小时丢掉左端点。" };
+        if (/^right\+\+;sum=a\[right\]$/.test(text))
+          return { ok: false, message: "赋值会把之前的窗口和覆盖掉：要把新数累加进去，写成 sum += a[right]。" };
+        if (/^right--;sum\+=a\[right\]$/.test(text))
+          return { ok: false, message: "右端点只往右走：用 right++ 才是扩大窗口。" };
+
+        return { ok: false, message: "这一空要写两件事：先 right++ 移动右端点，再 sum += a[right] 把新数折进窗口和。" };
+      }
+
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [
+          state.formulasMatched,
+          state.evenChecked && state.windowTyped,
+          conceptSolved(),
+          state.quizSubmitted,
+        ].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        // 任务 2 的下一步必须亲手写对扩大窗口的那一行才点亮：光点三步按钮不算学会。
+        return [true, state.formulasMatched, state.evenChecked && state.windowTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1758,7 +1867,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "left = 1, right = 2，sum = 3";
           variableMeta.textContent = "窗口 [1, 2] 刚好满。不要跳过空窗口。";
-          showFeedback(flowFeedback, "你已经按顺序扩完窗口。下一步核对空窗口和满窗口。");
+          showFeedback(
+            flowFeedback,
+            state.windowTyped
+              ? "你已经按顺序扩完窗口，还亲手写出了扩大窗口的那一行。下一步核对空窗口和满窗口。"
+              : "你已经按顺序扩完窗口。现在在下面的空里亲手写出扩大窗口的那一行：先移右端点，再纳入新数。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "left = 1, right = 1，sum = 1";
           variableMeta.textContent = "纳入 a[1]=1。下一步让 right = 2。";
@@ -1772,6 +1886,11 @@
           variableMeta.textContent = "先点“空窗口：left = 1, right = 0”。";
           flowFeedback.textContent = "";
         }
+
+        if (windowMicro) windowMicro.hidden = !state.evenChecked;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (windowInput && document.activeElement !== windowInput) windowInput.value = state.windowDraft ?? "";
+        windowInput?.classList.toggle("is-correct", state.windowTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2142,77 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这三步已经走完，可以进入下一任务。");
+          announce("这三步已经走完，在下面的空里写出扩大窗口的那一行。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：空窗口，再 right = 1，再 right = 2 得到 sum = 3。现在在下面的空里亲手写出扩大窗口的那一行。");
+        announce("right = 1 纳入 1，right = 2 得到 sum = 3。现在亲手写：先移右端点，再把新数加进窗口和。");
+        playSound("calm");
+      });
+
+      windowInput?.addEventListener("input", (event) => {
+        state.windowDraft = event.target.value;
+        state.windowTyped = false;
+        windowInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#windowCheckButton")?.addEventListener("click", () => {
+        const result = checkWindowMove(state.windowDraft);
+        if (!result.ok) {
+          showFeedback(windowHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          windowInput?.classList.add("is-wrong");
+          return;
+        }
+        windowInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(windowHint, result.message);
+        if (!state.windowTyped) {
+          state.windowTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：right++; sum += a[right]; 这一行是你亲手写的。下一步核对空窗口和满窗口。");
+        }
+      });
+
+      document.querySelector("#windowHintButton")?.addEventListener("click", () => {
+        const text = normalizeWindowInput(state.windowDraft);
+        const hint = !text
+          ? "right 从 0 走到 1：先 right++ 让右端点落在 1，再 sum += a[1] 把 1 加进来。"
+          : text.includes("right++")
+            ? "右端点移了。检查后半句：能把新纳入的 a[right] 累加进 sum 吗？"
+            : "这一空要两件事：right++ 移动右端点，再 sum += a[right] 累加新数。顺序不能换。";
+        showFeedback(windowHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#windowRefButton")?.addEventListener("click", () => {
+        if (windowRef) windowRef.hidden = !windowRef.hidden;
+        announce(windowRef && !windowRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#windowResetButton")?.addEventListener("click", () => {
+        state.windowDraft = "";
+        state.windowTyped = false;
+        if (windowHint) windowHint.textContent = "";
+        if (windowRef) windowRef.hidden = true;
+        windowInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (windowInput) windowInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：空窗口，再 right = 1，再 right = 2 得到 sum = 3。下一步看空窗和满窗。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
