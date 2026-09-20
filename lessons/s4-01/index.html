@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(320px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,32 @@
               <div class="box-meta" id="variableMeta">先点“圈出范围：n &lt;= 1000”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="outputMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在亲手把输出那一行敲出来：读入 <span class="inline-code">n</span> 后要输出 <span class="inline-code">n + 1</span>，<button type="button" class="faq-term" data-faq="clean-output">干净输出</button> 只许有答案本身。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="标准输入输出的脚手架，只留一空">
+                <ol>
+                  <li>#include &lt;iostream&gt;</li>
+                  <li>using namespace std;</li>
+                  <li>int main() {</li>
+                  <li>    int n;</li>
+                  <li class="highlight">    cin &gt;&gt; n;   // 题面：1 &lt;= n &lt;= 1000</li>
+                  <li class="focus-line">    <input id="outputInput" class="micro-input" type="text" value="" placeholder="cout &lt;&lt; ____;" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="32" aria-label="写出把答案送到标准输出的那一行" />   // 只输出答案，不许写提示语</li>
+                  <li>    return 0;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="输出行的检查与兜底">
+                <button id="outputCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="outputHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="outputRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="outputResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="outputHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="outputRef" class="micro-ref" hidden>    cout &lt;&lt; n + 1; // 只输出答案本身：评测机会逐字比较，多一个字也算错</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1544,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        outputDraft: "",
+        outputTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1574,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const outputMicro = document.querySelector("#outputMicro");
+      const outputInput = document.querySelector("#outputInput");
+      const outputHint = document.querySelector("#outputHint");
+      const outputRef = document.querySelector("#outputRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1601,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            outputDraft: typeof stored.outputDraft === "string" ? stored.outputDraft : "",
+            outputTyped: stored.outputTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1682,47 @@
         return state.precedenceSolved && state.parensSolved;
       }
 
+      function normalizeOutputInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkCleanOutput(raw) {
+        const text = normalizeOutputInput(raw);
+        if (!text) return { ok: false, message: "先在空里写出输出那一行：把算好的答案送到标准输出。" };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：小于号、加号和分号都要敲半角 < + ; 。" };
+        if (/请输入|提示语/.test(text))
+          return { ok: false, message: "竞赛程序不能多写提示语：评测机会逐字比较输出，多一个字也算错。" };
+        if (!text.endsWith(";"))
+          return { ok: false, message: "是不是漏了末尾的半角分号呀？C++ 每条语句末尾都要写 ; 。" };
+
+        const body = text.slice(0, -1);
+        if (/^cout<<(n\+1|1\+n)$/.test(body)) return { ok: true, message: "" };
+        if (/^cin>>n\+1$/.test(body))
+          return { ok: false, message: "cin 是从标准输入读数据。这一空要把答案送出去，用的是 cout << 。" };
+        if (/^cout>>n\+1$/.test(body))
+          return { ok: false, message: "cout 后面要用两个小于号 << ：数据从程序流向屏幕，>> 是从 cin 读进来的写法。" };
+        if (/^cout<<"n\+1"$/.test(body))
+          return { ok: false, message: "这里不要加引号：引号里是文字，不会被算成数。要写没有引号的 n + 1。" };
+        if (/^cout<<n$/.test(body))
+          return { ok: false, message: "题面要的是 n + 1，不是原样输出 n：读到 3 的时候要输出 4。" };
+        if (/^n\+1$/.test(body))
+          return { ok: false, message: "算出来还不够，要把答案送出去：前面补上 cout << 。" };
+        if (/^printf\(.+\)$/.test(body))
+          return { ok: false, message: "printf 也能输出，但本课先练 cout << ：等你熟悉了再换写法。" };
+
+        return { ok: false, message: "这一空要写成 cout << n + 1;：读入 n 之后，把 n+1 这个答案送到标准输出。" };
+      }
+
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        // 任务 2 还要亲手写对输出那一行才算推进：光点三步按钮不算学会。
+        return [state.formulasMatched, state.evenChecked && state.outputTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched, state.evenChecked && state.outputTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1758,7 +1867,7 @@
         if (state.evenChecked) {
           variableValue.textContent = "范围 n<=1000；无请输入；样例 3→4";
           variableMeta.textContent = "三步走完。不要跳过删提示语。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步核对干净输出和 n=1。");
+          showFeedback(flowFeedback, "你已经按顺序走完。下一步在下面的空里亲手写出输出那一行。");
         } else if (state.remaindered) {
           variableValue.textContent = "已圈 n <= 1000，已删请输入";
           variableMeta.textContent = "提示语删掉了。下一步按样例 3 → 4 核对。";
@@ -1772,6 +1881,11 @@
           variableMeta.textContent = "先点“圈出范围：n <= 1000”。";
           flowFeedback.textContent = "";
         }
+
+        if (outputMicro) outputMicro.hidden = !state.evenChecked;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (outputInput && document.activeElement !== outputInput) outputInput.value = state.outputDraft ?? "";
+        outputInput?.classList.toggle("is-correct", state.outputTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2142,72 @@
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：圈出 n <= 1000，删掉请输入，样例 3 → 4。现在在下面的空里亲手写出输出那一行。");
+        announce("三步已经走完。现在亲手写出把答案送出去的那一行：读完 n 之后输出 n + 1，不要加提示语。");
+        playSound("calm");
+      });
+
+      outputInput?.addEventListener("input", (event) => {
+        state.outputDraft = event.target.value;
+        state.outputTyped = false;
+        outputInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#outputCheckButton")?.addEventListener("click", () => {
+        const result = checkCleanOutput(state.outputDraft);
+        if (!result.ok) {
+          showFeedback(outputHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          outputInput?.classList.add("is-wrong");
+          return;
+        }
+        outputInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(outputHint, result.message);
+        if (!state.outputTyped) {
+          state.outputTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：干净输出那一行是你亲手写的。下一步核对干净输出和 n=1。");
+        }
+      });
+
+      document.querySelector("#outputHintButton")?.addEventListener("click", () => {
+        const text = normalizeOutputInput(state.outputDraft);
+        const hint = !text
+          ? "要写的是 cout << n + 1;：cout 表示向标准输出写，<< 后面跟要送出去的答案。"
+          : text.includes("cout")
+            ? "已经有 cout 了。检查三样：中间的两个小于号 << 、算式 n + 1、末尾的半角分号 ; 。"
+            : "这一空要的是 cout << n + 1;：先写 cout，再用 << 把算好的答案送出去。";
+        showFeedback(outputHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#outputRefButton")?.addEventListener("click", () => {
+        if (outputRef) outputRef.hidden = !outputRef.hidden;
+        announce(outputRef && !outputRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#outputResetButton")?.addEventListener("click", () => {
+        state.outputDraft = "";
+        state.outputTyped = false;
+        if (outputHint) outputHint.textContent = "";
+        if (outputRef) outputRef.hidden = true;
+        outputInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (outputInput) outputInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：圈出 n <= 1000，删掉请输入，样例 3 → 4。下一步看干净输出。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

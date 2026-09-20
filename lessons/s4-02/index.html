@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(320px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,33 @@
               <div class="box-meta" id="variableMeta">先点“写下已知：n 和 n 个数”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="sumMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在把建模卡落成一行代码：题目要输出 n 个数的和，<span class="inline-code">sum</span> 用来存这个和，循环已经写好，你只补里面那一行。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="累加求和的脚手架，只留一空">
+                <ol>
+                  <li>// 建模卡：已知 n 和 a[1..n]；未知/目标：输出它们的和</li>
+                  <li>int n; cin &gt;&gt; n;</li>
+                  <li>int a[1005];</li>
+                  <li>for (int i = 1; i &lt;= n; i += 1) cin &gt;&gt; a[i];   // 先把 n 个数读进来</li>
+                  <li class="highlight">int sum = 0;   // 和从这里开始，初始是 0</li>
+                  <li>for (int i = 1; i &lt;= n; i += 1) {</li>
+                  <li class="focus-line">    <input id="sumInput" class="micro-input" type="text" value="" placeholder="sum ____ a[i];" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写出把当前这个数累加进 sum 的那一行" />   // 每轮把第 i 个数加进 sum</li>
+                  <li>}</li>
+                  <li>cout &lt;&lt; sum;</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="累加行的检查与兜底">
+                <button id="sumCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="sumHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="sumRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="sumResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="sumHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="sumRef" class="micro-ref" hidden>    sum += a[i]; // 累加：把当前这个数加到原来的和上，不能把前面的和覆盖掉</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1545,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        sumDraft: "",
+        sumTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1575,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const sumMicro = document.querySelector("#sumMicro");
+      const sumInput = document.querySelector("#sumInput");
+      const sumHint = document.querySelector("#sumHint");
+      const sumRef = document.querySelector("#sumRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1602,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            sumDraft: typeof stored.sumDraft === "string" ? stored.sumDraft : "",
+            sumTyped: stored.sumTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1683,44 @@
         return state.precedenceSolved && state.parensSolved;
       }
 
+      function normalizeSumInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkSumLine(raw) {
+        const text = normalizeSumInput(raw);
+        if (!text) return { ok: false, message: "先在空里写出累加那一行：把当前这个数加进和里。" };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：方括号、加号和分号都要敲半角 [ + ; 。" };
+        if (!text.endsWith(";"))
+          return { ok: false, message: "是不是漏了末尾的半角分号呀？C++ 每条语句末尾都要写 ; 。" };
+
+        const body = text.slice(0, -1);
+        if (/^sum\+=a\[i\]$/.test(body)) return { ok: true, message: "" };
+        if (/^sum=sum\+a\[i\]$/.test(body)) return { ok: true, message: "" };
+        if (/^sum=a\[i\]$/.test(body))
+          return { ok: false, message: "这样每轮都会把前面的和覆盖掉：累加要用 += ，或者写成 sum = sum + a[i] 。" };
+        if (/^sum\+=i$/.test(body))
+          return { ok: false, message: "i 只是下标，不是数组里那个数：要累加的是 a[i] 。" };
+        if (/^sum\+=a\[0\]$/.test(body))
+          return { ok: false, message: "脚手架把数存在 a[1] 到 a[n]，a[0] 一直没被赋值。这里要写 a[i] 。" };
+        if (/^sum\+=a\[n\]$/.test(body))
+          return { ok: false, message: "循环变量是 i：每轮加的是当前这个 a[i]，不是最后一个 a[n] 。" };
+        if (/^cin>>a\[i\]$/.test(body))
+          return { ok: false, message: "这一空不是再读一个数：上面的循环已经读完了，这里要把 a[i] 加进 sum 。" };
+
+        return { ok: false, message: "这一空要写成 sum += a[i];：每轮把当前这个数累加进 sum 。" };
+      }
+
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        // 任务 2 还要亲手写对累加那一行才算推进：光点三步按钮不算学会。
+        return [state.formulasMatched, state.evenChecked && state.sumTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched, state.evenChecked && state.sumTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1758,7 +1865,7 @@
         if (state.evenChecked) {
           variableValue.textContent = "已知 n 和 n 个数；目标和；1+2+3=6";
           variableMeta.textContent = "三步走完。不要跳过样例反推。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步列出算法候选和两个边界。");
+          showFeedback(flowFeedback, "你已经按顺序走完。下一步在下面的空里亲手写出累加那一行。");
         } else if (state.remaindered) {
           variableValue.textContent = "已写已知，已写目标和";
           variableMeta.textContent = "目标写清了。下一步用 1 2 3 反推出 1+2+3=6。";
@@ -1772,6 +1879,11 @@
           variableMeta.textContent = "先点“写下已知：n 和 n 个数”。";
           flowFeedback.textContent = "";
         }
+
+        if (sumMicro) sumMicro.hidden = !state.evenChecked;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (sumInput && document.activeElement !== sumInput) sumInput.value = state.sumDraft ?? "";
+        sumInput?.classList.toggle("is-correct", state.sumTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2140,72 @@
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：已知、目标、1+2+3=6 都写在卡上。现在在下面的空里亲手写出累加那一行。");
+        announce("三步已经走完。现在亲手写出累加那一行：每轮把当前这个数加到和上，别把前面的和覆盖掉。");
+        playSound("calm");
+      });
+
+      sumInput?.addEventListener("input", (event) => {
+        state.sumDraft = event.target.value;
+        state.sumTyped = false;
+        sumInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#sumCheckButton")?.addEventListener("click", () => {
+        const result = checkSumLine(state.sumDraft);
+        if (!result.ok) {
+          showFeedback(sumHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          sumInput?.classList.add("is-wrong");
+          return;
+        }
+        sumInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(sumHint, result.message);
+        if (!state.sumTyped) {
+          state.sumTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：累加那一行是你亲手写的。下一步列算法候选并认出两个边界。");
+        }
+      });
+
+      document.querySelector("#sumHintButton")?.addEventListener("click", () => {
+        const text = normalizeSumInput(state.sumDraft);
+        const hint = !text
+          ? "要写的是 sum += a[i];：sum 存的是到目前为止的和，a[i] 是这一轮要加进去的数。"
+          : text.includes("a[i]")
+            ? "已经写到 a[i] 了。检查两样：前面的 sum += 、末尾的半角分号 ; 。"
+            : "这一空要的是 sum += a[i];：先写 sum，再用 += 把 a[i] 累加上去。";
+        showFeedback(sumHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#sumRefButton")?.addEventListener("click", () => {
+        if (sumRef) sumRef.hidden = !sumRef.hidden;
+        announce(sumRef && !sumRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#sumResetButton")?.addEventListener("click", () => {
+        state.sumDraft = "";
+        state.sumTyped = false;
+        if (sumHint) sumHint.textContent = "";
+        if (sumRef) sumRef.hidden = true;
+        sumInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (sumInput) sumInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：已知、目标和 1+2+3=6 都写上了。下一步看算法候选和边界。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

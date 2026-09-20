@@ -2,9 +2,9 @@
 /**
  * 手写填空微编程的浏览器自动化复验（零依赖）。
  *
- * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 八课）、bun run e2e:typed（全部）
+ * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 八课）、bun run e2e:s4-typed（S4 前三课）、bun run e2e:typed（全部）
  *
- * 这个脚本最早为 S2 八课而写，后来 S3 的课沿用同一套课件样板，所以也一起跑；
+ * 这个脚本最早为 S2 八课而写，后来 S3 与 S4 的课沿用同一套课件样板，所以也一起跑；
  * 用 CSP_E2E_LESSONS=s3-01,s3-03 可以只跑指定几课。
  *
  * 脚本会自行启动开发服务器与无头 Chrome，验证「只读脚手架 + 一空」的
@@ -394,6 +394,69 @@ const lessons: LessonConfig[] = [
     outOfBoundsMessage: "相加",
     blankWant: "dp[i] = dp[i - _] + dp[i - _]",
     scenario: "写出爬楼梯的转移那一行",
+  },
+  {
+    directory: "s4-01",
+    storageKey: "csp-cpp-s4-01-progress-v1",
+    micro: "outputMicro",
+    input: "outputInput",
+    check: "outputCheckButton",
+    hint: "outputHintButton",
+    ref: "outputRefButton",
+    reset: "outputResetButton",
+    hintPanel: "outputHint",
+    refPanel: "outputRef",
+    typedField: "outputTyped",
+    draftField: "outputDraft",
+    good: "cout << n + 1;",
+    fullWidth: "cout ＜＜ n ＋ 1；",
+    fullWidthHint: "半角",
+    outOfBounds: "cin >> n + 1;",
+    outOfBoundsMessage: "cin",
+    blankWant: "cout << ____;",
+    scenario: "写出只输出答案的那一行",
+  },
+  {
+    directory: "s4-02",
+    storageKey: "csp-cpp-s4-02-progress-v1",
+    micro: "sumMicro",
+    input: "sumInput",
+    check: "sumCheckButton",
+    hint: "sumHintButton",
+    ref: "sumRefButton",
+    reset: "sumResetButton",
+    hintPanel: "sumHint",
+    refPanel: "sumRef",
+    typedField: "sumTyped",
+    draftField: "sumDraft",
+    good: "sum += a[i];",
+    fullWidth: "sum ＋= a［i］；",
+    fullWidthHint: "半角",
+    outOfBounds: "sum = a[i];",
+    outOfBoundsMessage: "覆盖",
+    blankWant: "sum ____ a[i];",
+    scenario: "写出把当前这个数累加进 sum 的那一行",
+  },
+  {
+    directory: "s4-03",
+    storageKey: "csp-cpp-s4-03-progress-v1",
+    micro: "guardMicro",
+    input: "guardInput",
+    check: "guardCheckButton",
+    hint: "guardHintButton",
+    ref: "guardRefButton",
+    reset: "guardResetButton",
+    hintPanel: "guardHint",
+    refPanel: "guardRef",
+    typedField: "guardTyped",
+    draftField: "guardDraft",
+    good: "if (balance + x >= 0)",
+    fullWidth: "if （balance ＋ x ＞= 0）",
+    fullWidthHint: "半角",
+    outOfBounds: "if (balance + x > 0)",
+    outOfBoundsMessage: "刚好",
+    blankWant: "if (____)",
+    scenario: "写出判断这次操作能不能做的那一行",
   },
 ];
 
