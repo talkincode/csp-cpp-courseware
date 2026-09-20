@@ -10,8 +10,9 @@
  * 与 `s2-typed-cdp.ts` 的分工：那个脚本验「这一个空位本身」（出现时机、全角符号、语义写错、
  * 兜底按钮、草稿恢复）；这个脚本验「整节课能不能从头走到尾」——把 0 / N 推到 N / N、
  * 每一步都要经过真实浏览器点击、跳步会被拦住、刷新后进度还在、清掉本地存储就回到起点，
- * 再趁小测面板可见时把卷子量一遍（目标绑定、未答完不可提交、提交后得分与解析、没考住的复习出口）。
- * 每课 17 项，39 课共 663 项。两个脚本共用 `lesson-flows.ts` 里的答案，改一处两边同时生效。
+ * 再趁小测面板可见时把卷子量一遍（目标绑定、未答完不可提交、提交后得分与解析、没考住的复习出口），
+ * 最后量完成态自己揭开的「继续学习」入口（下一课路径、文案与可达性，最后一课换成课程收尾出口）。
+ * 每课 19 项，39 课共 741 项。两个脚本共用 `lesson-flows.ts` 里的答案，改一处两边同时生效。
  *
  * S1-01 不在这张表里：它的七个场景由 `s1-01-cdp.ts` 单独复验，粒度更细。
  *
@@ -28,6 +29,7 @@
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { lessonDirectoryName, loadCurriculum } from "../../scripts/curriculum.ts";
 import { lessonFlows, type LessonConfig } from "./lesson-flows.ts";
 
 const projectRoot = `${import.meta.dir}/../..`;
@@ -58,12 +60,27 @@ const selectedLessons =
     ? lessonFlows.filter((lesson) => requestedLessons.includes(lesson.directory))
     : lessonFlows;
 
+// 课后「继续学习」入口要指向 courseData 里的下一课；最后一课给的是课程收尾出口。
+const curriculum = await loadCurriculum();
+const nextLessonOf = (directory: string) => {
+  const index = curriculum.findIndex((course) => lessonDirectoryName(course.id) === directory);
+  if (index === -1) throw new Error(`课程顺序里找不到 ${directory}`);
+  return curriculum[index + 1] ?? null;
+};
+
 type Check = { name: string; ok: boolean; detail: string };
 const checks: Check[] = [];
 const servers: Bun.Subprocess[] = [];
 const browsers: Bun.Subprocess[] = [];
 const tempDirs: string[] = [];
 const chromeLog: string[] = [];
+
+/**
+ * 每课固定跑几项检查。它是文档里「每课 N 项 / 共 M 项」的唯一来源：
+ * 加了一条检查却忘了改这里，本轮跑完就会当场失败；改了这里但没同步文档与清单，
+ * `tests/e2e-count-facts.test.ts` 会失败。
+ */
+const checksPerLesson = 19;
 
 function check(name: string, ok: boolean, detail = "") {
   checks.push({ name, ok, detail });
@@ -245,7 +262,13 @@ function driver(lesson: LessonConfig) {
     return panel ? panel.hidden : null;
   };
 
-  const baseline = { total, unlocked: unlocked(), progress: progressText(), taskZeroHidden: panelHidden(0) };
+  const baseline = {
+    total,
+    unlocked: unlocked(),
+    progress: progressText(),
+    taskZeroHidden: panelHidden(0),
+    nextStepHidden: document.querySelector("#nextStep")?.hidden ?? null,
+  };
 
   // 一上来就想跳到最后一格：应当被拦住，仍停在第一步。
   const rail = [...document.querySelectorAll("[data-step]")];
@@ -390,6 +413,26 @@ function driver(lesson: LessonConfig) {
   }
 
   const solved = { unlocked: unlocked(), progress: progressText(), ribbon: ribbonText(), trace };
+
+  // 课后继续学习入口：完成态应当自己揭开，并且真的能走通（不是死链）。
+  const nextStep = document.querySelector("#nextStep");
+  const nextLink = nextStep?.querySelector("[data-next-lesson]") ?? null;
+  let nextLinkReachable = null;
+  if (nextLink) {
+    try {
+      const response = await fetch(nextLink.href, { method: "HEAD" });
+      nextLinkReachable = response.ok;
+    } catch {
+      nextLinkReachable = false;
+    }
+  }
+
+  solved.nextStepHidden = nextStep ? nextStep.hidden : null;
+  solved.courseComplete = nextStep ? nextStep.hasAttribute("data-course-complete") : null;
+  solved.nextLessonTarget = nextLink ? nextLink.dataset.nextLesson : null;
+  solved.nextLessonText = nextLink ? nextLink.textContent.trim() : null;
+  solved.nextLessonPath = nextLink ? new URL(nextLink.href).pathname : null;
+  solved.nextLessonReachable = nextLinkReachable;
 
   return JSON.stringify({ total, lastStep, baseline, jump, solved });
 })()`;
@@ -596,6 +639,33 @@ try {
       `ribbon="${solved.ribbon.slice(0, 60)}"`,
     );
 
+    const nextCourse = nextLessonOf(lesson.directory);
+
+    check(
+      `${lesson.directory} 没做完之前不把学习者提前引到下一课`,
+      baseline.nextStepHidden === true,
+      `hidden=${baseline.nextStepHidden}`,
+    );
+
+    if (nextCourse) {
+      const nextPath = `/lessons/${lessonDirectoryName(nextCourse.id)}/index.html`;
+      check(
+        `${lesson.directory} 完成后可以直接进入下一课 ${nextCourse.id}`,
+        solved.nextStepHidden === false &&
+          solved.nextLessonTarget === nextCourse.id &&
+          solved.nextLessonPath === nextPath &&
+          solved.nextLessonReachable === true &&
+          (solved.nextLessonText ?? "").includes(`${nextCourse.id} ${nextCourse.title}`),
+        `hidden=${solved.nextStepHidden} target=${solved.nextLessonTarget} path="${solved.nextLessonPath}" 可达=${solved.nextLessonReachable}`,
+      );
+    } else {
+      check(
+        `${lesson.directory} 最后一课给出课程收尾出口，而不是指向不存在的下一课`,
+        solved.nextStepHidden === false && solved.courseComplete === true && solved.nextLessonPath === null,
+        `hidden=${solved.nextStepHidden} 收尾=${solved.courseComplete} nextLink=${solved.nextLessonPath}`,
+      );
+    }
+
     // 小测这一段：趁整课刚推完、小测面板可见时把卷子本身量一遍。
     let quiz: any;
     try {
@@ -726,6 +796,16 @@ console.log(`\n${checks.length - failed.length}/${checks.length} 项通过`);
 
 if (failure) {
   console.error(`\n复验中断：${failure instanceof Error ? failure.message : String(failure)}`);
+  process.exit(1);
+}
+
+// 声明与实跑不符时先失败，避免文档与清单里的项数悄悄过期。
+const expectedTotal = selectedLessons.length * checksPerLesson;
+if (checks.length !== expectedTotal) {
+  console.error(
+    `\n检查项数与声明不符：脚本声明每课 ${checksPerLesson} 项、本次 ${selectedLessons.length} 课应跑 ${expectedTotal} 项，实际跑了 ${checks.length} 项。` +
+      `\n请同步 checksPerLesson、tests/e2e/flow-manual-checklist.md、docs/roadmap.md、docs/feature-checklist.md 与 README.md 里的数字。`,
+  );
   process.exit(1);
 }
 

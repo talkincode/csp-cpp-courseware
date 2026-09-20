@@ -1265,6 +1265,54 @@
           transition-duration: 1ms !important;
         }
       }
+
+      .next-step {
+        display: grid;
+        gap: 10px;
+        max-width: 790px;
+        margin-top: 26px;
+        padding: 18px 20px;
+        background: var(--mint);
+        border-left: 4px solid var(--forest);
+        border-radius: 4px;
+      }
+
+      .next-step[hidden] {
+        display: none;
+      }
+
+      .next-step-title {
+        margin: 0;
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--forest);
+      }
+
+      .next-step-lead,
+      .next-step-note {
+        margin: 0;
+        font-size: 0.86rem;
+        line-height: 1.7;
+        color: var(--ink);
+      }
+
+      .next-step-link {
+        justify-self: start;
+        padding: 11px 16px;
+        color: var(--paper);
+        background: var(--forest);
+        border: 1px solid var(--forest);
+        border-radius: 4px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .next-step-link:hover {
+        background: var(--orange);
+        border-color: var(--orange);
+      }
+
     </style>
   </head>
   <body data-faq-terms="binary-search monotonicity left-right-bound midpoint infinite-loop">
@@ -1460,6 +1508,13 @@
           <aside class="external-boundary">
             <strong>视频交付边界：</strong>本课的视频课件由仓库外流程制作。本页面只实现互动学习、引导和随机小测，不加载、不生产也不渲染视频资产。
           </aside>
+
+          <nav id="nextStep" class="next-step" aria-label="继续学习" hidden>
+            <p class="next-step-title">本课已完成，可以继续下一课</p>
+            <p class="next-step-lead">下一课是 <code>S3-04</code>《前缀和与区间查询》，先练的一件事是：预处理连续数据。</p>
+            <a class="next-step-link" href="../s3-04/index.html" data-next-lesson="S3-04">继续学习：S3-04 前缀和与区间查询</a>
+            <p class="next-step-note">进度只保存在这台设备的浏览器里。想先回看别的课，<a href="../../index.html">回到课程路线</a>按阶段挑一节就行。</p>
+          </nav>
         </div>
       </section>
     </main>
@@ -1581,6 +1636,7 @@
       const panels = [...document.querySelectorAll(".step-panel")];
       const stepButtons = [...document.querySelectorAll("[data-step]")];
       const taskProgress = document.querySelector("#taskProgress");
+      const nextStep = document.querySelector("#nextStep");
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
@@ -1805,6 +1861,8 @@
       function renderSteps() {
         clampActiveStep();
         taskProgress.textContent = `${unlockedStepCount()} / 4 已推进`;
+        // 推进满整课后才揭开继续学习入口，避免把学习者中途引走。
+        nextStep.hidden = unlockedStepCount() !== stepButtons.length;
 
         stepButtons.forEach((button) => {
           const step = Number(button.dataset.step);
