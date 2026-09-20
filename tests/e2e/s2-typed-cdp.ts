@@ -2,9 +2,9 @@
 /**
  * 手写填空微编程的浏览器自动化复验（零依赖）。
  *
- * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 八课）、bun run e2e:s4-typed（S4 八课）、bun run e2e:s5-typed（S5 已迁移的五课）、bun run e2e:typed（全部）
+ * 用法：bun run e2e:s1-typed（S1-02 至 S1-08）、bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 八课）、bun run e2e:s4-typed（S4 八课）、bun run e2e:s5-typed（S5 八课）、bun run e2e:typed（全部）
  *
- * 这个脚本最早为 S2 八课而写，后来 S3、S4 与 S5 的课沿用同一套课件样板，所以也一起跑；
+ * 这个脚本最早为 S2 八课而写，后来 S3、S4、S5 与 S1 的课沿用同一套课件样板，所以也一起跑；
  * 用 CSP_E2E_LESSONS=s3-01,s3-03 可以只跑指定几课。
  *
  * 脚本会自行启动开发服务器与无头 Chrome，验证「只读脚手架 + 一空」的
@@ -46,6 +46,8 @@ type LessonConfig = {
   reset: string;
   hintPanel: string;
   refPanel: string;
+  // 报错写在哪块面板上；不填就是提示面板。S1-02 的报错走流程反馈，提示另有一块。
+  feedbackPanel?: string;
   typedField: string;
   draftField: string;
   good: string;
@@ -53,14 +55,200 @@ type LessonConfig = {
   fullWidthHint: string;
   outOfBounds: string;
   outOfBoundsMessage: string;
-  blankWant: string;
-  // 任务 1 里要点对的两处选择；多数课沿用同一套标记，个别课的行名不同，需要逐课声明。
+  // 任务 1 里要点对的几处选择；多数课沿用同一套标记，个别课的行名不同，需要逐课声明。
   taskOnePicks?: string[];
+  // 点亮「输入框出现」要按的那串按钮；多数课是三步演示，S1-02 这类“存文件 → 编译 → 运行”的课要另写。
+  revealButtons?: string[];
+  // 只读脚手架所在的行选择器；默认 .code-sheet li，S1-05 用的是 .micro-sheet li。
+  scaffoldSelector?: string;
+  // 只读脚手架至少要有的行数；默认 2。S1-08 只补一个分号，微练习里就只重复出错那一行。
+  scaffoldLines?: number;
+  // 两空课的第二空（S1-05 要补 if 与 else if 两行条件）；不填就是常见的单空课。
+  secondBlank?: { input: string; good: string };
   scenario: string;
 };
 
-// 已迁移的二十九课各自的一空答案与应当出现的指正；fullWidth / outOfBounds 用来验证失败路径。
+// 配置里写 id 的不必再带 #，要写 CSS 选择器的课照写（例如 [data-panel="3"] .micro-sheet）。
+const asSelector = (value: string) => (/^[.#[]/.test(value) ? value : `#${value}`);
+const blankIds = (lesson: LessonConfig) => (lesson.secondBlank ? [lesson.input, lesson.secondBlank.input] : [lesson.input]);
+
+// 已迁移的三十九课各自的答案与应当出现的指正；fullWidth 验全角符号、outOfBounds 验语义写错（越界下标、漏括号、边界写错等）。
 const lessons: LessonConfig[] = [
+  {
+    directory: "s1-02",
+    storageKey: "csp-cpp-s1-02-progress-v1",
+    micro: "updateMicro",
+    input: "updateInput",
+    check: "updateCheckButton",
+    hint: "updateHintButton",
+    ref: "updateRefButton",
+    reset: "updateResetButton",
+    hintPanel: "updateHint",
+    feedbackPanel: "flowFeedback",
+    refPanel: "updateRef",
+    typedField: "updateTyped",
+    draftField: "updateDraft",
+    good: "score = score + 15;",
+    fullWidth: "score ＝ score ＋ 15；",
+    fullWidthHint: "半角",
+    outOfBounds: "score == score + 15;",
+    outOfBoundsMessage: "单个 =",
+    // 这一课的任务 1 是给三个量选类型，任务 2 是“存文件 → 编译 → 运行”三步，与后续课的三步演示不同。
+    taskOnePicks: [
+      '[data-quantity="people"] [data-choice="int"]',
+      '[data-quantity="average"] [data-choice="double"]',
+      '[data-quantity="grade"] [data-choice="char"]',
+    ],
+    revealButtons: ["saveSourceButton", "compileButton", "runButton"],
+    scenario: "写下把 score 加上 15 的更新语句",
+  },
+  {
+    directory: "s1-03",
+    storageKey: "csp-cpp-s1-03-progress-v1",
+    micro: "avgMicro",
+    input: "avgInput",
+    check: "avgCheckButton",
+    hint: "avgHintButton",
+    ref: "avgRefButton",
+    reset: "avgResetButton",
+    hintPanel: "avgHint",
+    // 这一课的报错写在任务 1 共用的反馈区，提示另有一块。
+    feedbackPanel: "sourceFeedback",
+    refPanel: "avgRef",
+    typedField: "avgTyped",
+    draftField: "avgDraft",
+    good: "(a + b) / 2",
+    fullWidth: "（a ＋ b） ／ 2",
+    fullWidthHint: "半角",
+    outOfBounds: "a + b / 2",
+    outOfBoundsMessage: "括号",
+    taskOnePicks: ['[data-quantity="perimeter"] [data-choice="grouped"]', '[data-quantity="average"] [data-choice="grouped"]'],
+    // 这一课的任务 1 选对公式就直接点亮输入框，没有中间演示按钮。
+    revealButtons: [],
+    scenario: "写下平均数算式",
+  },
+  {
+    directory: "s1-04",
+    storageKey: "csp-cpp-s1-04-progress-v1",
+    micro: "cinMicro",
+    input: "cinInput",
+    check: "cinCheckButton",
+    hint: "cinHintButton",
+    ref: "cinRefButton",
+    reset: "cinResetButton",
+    hintPanel: "cinHint",
+    feedbackPanel: "sourceFeedback",
+    refPanel: "cinRef",
+    typedField: "cinTyped",
+    draftField: "cinDraft",
+    good: "cin >> a >> b;",
+    fullWidth: "cin >> a >> b；",
+    fullWidthHint: "半角",
+    outOfBounds: "cin >> a, b;",
+    outOfBoundsMessage: ">>",
+    taskOnePicks: ['[data-quantity="twoInts"] [data-choice="chained"]', '[data-quantity="profile"] [data-choice="chained"]'],
+    revealButtons: [],
+    scenario: "写下一行读入两个整数的语句",
+  },
+  {
+    directory: "s1-05",
+    storageKey: "csp-cpp-s1-05-progress-v1",
+    // 这一课要补两行条件，空位在任务 4 的面板里，没有单独的 micro 容器 id。
+    micro: '[data-panel="3"] .micro-sheet',
+    input: "microIf",
+    check: "microCheckButton",
+    hint: "microHintButton",
+    ref: "microRefButton",
+    reset: "microResetButton",
+    hintPanel: "microFeedback",
+    refPanel: "microRef",
+    typedField: "microSolved",
+    draftField: "microIf",
+    scaffoldSelector: ".micro-sheet li",
+    secondBlank: { input: "microElseIf", good: "score >= 60" },
+    good: "score >= 90",
+    fullWidth: "score >= 90；",
+    fullWidthHint: "半角",
+    outOfBounds: "score > 90",
+    outOfBoundsMessage: "包含等于",
+    // 三步演示走完只翻到任务 3；任务 3 的 = / == 与括号两处都答对，才会翻到有输入框的面板。
+    revealButtons: [
+      "divideButton",
+      "remainderButton",
+      "evenButton",
+      '[data-concept="precedence"][data-pick="divide-first"]',
+      '[data-concept="parens"][data-pick="grouped"]',
+    ],
+    scenario: "亲手补齐优秀与合格两行条件",
+  },
+  {
+    directory: "s1-06",
+    storageKey: "csp-cpp-s1-06-progress-v1",
+    micro: "loopMicro",
+    input: "loopInput",
+    check: "loopCheckButton",
+    hint: "loopHintButton",
+    ref: "loopRefButton",
+    reset: "loopResetButton",
+    hintPanel: "loopHint",
+    feedbackPanel: "sourceFeedback",
+    refPanel: "loopRef",
+    typedField: "loopTyped",
+    draftField: "loopDraft",
+    good: "for (int i = 1; i <= n; i++)",
+    fullWidth: "for（int i ＝ 1； i ＜＝ n； i＋＋）",
+    fullWidthHint: "半角",
+    outOfBounds: "for (int i = 1; i < n; i++)",
+    outOfBoundsMessage: "n 也要进去",
+    revealButtons: [],
+    scenario: "写下从 1 数到 n 的循环表头",
+  },
+  {
+    directory: "s1-07",
+    storageKey: "csp-cpp-s1-07-progress-v1",
+    micro: "colMicro",
+    input: "colInput",
+    check: "colCheckButton",
+    hint: "colHintButton",
+    ref: "colRefButton",
+    reset: "colResetButton",
+    hintPanel: "colHint",
+    feedbackPanel: "sourceFeedback",
+    refPanel: "colRef",
+    typedField: "colTyped",
+    draftField: "colDraft",
+    good: "for (int c = 1; c <= n; c++)",
+    fullWidth: "for（int c ＝ 1； c ＜＝ n； c＋＋）",
+    fullWidthHint: "半角",
+    outOfBounds: "for (int r = 1; r <= n; r++)",
+    outOfBoundsMessage: "内层管列",
+    revealButtons: [],
+    scenario: "写下管列的内层循环",
+  },
+  {
+    directory: "s1-08",
+    storageKey: "csp-cpp-s1-08-progress-v1",
+    micro: "semiMicro",
+    input: "semiInput",
+    check: "semiCheckButton",
+    hint: "semiHintButton",
+    ref: "semiRefButton",
+    reset: "semiResetButton",
+    hintPanel: "semiHint",
+    // 这一课报错沿用定位步骤的流程反馈区。
+    feedbackPanel: "flowFeedback",
+    refPanel: "semiRef",
+    // 这一课只补一个分号：微练习里只重复出错的那一行，完整四行程序在任务 1 已经读过。
+    scaffoldLines: 1,
+    typedField: "semiTyped",
+    draftField: "semiDraft",
+    good: ";",
+    fullWidth: "；",
+    fullWidthHint: "半角",
+    outOfBounds: ";n",
+    outOfBoundsMessage: "一个分号",
+    scenario: "补上漏掉的那一个分号",
+  },
   {
     directory: "s2-01",
     storageKey: "csp-cpp-s2-01-progress-v1",
@@ -79,7 +267,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "a[n]",
     outOfBoundsMessage: "越界",
-    blankWant: "a[ 下标 ]",
     scenario: "访问最后一个成绩",
   },
   {
@@ -100,7 +287,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "s[n]",
     outOfBoundsMessage: "越界",
-    blankWant: "s[ 下标 ]",
     scenario: "访问最后一个字符",
   },
   {
@@ -121,7 +307,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "isEven",
     outOfBoundsMessage: "括号",
-    blankWant: "isEven(",
     scenario: "写出这次调用",
   },
   {
@@ -142,7 +327,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "int &x",
     outOfBoundsMessage: "引用",
-    blankWant: "int x",
     scenario: "写出值传递的形参",
   },
   {
@@ -163,7 +347,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "a[0].name",
     outOfBoundsMessage: "score",
-    blankWant: "a[0]",
     scenario: "写出读分数的成员访问",
   },
   {
@@ -184,7 +367,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "swap(a[0], a[2])",
     outOfBoundsMessage: "相邻",
-    blankWant: "swap(",
     scenario: "写出相邻交换",
   },
   {
@@ -205,7 +387,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "evenCount++;",
     outOfBoundsMessage: "漏分支",
-    blankWant: "if (",
     scenario: "写出遇到偶数时的判断与更新",
   },
   {
@@ -226,7 +407,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "n + n",
     outOfBoundsMessage: "相乘",
-    blankWant: "n *",
     scenario: "写出双层循环的次数算式",
   },
   {
@@ -247,7 +427,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "x / 10",
     outOfBoundsMessage: "去掉个位",
-    blankWant: "x % 10",
     scenario: "写出取出十进制个位的算式",
   },
   {
@@ -268,7 +447,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "n * fact(n)",
     outOfBoundsMessage: "边界",
-    blankWant: "n * fact(",
     scenario: "写出阶乘的递归调用",
   },
   {
@@ -289,7 +467,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "left + right / 2",
     outOfBoundsMessage: "少了括号",
-    blankWant: "(left + right) / 2",
     scenario: "写出二分的中点算式",
   },
   {
@@ -310,7 +487,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "sum[i] = sum[i] + a[i]",
     outOfBoundsMessage: "少减了",
-    blankWant: "sum[i] = sum[i - 1] + a[i]",
     scenario: "写出填表（前缀和）语句",
   },
   {
@@ -331,7 +507,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "sum += a[right]; right++;",
     outOfBoundsMessage: "顺序反了",
-    blankWant: "right++; sum += a[right];",
     scenario: "写出扩大窗口的两步",
   },
   {
@@ -352,7 +527,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "sort(a + 1, a + 4, by_start)",
     outOfBoundsMessage: "开始时间",
-    blankWant: "sort(a + 1, a + 4, by_end)",
     scenario: "写出按结束时间排序的那一行",
   },
   {
@@ -373,7 +547,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "st.top()",
     outOfBoundsMessage: "看一眼",
-    blankWant: "st.____()",
     scenario: "写出配对成功后弹掉栈顶的那一行",
   },
   {
@@ -394,7 +567,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "dp[i] = dp[i - 1] * dp[i - 2]",
     outOfBoundsMessage: "相加",
-    blankWant: "dp[i] = dp[i - _] + dp[i - _]",
     scenario: "写出爬楼梯的转移那一行",
   },
   {
@@ -415,7 +587,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "cin >> n + 1;",
     outOfBoundsMessage: "cin",
-    blankWant: "cout << ____;",
     scenario: "写出只输出答案的那一行",
   },
   {
@@ -436,7 +607,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "sum = a[i];",
     outOfBoundsMessage: "覆盖",
-    blankWant: "sum ____ a[i];",
     scenario: "写出把当前这个数累加进 sum 的那一行",
   },
   {
@@ -457,7 +627,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "if (balance + x > 0)",
     outOfBoundsMessage: "刚好",
-    blankWant: "if (____)",
     scenario: "写出判断这次操作能不能做的那一行",
   },
   {
@@ -478,7 +647,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "if (sum >= target) return;",
     outOfBoundsMessage: "边界差一点",
-    blankWant: "if (sum ____ target) return;",
     scenario: "写出剪枝那一行",
   },
   {
@@ -499,7 +667,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "cnt[score] = 1;",
     outOfBoundsMessage: "覆盖",
-    blankWant: "cnt[score]____;",
     taskOnePicks: ['[data-quantity="rangeTool"] [data-choice="counting"]', '[data-quantity="dupTool"] [data-choice="sortScan"]'],
     scenario: "写出把这次读到的分数记进计数数组的那一行",
   },
@@ -521,7 +688,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "dp[i] = max(dp[i - 1], dp[i - 2]);",
     outOfBoundsMessage: "少了金额",
-    blankWant: "dp[i] = max(dp[i - 1], ____);",
     taskOnePicks: ['[data-quantity="stateTool"] [data-choice="define-dp"]', '[data-quantity="pickTool"] [data-choice="pick-or-skip"]'],
     scenario: "写出打家劫舍的转移那一行",
   },
@@ -543,7 +709,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "if (!visited[u]) return;",
     outOfBoundsMessage: "写反",
-    blankWant: "if (____) return;",
     taskOnePicks: ['[data-quantity="graphTool"] [data-choice="adjacency-list"]', '[data-quantity="visitedTool"] [data-choice="visited-array"]'],
     scenario: "写出 dfs 防止重复访问的那一行",
   },
@@ -565,7 +730,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "if (n <= 100000) { cout << brute(n); return 0; }",
     outOfBoundsMessage: "10 万",
-    blankWant: "if (____) { ... }",
     taskOnePicks: ['[data-quantity="orderChoice"] [data-choice="brute-first"]', '[data-quantity="fallbackChoice"] [data-choice="submit-fallback"]'],
     scenario: "写出子任务 1 的保底分支那一行",
   },
@@ -587,7 +751,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "cin >> i >> prefix;",
     outOfBoundsMessage: "读入",
-    blankWant: "cout << ____;",
     taskOnePicks: [
       '[data-quantity="orderChoice"] [data-choice="brute-first"]',
       '[data-quantity="fallbackChoice"] [data-choice="submit-fallback"]',
@@ -612,7 +775,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "int sum = 0;",
     outOfBoundsMessage: "装不下",
-    blankWant: "____ sum = 0;",
     taskOnePicks: [
       '[data-quantity="overflowChoice"] [data-choice="is-overflow"]',
       '[data-quantity="boundsChoice"] [data-choice="is-bounds"]',
@@ -637,7 +799,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "sum[r] - sum[l]",
     outOfBoundsMessage: "伪优化",
-    blankWant: "sum[ r ] - sum[ ? ]",
     taskOnePicks: [
       '[data-quantity="startChoice"] [data-choice="write-baseline"]',
       '[data-quantity="labelChoice"] [data-choice="label-limits"]',
@@ -662,7 +823,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: 'if (n == 1) { cout << 0 << "\\n"; return 0; }',
     outOfBoundsMessage: "n=0",
-    blankWant: "if ( n == 0 ) { ... }",
     taskOnePicks: [
       '[data-quantity="startChoice"] [data-choice="scan-and-order"]',
       '[data-quantity="labelChoice"] [data-choice="log-self-test"]',
@@ -687,7 +847,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "i < n",
     outOfBoundsMessage: "最后一个",
-    blankWant: "i ? n",
     taskOnePicks: [
       '[data-quantity="startChoice"] [data-choice="classify-first"]',
       '[data-quantity="actionChoice"] [data-choice="write-fix-rule"]',
@@ -712,7 +871,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "int a[100000];",
     outOfBoundsMessage: "越界",
-    blankWant: "int a[ ? ];",
     taskOnePicks: [
       '[data-quantity="orderChoice"] [data-choice="brute-first"]',
       '[data-quantity="fallbackChoice"] [data-choice="submit-fallback"]',
@@ -737,7 +895,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "long long formula = n * (n + 1) / 2;",
     outOfBoundsMessage: "溢出",
-    blankWant: "long long formula = ____;",
     taskOnePicks: [
       '[data-quantity="startChoice"] [data-choice="bring-last-habit"]',
       '[data-quantity="labelChoice"] [data-choice="cross-check-twice"]',
@@ -762,7 +919,6 @@ const lessons: LessonConfig[] = [
     fullWidthHint: "半角",
     outOfBounds: "int cnt[105] = 0;",
     outOfBoundsMessage: "第一个格子",
-    blankWant: "int cnt[ ? ] = ?;",
     taskOnePicks: [
       '[data-quantity="startChoice"] [data-choice="list-and-rate"]',
       '[data-quantity="labelChoice"] [data-choice="specific-topic-with-plan"]',
@@ -940,11 +1096,9 @@ const lessonReady = `new Promise((resolve) => {
   tick();
 })`;
 
-const selector = (id: string) => `#${id}`;
-
 async function clearInput(client: Cdp, target: string) {
   await client.evaluate(`(() => {
-    const el = document.querySelector(${JSON.stringify(selector(target))});
+    const el = document.querySelector(${JSON.stringify(asSelector(target))});
     el.focus();
     el.value = "";
     el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -954,7 +1108,7 @@ async function clearInput(client: Cdp, target: string) {
 
 // 逐字符走真实键盘事件，验证孩子真的敲键盘时输入框与状态都跟得上。
 async function typeText(client: Cdp, target: string, text: string) {
-  await client.evaluate(`document.querySelector(${JSON.stringify(selector(target))}).focus(); true`);
+  await client.evaluate(`document.querySelector(${JSON.stringify(asSelector(target))}).focus(); true`);
   for (const character of text) {
     // keyDown 报“按下哪个键”，char 负责真正插入字符：标点没有合法的 code（如 `<`），
     // 只把 text 挂在 keyDown 上会被丢弃，必须补一个 char 事件。
@@ -970,7 +1124,7 @@ async function typeText(client: Cdp, target: string, text: string) {
 
 async function click(client: Cdp, target: string) {
   return client.evaluate(`(() => {
-    const el = document.querySelector(${JSON.stringify(selector(target))});
+    const el = document.querySelector(${JSON.stringify(asSelector(target))});
     if (!el) return false;
     el.click();
     return true;
@@ -985,18 +1139,24 @@ async function readStorage(client: Cdp, key: string) {
 
 async function microSnapshot(client: Cdp, lesson: LessonConfig) {
   return client.evaluateJson<any>(`(() => {
-    const micro = document.querySelector(${JSON.stringify(selector(lesson.micro))});
-    const input = document.querySelector(${JSON.stringify(selector(lesson.input))});
-    const hintPanel = document.querySelector(${JSON.stringify(selector(lesson.hintPanel))});
-    const refPanel = document.querySelector(${JSON.stringify(selector(lesson.refPanel))});
+    const micro = document.querySelector(${JSON.stringify(asSelector(lesson.micro))});
+    const blanks = ${JSON.stringify(blankIds(lesson))}.map((id) => document.querySelector("#" + id));
+    const hintPanel = document.querySelector(${JSON.stringify(asSelector(lesson.hintPanel))});
+    const feedbackPanel = document.querySelector(${JSON.stringify(asSelector(lesson.feedbackPanel ?? lesson.hintPanel))});
+    const refPanel = document.querySelector(${JSON.stringify(asSelector(lesson.refPanel))});
     const ribbon = document.querySelector("#completionRibbon");
+    // hidden 只说明自己有没有被藏起来，S1-05 的空位在整块面板被藏的时候仍然“出现”着，
+    // 所以按渲染结果判断：有盒子（getClientRects）才算学习者真的看得见。
+    const visible = (element) => Boolean(element) && !element.hidden && element.getClientRects().length > 0;
     return JSON.stringify({
-      microHidden: micro ? micro.hidden : null,
-      inputValue: input ? input.value : null,
-      inputCorrect: input ? input.classList.contains("is-correct") : null,
-      inputWrong: input ? input.classList.contains("is-wrong") : null,
-      feedback: hintPanel ? hintPanel.textContent : null,
-      feedbackTone: hintPanel ? hintPanel.dataset.tone ?? "" : null,
+      microVisible: visible(micro),
+      inputValue: blanks[0] ? blanks[0].value : null,
+      values: blanks.map((element) => (element ? element.value : null)),
+      allCorrect: blanks.every((element) => Boolean(element) && element.classList.contains("is-correct")),
+      anyWrong: blanks.some((element) => Boolean(element) && element.classList.contains("is-wrong")),
+      feedback: feedbackPanel ? feedbackPanel.textContent : null,
+      feedbackTone: feedbackPanel ? feedbackPanel.dataset.tone ?? "" : null,
+      hintText: hintPanel ? hintPanel.textContent : null,
       refHidden: refPanel ? refPanel.hidden : null,
       ribbon: ribbon ? ribbon.textContent : "",
     });
@@ -1022,7 +1182,14 @@ try {
     await Bun.sleep(1200);
     await client.evaluate(lessonReady);
 
-    // 任务 1：两处选择都选对，任务 2 才会点亮
+    // 任务 1：把该点对的选择都点对（多数课两处），任务 2 才会点亮
+    const initial = await microSnapshot(client, lesson);
+    check(
+      `${lesson.directory} 打开页面时输入框还没有出现`,
+      initial.microVisible === false,
+      `visible=${initial.microVisible}`,
+    );
+
     const taskOnePicks = lesson.taskOnePicks ?? [
       '[data-quantity="passFail"] [data-choice="compare"]',
       '[data-quantity="grade"] [data-choice="three-way"]',
@@ -1037,8 +1204,8 @@ try {
     })()`);
 
     const scaffold = await client.evaluateJson<any>(`(() => {
-      const input = document.querySelector(${JSON.stringify(selector(lesson.input))});
-      const micro = document.querySelector(${JSON.stringify(selector(lesson.micro))});
+      const input = document.querySelector(${JSON.stringify(asSelector(lesson.input))});
+      const micro = document.querySelector(${JSON.stringify(asSelector(lesson.micro))});
       return JSON.stringify({
         exists: Boolean(input) && Boolean(micro),
         type: input ? input.type : null,
@@ -1062,21 +1229,54 @@ try {
       JSON.stringify(scaffold),
     );
 
-    const scaffoldLines = await client.evaluate(`document.querySelectorAll(${JSON.stringify(
-      `#${lesson.micro} .code-sheet li`,
-    )}).length`);
+    const scaffoldShape = await client.evaluateJson<any>(`(() => {
+      const micro = document.querySelector(${JSON.stringify(asSelector(lesson.micro))});
+      const lineSelector = ${JSON.stringify(lesson.scaffoldSelector ?? ".code-sheet li")};
+      return JSON.stringify({
+        lines: micro ? micro.querySelectorAll(lineSelector).length : 0,
+        blanks: micro ? micro.querySelectorAll("input.micro-input").length : 0,
+        textareas: micro ? micro.querySelectorAll("textarea").length : 0,
+      });
+    })()`);
 
-    check(`${lesson.directory} 脚手架为只读且只留一空`, scaffoldLines >= 3, `代码行数=${scaffoldLines}`);
+    // 行数够说明脚手架不是空壳，空位数与声明一致才说明没让孩子手打整段程序。
+    check(
+      `${lesson.directory} 脚手架为只读、行数与空位数都符合微编程要求`,
+      scaffoldShape.lines >= (lesson.scaffoldLines ?? 2) &&
+        scaffoldShape.blanks === blankIds(lesson).length &&
+        scaffoldShape.textareas === 0,
+      JSON.stringify(scaffoldShape),
+    );
 
-    // 任务 2：走完三格之前不能出现输入框
-    await click(client, "divideButton");
-    await click(client, "remainderButton");
+    // 任务 2：按各课真实的点亮方式走到输入框出现。
+    // 多数课是三步演示；S1-03 这类任务 1 选对就点亮的课 revealButtons 留空；
+    // S1-02 是“存文件 → 编译 → 运行”；S1-05 还得先答完任务 3 才会翻到有输入框的面板。
+    const revealButtons = lesson.revealButtons ?? ["divideButton", "remainderButton", "evenButton"];
+    // 点亮步骤的选择器写错会静默跳过，最后只说“输入框没出现”，所以把没找到的目标记下来一起报。
+    const missedReveal: string[] = [];
+    for (const button of revealButtons.slice(0, -1)) {
+      if (!(await click(client, button))) missedReveal.push(button);
+    }
     const before = await microSnapshot(client, lesson);
-    check(`${lesson.directory} 走完前两步时输入框仍隐藏`, before.microHidden === true, `hidden=${before.microHidden}`);
+    if (revealButtons.length > 0) {
+      check(
+        `${lesson.directory} 走完前${revealButtons.length - 1}步时输入框仍隐藏`,
+        before.microVisible === false && missedReveal.length === 0,
+        `visible=${before.microVisible} missed=${JSON.stringify(missedReveal)}`,
+      );
+      const lastReveal = revealButtons[revealButtons.length - 1]!;
+      if (!(await click(client, lastReveal))) missedReveal.push(lastReveal);
+    }
 
-    await click(client, "evenButton");
     const opened = await microSnapshot(client, lesson);
-    check(`${lesson.directory} 走完第三步后输入框出现`, opened.microHidden === false, `hidden=${opened.microHidden}`);
+    const openedState = await readStorage(client, lesson.storageKey);
+    check(
+      revealButtons.length === 0
+        ? `${lesson.directory} 任务 1 选对后输入框出现，可以亲手写`
+        : `${lesson.directory} 走完第${revealButtons.length}步后输入框出现`,
+      opened.microVisible === true && missedReveal.length === 0,
+      `visible=${opened.microVisible} missed=${JSON.stringify(missedReveal)}`,
+    );
 
     // 空提交：必须给出提示且不算完成
     await click(client, lesson.check);
@@ -1104,7 +1304,7 @@ try {
     check(
       `${lesson.directory} 全角符号被指正为半角且不算完成`,
       String(fullWidth.feedback).includes(lesson.fullWidthHint) &&
-        fullWidth.inputWrong === true &&
+        fullWidth.anyWrong === true &&
         fullWidthState[lesson.typedField] !== true,
       `feedback=${String(fullWidth.feedback).slice(0, 80)}`,
     );
@@ -1121,10 +1321,14 @@ try {
       `feedback=${String(semantic.feedback).slice(0, 80)} draft=${JSON.stringify(String(semanticState[lesson.draftField]))}`,
     );
 
-    // 提示按钮：卡壳时有渐进线索
+    // 提示按钮：卡壳时有渐进线索。同一块面板既要报错又要给提示，所以要求提示确实换了内容。
     await click(client, lesson.hint);
     const hint = await microSnapshot(client, lesson);
-    check(`${lesson.directory} 查看提示给出渐进线索`, Boolean(hint.feedback), `hint=${String(hint.feedback).slice(0, 60)}`);
+    check(
+      `${lesson.directory} 查看提示给出渐进线索`,
+      Boolean(hint.hintText) && String(hint.hintText) !== String(semantic.feedback),
+      `hint=${String(hint.hintText).slice(0, 60)}`,
+    );
 
     // 参考代码：可展开也可收起
     await click(client, lesson.ref);
@@ -1137,7 +1341,7 @@ try {
       `open=${refOpen.refHidden} closed=${refClosed.refHidden}`,
     );
 
-    // 重置：清空这一空与草稿
+    // 重置：清空这一空（两空课清第一空）与草稿
     await click(client, lesson.reset);
     const reset = await microSnapshot(client, lesson);
     const resetState = await readStorage(client, lesson.storageKey);
@@ -1148,35 +1352,45 @@ try {
     );
 
     // 安全边界：这一空只做字符串比较，原样保留、绝不当 HTML 解析（此时任务 1 面板仍可见，输入框可用）
-    const injectedRaw = "<script>x</script>";
+    // 有的空位带 maxlength（S1-08 补分号只留 10 个字符），注入串要挑一条放得进去的，
+    // 否则测到的是被截断的输入，而不是「不会被当成 HTML」。
+    const injectionRoom = await client.evaluateJson<number>(
+      `document.querySelector(${JSON.stringify(asSelector(lesson.input))}).maxLength`,
+    );
+    const injectedRaw = injectionRoom < 0 || injectionRoom >= 12 ? "<script>x</script>" : "<b>x</b>";
     await clearInput(client, lesson.input);
     await typeText(client, lesson.input, injectedRaw);
     await click(client, lesson.check);
     const injected = await microSnapshot(client, lesson);
     const injectedState = await readStorage(client, lesson.storageKey);
+    // script 与 b 都要数：带 maxlength 的空位放进 <b>x</b>，页面上出现任何解析出来的元素都是失败。
     const parsedNodes = await client.evaluateJson<number>(
-      `document.querySelectorAll(${JSON.stringify(`${selector(lesson.micro)} script`)}).length`,
+      `document.querySelectorAll(${JSON.stringify(`${asSelector(lesson.micro)} script, ${asSelector(lesson.micro)} b`)}).length`,
     );
     check(
       `${lesson.directory} 输入框内容原样保留，不会被当成 HTML 或正确答案`,
       parsedNodes === 0 &&
         injected.inputValue === injectedRaw &&
         injectedState[lesson.typedField] !== true &&
-        injectedState.activeStep === 1,
+        injectedState.activeStep === openedState.activeStep,
       `raw=${String(injected.inputValue)} parsedNodes=${parsedNodes} typed=${String(injectedState[lesson.typedField])}`,
     );
 
-    // 正确作答：解锁任务 3 并给出奖励反馈
+    // 正确作答：解锁下一任务并给出奖励反馈
     await clearInput(client, lesson.input);
     await typeText(client, lesson.input, lesson.good);
+    if (lesson.secondBlank) {
+      await clearInput(client, lesson.secondBlank.input);
+      await typeText(client, lesson.secondBlank.input, lesson.secondBlank.good);
+    }
     await click(client, lesson.check);
     const solved = await microSnapshot(client, lesson);
     const solvedState = await readStorage(client, lesson.storageKey);
     check(
-      `${lesson.directory} 正确作答后标记完成、进入任务 3 并给出反馈`,
-      solved.inputCorrect === true &&
+      `${lesson.directory} 正确作答后标记完成、进入下一任务并给出反馈`,
+      solved.allCorrect === true &&
         solvedState[lesson.typedField] === true &&
-        solvedState.activeStep >= 2 &&
+        solvedState.activeStep > openedState.activeStep &&
         String(solved.ribbon).length > 0,
       `typed=${String(solvedState[lesson.typedField])} activeStep=${String(solvedState.activeStep)}`,
     );
@@ -1188,7 +1402,7 @@ try {
     const restored = await microSnapshot(client, lesson);
     check(
       `${lesson.directory} 刷新后恢复这一空的答案与完成状态`,
-      restored.inputValue === lesson.good && restored.inputCorrect === true,
+      restored.inputValue === lesson.good && restored.allCorrect === true,
       `value=${String(restored.inputValue)}`,
     );
 

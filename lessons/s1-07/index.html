@@ -2155,6 +2155,10 @@
         state.colTyped = false;
         if (colHint) colHint.textContent = "";
         if (colRef) colRef.hidden = true;
+        colInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderSourceTask 里有「正在输入就不覆盖」的保护，
+        // 点按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (colInput) colInput.value = "";
         saveState();
         renderSourceTask();
         announce("已清空这一空，重新敲一次吧。");
