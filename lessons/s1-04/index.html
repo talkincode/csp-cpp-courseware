@@ -1217,6 +1217,45 @@
           transition-duration: 1ms !important;
         }
       }
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
     </style>
   </head>
   <body data-faq-terms="cin cout newline fixed-precision prompt-output">
@@ -1298,6 +1337,23 @@
               </div>
             </div>
             <p id="sourceFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="cinMicro" hidden>
+              <p class="step-lead">都选对了。现在亲手写下读入语句：下面是只读脚手架，只留一空给你敲键盘。</p>
+              <div class="code-sheet" aria-label="读入语句脚手架，只留一空">
+                <ol>
+                  <li>int a, b;</li>
+                  <li class="focus-line"><input id="cinInput" class="micro-input" type="text" value="" placeholder="cin >> a >> b;" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写下一行读入两个整数的语句" /> <span class="inline-code">// 一行读入两个整数</span></li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="读入语句的检查与兜底">
+                <button id="cinCheckButton" class="primary-action" type="button">检查这行读入</button>
+                <button id="cinHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="cinRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="cinResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="cinHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="cinRef" class="micro-ref" hidden>cin &gt;&gt; a &gt;&gt; b;</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="1" hidden>
@@ -1467,6 +1523,8 @@
         activeStep: 0,
         formulaChoices: {},
         formulasMatched: false,
+        cinTyped: false,
+        cinDraft: "",
         divided: false,
         remaindered: false,
         evenChecked: false,
@@ -1488,6 +1546,10 @@
       const stepButtons = [...document.querySelectorAll("[data-step]")];
       const taskProgress = document.querySelector("#taskProgress");
       const sourceFeedback = document.querySelector("#sourceFeedback");
+      const cinMicro = document.querySelector("#cinMicro");
+      const cinInput = document.querySelector("#cinInput");
+      const cinHint = document.querySelector("#cinHint");
+      const cinRef = document.querySelector("#cinRef");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
@@ -1518,6 +1580,8 @@
                 ? stored.formulaChoices
                 : {},
             formulasMatched: stored.formulasMatched === true,
+            cinTyped: stored.cinTyped === true,
+            cinDraft: typeof stored.cinDraft === "string" ? stored.cinDraft : "",
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
@@ -1601,11 +1665,11 @@
       }
 
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.formulasMatched && state.cinTyped, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched && state.cinTyped, state.evenChecked, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1731,8 +1795,11 @@
         });
 
         if (state.formulasMatched) {
-          showFeedback(sourceFeedback, "两种读入都选对了。连续几个量就写几个 >>。下一步已经点亮。");
+          showFeedback(sourceFeedback, "两种读入都选对了。连续几个量就写几个 >>。现在亲手写下读入语句。");
         }
+        if (cinMicro) cinMicro.hidden = !state.formulasMatched;
+        if (cinInput && document.activeElement !== cinInput) cinInput.value = state.cinDraft ?? "";
+        cinInput?.classList.toggle("is-correct", state.cinTyped);
       }
 
       function renderFlowTask() {
@@ -1784,6 +1851,24 @@
           debugFeedback.textContent = "";
           debugFeedback.dataset.tone = "";
         }
+      }
+
+      function normalizeCinLine(value) {
+        return (value ?? "").replace(/\u3000/g, " ").trim();
+      }
+
+      function checkCinLine(raw) {
+        const text = normalizeCinLine(raw);
+        if (!text) return { ok: false, message: "先在空里写下读入语句试试，比如 cin >> a >> b;" };
+        if (/[一-龥、。！？；：（）]/.test(text)) return { ok: false, message: "用了中文符号哦：>> 和分号都要用半角，把输入法切到英文再敲一次。" };
+        if (text.replace(/\s+/g, "") === "cin>>a>>b;") return { ok: true, message: "" };
+        if (/cout/.test(text)) return { ok: false, message: "cout 是输出。要把数据读进来，用 cin。" };
+        if (text.includes(",")) return { ok: false, message: "逗号不会连续读入：两个 >> 才行，写成 cin >> a >> b;" };
+        if (text.includes("<<")) return { ok: false, message: "读入用 >>（箭头指向变量），<< 是输出用的哦。" };
+        if (!text.includes(">>")) return { ok: false, message: "连续读入用 >> 哦，几个量就写几个 >>。" };
+        if (!text.includes(";")) return { ok: false, message: "语句末尾少了半角分号 ; 哦。" };
+        if (!/cin/.test(text)) return { ok: false, message: "读入用 cin 开头哦。" };
+        return { ok: false, message: "再对照一下：写成 cin >> a >> b; 的样子。" };
       }
 
       function questionsAreValid(questions) {
@@ -1963,10 +2048,11 @@
           const complete = Object.keys(correctFormulas).every((key) => state.formulaChoices[key] === correctFormulas[key]);
           if (complete) {
             state.formulasMatched = true;
-            state.activeStep = 1;
             saveState();
             render();
-            reward("任务 1 完成：连续读入都选对了。下一步看空格和换行。");
+            showFeedback(sourceFeedback, "两种读入都选对了。现在亲手写下读入语句。");
+            announce("两种读入都选对了。现在亲手写下读入语句。");
+            playSound("calm");
             return;
           }
 
@@ -1975,6 +2061,64 @@
           showFeedback(sourceFeedback, "这一项选对了。继续给剩下的读入做选择。");
           playSound("calm");
         });
+      });
+
+      cinInput?.addEventListener("input", (event) => {
+        state.cinDraft = event.target.value;
+        state.cinTyped = false;
+        cinInput.classList.remove("is-wrong");
+        saveState();
+        renderSourceTask();
+      });
+
+      document.querySelector("#cinCheckButton")?.addEventListener("click", () => {
+        const result = checkCinLine(state.cinDraft);
+        if (!result.ok) {
+          showFeedback(sourceFeedback, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          cinInput?.classList.add("is-wrong");
+          return;
+        }
+        cinInput?.classList.remove("is-wrong");
+        if (!state.cinTyped) {
+          state.cinTyped = true;
+          state.activeStep = 1;
+          saveState();
+          render();
+          reward("任务 1 完成：连续读入都选对了，读入语句还是你亲手写的。下一步看空格和换行。");
+        }
+      });
+
+      document.querySelector("#cinHintButton")?.addEventListener("click", () => {
+        const text = normalizeCinLine(state.cinDraft);
+        const hint = !text
+          ? "先写 cin，再写两个 >>，分别连上 a 和 b，最后补分号。"
+          : !text.includes("cin")
+            ? "读入用 cin 开头。"
+            : !text.includes(">>")
+              ? "连续几个量就写几个 >>。"
+              : "对照参考代码看看：cin >> a >> b;";
+        showFeedback(cinHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#cinRefButton")?.addEventListener("click", () => {
+        if (cinRef) cinRef.hidden = !cinRef.hidden;
+        announce(cinRef && !cinRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#cinResetButton")?.addEventListener("click", () => {
+        state.cinDraft = "";
+        state.cinTyped = false;
+        if (cinHint) cinHint.textContent = "";
+        if (cinRef) cinRef.hidden = true;
+        saveState();
+        renderSourceTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelector("#divideButton").addEventListener("click", () => {

@@ -120,6 +120,14 @@ test("S1-02 supplies a guided variable lesson and randomized choice quiz", async
   expect(source).toContain('type: "choice"');
   expect(source).toContain("不会在浏览器里运行 C++");
   expect(source).toContain("csp-cpp-s1-02-progress-v1");
+  // 微编程：更新演示后亲手写一行更新语句
+  expect(source).toContain('id="updateInput"');
+  expect(source).toContain('id="updateCheckButton"');
+  expect(source).toContain('id="updateHintButton"');
+  expect(source).toContain('id="updateRefButton"');
+  expect(source).toContain('id="updateResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S1-03 supplies a guided expression lesson and randomized choice quiz", async () => {
@@ -143,6 +151,14 @@ test("S1-03 supplies a guided expression lesson and randomized choice quiz", asy
   expect(source).toContain("(a + b) / 2");
   expect(source).toContain("7 / 2");
   expect(source).toContain("7 % 2");
+  // 微编程：选对公式后亲手写平均数算式
+  expect(source).toContain('id="avgInput"');
+  expect(source).toContain('id="avgCheckButton"');
+  expect(source).toContain('id="avgHintButton"');
+  expect(source).toContain('id="avgRefButton"');
+  expect(source).toContain('id="avgResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S1-04 supplies a guided input-output lesson and randomized choice quiz", async () => {
@@ -165,6 +181,14 @@ test("S1-04 supplies a guided input-output lesson and randomized choice quiz", a
   expect(source).toContain("题库暂时不可用");
   expect(source).toContain("cin >> a >> b");
   expect(source).toContain("请输入");
+  // 微编程：选对读入后亲手写读入语句
+  expect(source).toContain('id="cinInput"');
+  expect(source).toContain('id="cinCheckButton"');
+  expect(source).toContain('id="cinHintButton"');
+  expect(source).toContain('id="cinRefButton"');
+  expect(source).toContain('id="cinResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S1-05 supplies a guided condition lesson and randomized choice quiz", async () => {
