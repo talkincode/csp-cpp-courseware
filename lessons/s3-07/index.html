@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(280px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1339,6 +1379,30 @@
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
+            <div id="stackMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在亲手把弹栈那一行敲出来：读到 <span class="inline-code">]</span> 时栈顶是 <span class="inline-code">[</span>，<button type="button" class="faq-term" data-faq="lifo">后进先出</button> 要求最后压进去的先弹掉。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="用栈检查括号的脚手架，只留一空">
+                <ol>
+                  <li>stack&lt;char&gt; st;</li>
+                  <li>string s = "([])";</li>
+                  <li>st.push('('); st.push('[');  // 先读 ( 再读 [，现在栈顶是 '['</li>
+                  <li>if (st.top() != '[') { cout &lt;&lt; "不匹配"; return 0; }  // 读到 ']'，先看栈顶</li>
+                  <li class="focus-line">  <input id="stackInput" class="micro-input" type="text" value="" placeholder="st.____()" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="24" aria-label="写出配对成功后弹掉栈顶那一行" />;   // 配上了，弹掉栈顶</li>
+                  <li>if (st.empty()) cout &lt;&lt; "匹配";</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="弹栈语句的检查与兜底">
+                <button id="stackCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="stackHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="stackRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="stackResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="stackHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="stackRef" class="micro-ref" hidden>  st.pop(); // 弹出栈顶的 '['，剩下的 '(' 等下一个 ')' 来配</pre>
+            </div>
+
           <section class="step-panel" data-panel="2" hidden>
             <h2>任务 3：核对空栈，并认出错配 ([)]</h2>
             <p class="step-lead">
@@ -1478,6 +1542,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        stackDraft: "",
+        stackTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1572,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const stackMicro = document.querySelector("#stackMicro");
+      const stackInput = document.querySelector("#stackInput");
+      const stackHint = document.querySelector("#stackHint");
+      const stackRef = document.querySelector("#stackRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1599,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            stackDraft: typeof stored.stackDraft === "string" ? stored.stackDraft : "",
+            stackTyped: stored.stackTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1680,42 @@
         return state.precedenceSolved && state.parensSolved;
       }
 
+      function normalizeStackInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "").replace(/;$/, "");
+      }
+
+      function checkStackPop(raw) {
+        const text = normalizeStackInput(raw);
+        if (!text) return { ok: false, message: "先在空里写出弹栈那一行：配好的左括号要从栈顶拿掉。" };
+        if (/[（），；：、。！？［］【】＝＋－×＊．·]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：小括号、点和分号都要敲半角 ( ) . ;。" };
+        if (text === "st.pop()") return { ok: true, message: "" };
+        if (/^st\.top\(\)$/.test(text))
+          return { ok: false, message: "st.top() 只是看一眼栈顶，括号还留在栈里。要把它拿掉得用 st.pop()。" };
+        if (/^st\.empty\(\)$/.test(text))
+          return { ok: false, message: "st.empty() 只回答“栈是不是空的”，不会动栈里的元素。这一空要弹掉栈顶。" };
+        if (/^st\.push\(.+\)$/.test(text))
+          return { ok: false, message: "st.push(...) 是再压一个进去。这一步是配对成功，要弹出来，用的是 st.pop()。" };
+        if (/^st\.size\(\)$/.test(text))
+          return { ok: false, message: "st.size() 只数一数栈里有几个，不会弹出栈顶。这一空要写 st.pop()。" };
+        if (/^pop\(\)$/.test(text))
+          return { ok: false, message: "要写清在哪个栈上操作：前面带上栈名，写成 st.pop()。" };
+
+        return { ok: false, message: "这一空要写成 st.pop()：配对成功后，把栈顶那个左括号弹掉。" };
+      }
+
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [
+          state.formulasMatched,
+          state.evenChecked && state.stackTyped,
+          conceptSolved(),
+          state.quizSubmitted,
+        ].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        // 任务 2 的下一步必须亲手写对弹栈那一行才点亮：光点三步按钮不算学会。
+        return [true, state.formulasMatched, state.evenChecked && state.stackTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1772,6 +1874,11 @@
           variableMeta.textContent = "先点“空栈：还没读任何括号”。";
           flowFeedback.textContent = "";
         }
+
+        if (stackMicro) stackMicro.hidden = !state.evenChecked;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (stackInput && document.activeElement !== stackInput) stackInput.value = state.stackDraft ?? "";
+        stackInput?.classList.toggle("is-correct", state.stackTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2135,72 @@
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：空栈，再读 ( [ ，再用右括号弹出。现在在下面的空里亲手写出弹栈那一行。");
+        announce("已经读到栈顶是 [。现在亲手写出弹掉栈顶那一行：配对成功后，最后压进去的先弹出来。");
+        playSound("calm");
+      });
+
+      stackInput?.addEventListener("input", (event) => {
+        state.stackDraft = event.target.value;
+        state.stackTyped = false;
+        stackInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#stackCheckButton")?.addEventListener("click", () => {
+        const result = checkStackPop(state.stackDraft);
+        if (!result.ok) {
+          showFeedback(stackHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          stackInput?.classList.add("is-wrong");
+          return;
+        }
+        stackInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(stackHint, result.message);
+        if (!state.stackTyped) {
+          state.stackTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：st.pop() 这一行是你亲手写的。下一步看空栈并认出错配 ([)]。");
+        }
+      });
+
+      document.querySelector("#stackHintButton")?.addEventListener("click", () => {
+        const text = normalizeStackInput(state.stackDraft);
+        const hint = !text
+          ? "要写的是 st.pop()：st 是栈名，pop() 表示把栈顶那个左括号拿掉。"
+          : text.includes("pop")
+            ? "已经有 pop 了。检查两样：栈名 st. 和后面的一对小括号 ()。"
+            : "这一空要的是 st.pop()：配对成功后把栈顶弹掉，剩下的 ( 留到后面再配。";
+        showFeedback(stackHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#stackRefButton")?.addEventListener("click", () => {
+        if (stackRef) stackRef.hidden = !stackRef.hidden;
+        announce(stackRef && !stackRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#stackResetButton")?.addEventListener("click", () => {
+        state.stackDraft = "";
+        state.stackTyped = false;
+        if (stackHint) stackHint.textContent = "";
+        if (stackRef) stackRef.hidden = true;
+        stackInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (stackInput) stackInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：空栈，再读 ( [ ，再弹出匹配。下一步看空栈和错配 ([)]。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

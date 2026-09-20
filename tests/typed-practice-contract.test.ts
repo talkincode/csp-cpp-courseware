@@ -8,8 +8,6 @@ const lessonsRoot = `${projectRoot}/lessons`;
 // 已经完成迁移的课件要一直守住完整契约；还没迁移的在下面显式登记，清单必须和现场精确一致——
 // 这样「补完一课却忘了从清单里划掉」和「新写一课却没有输入框」都会当场失败。
 const pendingTypedPractice = [
-  "s3-07",
-  "s3-08",
   "s4-01",
   "s4-02",
   "s4-03",

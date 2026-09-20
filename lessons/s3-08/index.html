@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(280px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1339,6 +1379,30 @@
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
+            <div id="dpMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在亲手把转移那一行敲出来：第 <span class="inline-code">i</span> 级只能从 <span class="inline-code">i - 1</span> 走 1 级上来，或者从 <span class="inline-code">i - 2</span> 一次走 2 级上来，两类走法都要 <button type="button" class="faq-term" data-faq="dp-transition">转移</button> 过来。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="爬楼梯的脚手架，只留一空">
+                <ol>
+                  <li>int dp[50];</li>
+                  <li>dp[1] = 1;  dp[2] = 2;  // 初值必须先写</li>
+                  <li>for (int i = 3; i &lt;= n; i++) {</li>
+                  <li class="focus-line">  <input id="dpInput" class="micro-input" type="text" value="" placeholder="dp[i] = dp[i - _] + dp[i - _]" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写出第 i 级的转移那一行" />;   // 由前两级推出来</li>
+                  <li>}</li>
+                  <li>cout &lt;&lt; dp[n];</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="转移语句的检查与兜底">
+                <button id="dpCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="dpHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="dpRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="dpResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="dpHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="dpRef" class="micro-ref" hidden>  dp[i] = dp[i - 1] + dp[i - 2]; // i=3 时就是 dp[3] = dp[2] + dp[1] = 3</pre>
+            </div>
+
           <section class="step-panel" data-panel="2" hidden>
             <h2>任务 3：核对初值，并认出忘写初值会错</h2>
             <p class="step-lead">
@@ -1478,6 +1542,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        dpDraft: "",
+        dpTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1572,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const dpMicro = document.querySelector("#dpMicro");
+      const dpInput = document.querySelector("#dpInput");
+      const dpHint = document.querySelector("#dpHint");
+      const dpRef = document.querySelector("#dpRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1599,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            dpDraft: typeof stored.dpDraft === "string" ? stored.dpDraft : "",
+            dpTyped: stored.dpTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1680,49 @@
         return state.precedenceSolved && state.parensSolved;
       }
 
+      function normalizeDpInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "").replace(/;$/, "");
+      }
+
+      function checkDpTransition(raw) {
+        const text = normalizeDpInput(raw);
+        if (!text) return { ok: false, message: "先在空里写出转移那一行：第 i 级由前面已经算好的格子推出来。" };
+        if (/[（），；：、。！？［］【】＝＋－×＊．·]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：方括号、等号、加号都要敲半角 [ ] = +。" };
+        if (text === "dp[i]=dp[i-1]+dp[i-2]") return { ok: true, message: "" };
+        if (/^dp\[i\+1\]=/.test(text))
+          return { ok: false, message: "循环变量是 i，这一空要填的是 dp[i] 那一格；写成 dp[i + 1] 会跳过第 i 级。" };
+
+        // 等号右边出现 dp[i] 说明这一格自己还没算出来就被用了。
+        const rhs = text.includes("=") ? text.slice(text.indexOf("=") + 1) : "";
+        if (rhs.includes("dp[i]"))
+          return { ok: false, message: "等号右边出现了 dp[i]：这一格自己还没算出来。右边只能用已经先算好的 dp[i - 1] 和 dp[i - 2]。" };
+        if (/^dp\[i\]=dp\[i-1\]\*dp\[i-2\]$/.test(text))
+          return { ok: false, message: "乘号用错了：两类走法要相加，写成 dp[i] = dp[i - 1] + dp[i - 2]。" };
+        if (/^dp\[i\]=dp\[i-1\]\+dp\[i-1\]$/.test(text))
+          return { ok: false, message: "i - 1 用了两次：从 i - 2 一次走 2 级也是一种走法，两项都要有，写成 dp[i] = dp[i - 1] + dp[i - 2]。" };
+        if (/^dp\[i\]=dp\[i-1\]\+dp\[i-2\]\+1$/.test(text))
+          return { ok: false, message: "多加了一个 + 1：走到第 i 级只有“从 i - 1 走 1 级”和“从 i - 2 走 2 级”两类，没有别的。" };
+        if (!text.includes("dp[i-2]"))
+          return { ok: false, message: "少了一项：从 i - 2 一次走 2 级也是一种走法，两项都要加。" };
+        if (!text.startsWith("dp[i]="))
+          return { ok: false, message: "等号左边要写 dp[i]：这一空填的是第 i 级那一格。" };
+
+        return { ok: false, message: "这一空要写成 dp[i] = dp[i - 1] + dp[i - 2]：前两级的方法数加起来。" };
+      }
+
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [
+          state.formulasMatched,
+          state.evenChecked && state.dpTyped,
+          conceptSolved(),
+          state.quizSubmitted,
+        ].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        // 任务 2 的下一步必须亲手写对转移那一行才点亮：光点三步按钮不算学会。
+        return [true, state.formulasMatched, state.evenChecked && state.dpTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1772,6 +1881,11 @@
           variableMeta.textContent = "先点“初值：dp[1] = 1”。";
           flowFeedback.textContent = "";
         }
+
+        if (dpMicro) dpMicro.hidden = !state.evenChecked;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (dpInput && document.activeElement !== dpInput) dpInput.value = state.dpDraft ?? "";
+        dpInput?.classList.toggle("is-correct", state.dpTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2142,72 @@
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：dp[1] = 1，dp[2] = 2，dp[3] = 3。现在在下面的空里亲手写出转移那一行。");
+        announce("前三步手算完了。现在亲手写出转移那一行：第 i 级由前面两格加起来。");
+        playSound("calm");
+      });
+
+      dpInput?.addEventListener("input", (event) => {
+        state.dpDraft = event.target.value;
+        state.dpTyped = false;
+        dpInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#dpCheckButton")?.addEventListener("click", () => {
+        const result = checkDpTransition(state.dpDraft);
+        if (!result.ok) {
+          showFeedback(dpHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          dpInput?.classList.add("is-wrong");
+          return;
+        }
+        dpInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(dpHint, result.message);
+        if (!state.dpTyped) {
+          state.dpTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：dp[i] = dp[i - 1] + dp[i - 2] 这一行是你亲手写的。下一步看初值和 n=1。");
+        }
+      });
+
+      document.querySelector("#dpHintButton")?.addEventListener("click", () => {
+        const text = normalizeDpInput(state.dpDraft);
+        const hint = !text
+          ? "要写的是 dp[i] = dp[i - 1] + dp[i - 2]：前面那两格的方法数加起来。"
+          : text.includes("dp[i")
+            ? "已经提到 dp[i] 了。检查三样：等号左边是 dp[i]、右边有 dp[i - 1] 和 dp[i - 2]、中间用加号。"
+            : "这一空要的是 dp[i]：第 i 级只能从第 i - 1 级走 1 级，或从第 i - 2 级走 2 级上来。";
+        showFeedback(dpHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#dpRefButton")?.addEventListener("click", () => {
+        if (dpRef) dpRef.hidden = !dpRef.hidden;
+        announce(dpRef && !dpRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#dpResetButton")?.addEventListener("click", () => {
+        state.dpDraft = "";
+        state.dpTyped = false;
+        if (dpHint) dpHint.textContent = "";
+        if (dpRef) dpRef.hidden = true;
+        dpInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (dpInput) dpInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：dp[1] = 1，dp[2] = 2，dp[3] = 3。下一步看初值和 n=1。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
