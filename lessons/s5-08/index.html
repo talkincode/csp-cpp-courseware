@@ -741,8 +741,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1481,10 +1489,17 @@
           "no-plan-needed": "只标出薄弱模块还不够：如果不安排具体复习时间，薄弱模块大概率还是薄弱，赛前才发现就来不及了。",
         },
       };
+      const courseObjectives = [
+        "整理个人知识地图",
+        "完成赛前检查清单",
+        "明确 CSP-J 后的学习边界",
+      ];
+
       const questionPool = [
         {
           id: "why-knowledge-map-first",
           courseId: "S5-08",
+          objectiveIndex: 0,
           objective: "整理个人知识地图",
           difficulty: "required",
           type: "choice",
@@ -1497,6 +1512,7 @@
         {
           id: "weak-module-must-be-specific",
           courseId: "S5-08",
+          objectiveIndex: 0,
           objective: "标注薄弱模块并安排复习",
           difficulty: "required",
           type: "choice",
@@ -1509,6 +1525,7 @@
         {
           id: "pre-contest-checklist-purpose",
           courseId: "S5-08",
+          objectiveIndex: 1,
           objective: "完成赛前检查清单",
           difficulty: "required",
           type: "choice",
@@ -1521,6 +1538,7 @@
         {
           id: "weak-module-priority-order",
           courseId: "S5-08",
+          objectiveIndex: 0,
           objective: "标注薄弱模块并安排复习",
           difficulty: "recommended",
           type: "choice",
@@ -1533,6 +1551,7 @@
         {
           id: "csp-s-boundary-meaning",
           courseId: "S5-08",
+          objectiveIndex: 2,
           objective: "明确 CSP-J 后的学习边界",
           difficulty: "required",
           type: "choice",
@@ -1545,6 +1564,7 @@
         {
           id: "checklist-is-not-cram",
           courseId: "S5-08",
+          objectiveIndex: 1,
           objective: "完成赛前检查清单",
           difficulty: "recommended",
           type: "choice",
@@ -1557,6 +1577,7 @@
         {
           id: "knowledge-map-not-relearn-everything",
           courseId: "S5-08",
+          objectiveIndex: 0,
           objective: "整理个人知识地图",
           difficulty: "recommended",
           type: "choice",
@@ -2016,7 +2037,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -2031,10 +2053,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能整理知识地图、标出薄弱模块，也知道赛前清单和 CSP-S 边界该怎么处理。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能整理知识地图、标出薄弱模块，也知道赛前清单和 CSP-S 边界该怎么处理。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

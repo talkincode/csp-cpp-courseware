@@ -741,8 +741,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1477,10 +1485,17 @@
           "delete-fallback": "把验证交给评测机等于放弃证据：小数据上手算更快，也更安全。",
         },
       };
+      const courseObjectives = [
+        "按证据缩小错误范围",
+        "构造最小复现",
+        "记录修复原因",
+      ];
+
       const questionPool = [
         {
           id: "why-minimal-repro",
           courseId: "S5-02",
+          objectiveIndex: 1,
           objective: "能把一个错误缩小到小数据",
           difficulty: "required",
           type: "choice",
@@ -1493,6 +1508,7 @@
         {
           id: "why-debug-print",
           courseId: "S5-02",
+          objectiveIndex: 0,
           objective: "能写出验证假设的输出",
           difficulty: "required",
           type: "choice",
@@ -1505,6 +1521,7 @@
         {
           id: "why-not-guess-edit",
           courseId: "S5-02",
+          objectiveIndex: 2,
           objective: "能说明修复后重新测了什么",
           difficulty: "required",
           type: "choice",
@@ -1517,6 +1534,7 @@
         {
           id: "assert-idea-meaning",
           courseId: "S5-02",
+          objectiveIndex: 0,
           objective: "能写出验证假设的输出",
           difficulty: "recommended",
           type: "choice",
@@ -1529,6 +1547,7 @@
         {
           id: "diff-check-extra",
           courseId: "S5-02",
+          objectiveIndex: 1,
           objective: "能把一个错误缩小到小数据",
           difficulty: "recommended",
           type: "choice",
@@ -2023,7 +2042,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -2038,10 +2058,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能写流程卡、预留检查时间，并且知道不跳过样例。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能写流程卡、预留检查时间，并且知道不跳过样例。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

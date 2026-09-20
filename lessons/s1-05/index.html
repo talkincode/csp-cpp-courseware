@@ -701,8 +701,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1527,10 +1535,17 @@
           switch: "switch 是拓展，现在不用。必会先写 if / else if / else。",
         },
       };
+      const courseObjectives = [
+        "根据条件选择不同分支",
+        "正确组合比较与逻辑条件",
+        "覆盖等于边界的情况",
+      ];
+
       const questionPool = [
         {
           id: "three-way",
           courseId: "S1-05",
+          objectiveIndex: 0,
           objective: "根据条件选择不同分支",
           difficulty: "required",
           type: "choice",
@@ -1543,6 +1558,7 @@
         {
           id: "assignment-trap",
           courseId: "S1-05",
+          objectiveIndex: 1,
           objective: "不混淆 = 与 ==",
           difficulty: "required",
           type: "choice",
@@ -1555,6 +1571,7 @@
         {
           id: "boundary-60",
           courseId: "S1-05",
+          objectiveIndex: 2,
           objective: "覆盖等于边界的情况",
           difficulty: "required",
           type: "choice",
@@ -1567,6 +1584,7 @@
         {
           id: "else-if-order",
           courseId: "S1-05",
+          objectiveIndex: 0,
           objective: "能解释一个条件分支为何会执行",
           difficulty: "required",
           type: "choice",
@@ -1579,6 +1597,7 @@
         {
           id: "logical-and",
           courseId: "S1-05",
+          objectiveIndex: 1,
           objective: "正确组合比较与逻辑条件",
           difficulty: "recommended",
           type: "choice",
@@ -2080,7 +2099,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -2095,10 +2115,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能选对分支并分清 = 和 ==。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能选对分支并分清 = 和 ==。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

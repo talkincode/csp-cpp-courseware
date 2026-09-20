@@ -701,8 +701,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1457,10 +1465,17 @@
           switch: "两层都只管列，就没有“换行”。外层必须管行。",
         },
       };
+      const courseObjectives = [
+        "看懂二维重复过程",
+        "区分内外层循环职责",
+        "处理简单提前结束",
+      ];
+
       const questionPool = [
         {
           id: "nested-stars",
           courseId: "S1-07",
+          objectiveIndex: 0,
           objective: "看懂二维重复过程",
           difficulty: "required",
           type: "choice",
@@ -1478,6 +1493,7 @@
         {
           id: "outer-inner",
           courseId: "S1-07",
+          objectiveIndex: 1,
           objective: "区分内外层循环职责",
           difficulty: "required",
           type: "choice",
@@ -1490,6 +1506,7 @@
         {
           id: "inner-count",
           courseId: "S1-07",
+          objectiveIndex: 1,
           objective: "能解释每一层循环代表什么",
           difficulty: "required",
           type: "choice",
@@ -1502,6 +1519,7 @@
         {
           id: "zero-n",
           courseId: "S1-07",
+          objectiveIndex: 0,
           objective: "能输出 n 行 n 列的图案并理解边界",
           difficulty: "required",
           type: "choice",
@@ -1514,6 +1532,7 @@
         {
           id: "break-stop",
           courseId: "S1-07",
+          objectiveIndex: 2,
           objective: "能在找到目标后正确停止",
           difficulty: "recommended",
           type: "choice",
@@ -1947,7 +1966,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -1962,10 +1982,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能分清内外层并认识 break。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能分清内外层并认识 break。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

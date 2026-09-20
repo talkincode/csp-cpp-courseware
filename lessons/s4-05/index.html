@@ -741,8 +741,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1476,10 +1484,17 @@
           "one-binary-search": "二分查找只能判断某个值在不在，不能一次直接找出出现次数最多的分数，还是要先排序再扫描统计。",
         },
       };
+      const courseObjectives = [
+        "根据数据范围选择工具",
+        "处理重复数据",
+        "在排序后继续扫描或查找",
+      ];
+
       const questionPool = [
         {
           id: "why-range-decides-tool",
           courseId: "S4-05",
+          objectiveIndex: 0,
           objective: "能按范围选择数组或映射方案",
           difficulty: "required",
           type: "choice",
@@ -1492,6 +1507,7 @@
         {
           id: "why-sort-before-scan",
           courseId: "S4-05",
+          objectiveIndex: 2,
           objective: "能说明何时用排序",
           difficulty: "required",
           type: "choice",
@@ -1504,6 +1520,7 @@
         {
           id: "duplicate-tie-rule",
           courseId: "S4-05",
+          objectiveIndex: 1,
           objective: "能处理重复元素",
           difficulty: "required",
           type: "choice",
@@ -1516,6 +1533,7 @@
         {
           id: "tie-break-rule",
           courseId: "S4-05",
+          objectiveIndex: 1,
           objective: "能处理重复元素",
           difficulty: "recommended",
           type: "choice",
@@ -1528,6 +1546,7 @@
         {
           id: "range-vs-hashmap",
           courseId: "S4-05",
+          objectiveIndex: 0,
           objective: "能按范围选择数组或映射方案",
           difficulty: "recommended",
           type: "choice",
@@ -1978,7 +1997,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -1993,10 +2013,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能按数据范围选工具，并追踪出 90 78 85 90 85 90 排序后的最高频分数。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能按数据范围选工具，并追踪出 90 78 85 90 85 90 排序后的最高频分数。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

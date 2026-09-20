@@ -741,8 +741,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1472,10 +1480,17 @@
           switch: "每次重新相加也能算对，但 n 和 q 到 1e5 时太慢。必会是先填表再查询。",
         },
       };
+      const courseObjectives = [
+        "预处理连续数据",
+        "用公式快速查询区间和",
+        "避免下标偏移错误",
+      ];
+
       const questionPool = [
         {
           id: "what-prefix",
           courseId: "S3-04",
+          objectiveIndex: 0,
           objective: "说出前缀和的含义",
           difficulty: "required",
           type: "choice",
@@ -1488,6 +1503,7 @@
         {
           id: "range-formula",
           courseId: "S3-04",
+          objectiveIndex: 1,
           objective: "用公式查询区间和",
           difficulty: "required",
           type: "choice",
@@ -1500,6 +1516,7 @@
         {
           id: "trace-prefix",
           courseId: "S3-04",
+          objectiveIndex: 0,
           objective: "构造前缀和数组",
           difficulty: "required",
           type: "choice",
@@ -1512,6 +1529,7 @@
         {
           id: "query-two-four",
           courseId: "S3-04",
+          objectiveIndex: 1,
           objective: "查询任意连续区间",
           difficulty: "recommended",
           type: "choice",
@@ -1524,6 +1542,7 @@
         {
           id: "first-index",
           courseId: "S3-04",
+          objectiveIndex: 2,
           objective: "处理从第一个元素开始",
           difficulty: "recommended",
           type: "choice",
@@ -1980,7 +1999,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -1995,10 +2015,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能写前缀和，并查询任意区间。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能写前缀和，并查询任意区间。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

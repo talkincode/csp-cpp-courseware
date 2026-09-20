@@ -741,8 +741,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1474,10 +1482,17 @@
           "only-skip": "永远跳过会漏掉选中当前位置更优的情况，比如示例中要选第 4 个位置（值 6）才能拿到最大值 13。",
         },
       };
+      const courseObjectives = [
+        "识别阶段性最优决策",
+        "写出状态转移",
+        "处理不可达或初始状态",
+      ];
+
       const questionPool = [
         {
           id: "why-state-first",
           courseId: "S4-06",
+          objectiveIndex: 0,
           objective: "能列状态表",
           difficulty: "required",
           type: "choice",
@@ -1490,6 +1505,7 @@
         {
           id: "pick-or-skip-formula",
           courseId: "S4-06",
+          objectiveIndex: 1,
           objective: "能写转移",
           difficulty: "required",
           type: "choice",
@@ -1502,6 +1518,7 @@
         {
           id: "trace-dp-3746",
           courseId: "S4-06",
+          objectiveIndex: 1,
           objective: "能写转移",
           difficulty: "required",
           type: "choice",
@@ -1514,6 +1531,7 @@
         {
           id: "boundary-i-minus-2",
           courseId: "S4-06",
+          objectiveIndex: 2,
           objective: "能检查不可达状态",
           difficulty: "required",
           type: "choice",
@@ -1526,6 +1544,7 @@
         {
           id: "why-dp-faster",
           courseId: "S4-06",
+          objectiveIndex: 0,
           objective: "能列状态表",
           difficulty: "recommended",
           type: "choice",
@@ -1994,7 +2013,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -2009,10 +2029,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能定义状态、写出转移式子，并推出 3 7 4 6 这组数据的 dp[3] = 13。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能定义状态、写出转移式子，并推出 3 7 4 6 这组数据的 dp[3] = 13。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

@@ -701,8 +701,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1457,10 +1465,17 @@
           switch: "do-while 是拓展，现在不用。次数未知时先认识 while。",
         },
       };
+      const courseObjectives = [
+        "用循环解决重复计算",
+        "理解循环变量的变化",
+        "主动检查死循环风险",
+      ];
+
       const questionPool = [
         {
           id: "for-sum",
           courseId: "S1-06",
+          objectiveIndex: 0,
           objective: "用循环解决重复计算",
           difficulty: "required",
           type: "choice",
@@ -1473,6 +1488,7 @@
         {
           id: "loop-count",
           courseId: "S1-06",
+          objectiveIndex: 1,
           objective: "能控制循环次数",
           difficulty: "required",
           type: "choice",
@@ -1485,6 +1501,7 @@
         {
           id: "infinite",
           courseId: "S1-06",
+          objectiveIndex: 2,
           objective: "能避免死循环",
           difficulty: "required",
           type: "choice",
@@ -1497,6 +1514,7 @@
         {
           id: "zero-n",
           courseId: "S1-06",
+          objectiveIndex: 0,
           objective: "能求连续和并理解循环边界",
           difficulty: "required",
           type: "choice",
@@ -1509,6 +1527,7 @@
         {
           id: "while-unknown",
           courseId: "S1-06",
+          objectiveIndex: 0,
           objective: "在次数未知时选择 while",
           difficulty: "recommended",
           type: "choice",
@@ -1942,7 +1961,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -1957,10 +1977,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能用 for 累加并避免死循环。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能用 for 累加并避免死循环。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

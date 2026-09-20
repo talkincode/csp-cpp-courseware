@@ -1191,6 +1191,32 @@ try {
       restored.inputValue === lesson.good && restored.inputCorrect === true,
       `value=${String(restored.inputValue)}`,
     );
+
+    // 抽出来的题不能只丢一句自由文本：检查目标要是本课学习目标的原文，
+    // 同时另起一行保留“这道题具体查什么”。模板写坏（例如渲染成 undefined）只有真渲染才看得出。
+    const quizBinding = await client.evaluateJson<any>(`(() => {
+      const questions = [...document.querySelectorAll("#quizForm section.question")];
+      const text = (node) => (node ? node.textContent.trim() : "");
+      return JSON.stringify({
+        goals: typeof courseObjectives === "undefined" ? null : courseObjectives,
+        objectives: questions.map((question) => text(question.querySelector(".question-objective"))),
+        checkpoints: questions.map((question) => text(question.querySelector(".question-checkpoint"))),
+      });
+    })()`);
+
+    check(
+      `${lesson.directory} 抽出的题都把检查目标绑到本课学习目标原文`,
+      Array.isArray(quizBinding.goals) &&
+        quizBinding.objectives.length === 3 &&
+        quizBinding.objectives.every((line: string) => quizBinding.goals.includes(line.replace("检查目标：", ""))),
+      `目标 ${JSON.stringify(quizBinding.goals)} 显示 ${JSON.stringify(quizBinding.objectives[0] ?? "")}`,
+    );
+
+    check(
+      `${lesson.directory} 每题都保留一句更细的本题检查说明`,
+      quizBinding.checkpoints.length === 3 && quizBinding.checkpoints.every((line: string) => /^本题检查：\S/.test(line)),
+      `显示 ${JSON.stringify(quizBinding.checkpoints[0] ?? "")}`,
+    );
   }
 } catch (error) {
   failure = error;
