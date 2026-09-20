@@ -128,6 +128,18 @@ test("S2-07 wires enumeration and simulation FAQ terms into the guided lesson", 
   await expectLessonFaqWiring("s2-07", ["enumeration", "enumeration-range", "simulation"]);
 });
 
+test("S2-07 links the modulo term used by its typed micro practice", async () => {
+  const manifest = (await Bun.file(`${import.meta.dir}/../lessons/s2-07/lesson.json`).json()) as {
+    faqTermIds: string[];
+  };
+  const lesson = await Bun.file(`${import.meta.dir}/../lessons/s2-07/index.html`).text();
+
+  expect(manifest.faqTermIds).toContain("modulo");
+  expect(lesson).toContain('data-faq="modulo"');
+  expect(lesson).toMatch(/data-faq-terms="[^"]*\bmodulo\b[^"]*"/);
+  expect(lesson).toContain("i % 2 == 0");
+});
+
 test("S2-08 wires complexity and test-point FAQ terms into the guided lesson", async () => {
   await expectLessonFaqWiring("s2-08", ["operation-count", "linear-time", "test-point"]);
 });

@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 /**
- * S2-01 / S2-02 / S2-03 / S2-04 / S2-05 / S2-06 微编程输入框浏览器自动化复验（零依赖）。
+ * S2-01 至 S2-08 微编程输入框浏览器自动化复验（零依赖）。
  *
  * 用法：bun run e2e:s2-typed
  *
- * 脚本会自行启动开发服务器与无头 Chrome，验证这六课新加的「只读脚手架 + 一空」
+ * 脚本会自行启动开发服务器与无头 Chrome，验证这八课新加的「只读脚手架 + 一空」
  * 微编程练习：出现时机、真实键盘输入、错误指正、兜底按钮、草稿恢复与提交后解锁。
  * 它不在 `bun test` 范围内：需要真实浏览器，属于体验验收，不是单元测试。
  *
@@ -53,7 +53,7 @@ type LessonConfig = {
   scenario: string;
 };
 
-// 六课各自的一空答案与应当出现的指正；fullWidth / outOfBounds 用来验证失败路径。
+// 八课各自的一空答案与应当出现的指正；fullWidth / outOfBounds 用来验证失败路径。
 const lessons: LessonConfig[] = [
   {
     directory: "s2-01",
@@ -180,6 +180,48 @@ const lessons: LessonConfig[] = [
     outOfBoundsMessage: "相邻",
     blankWant: "swap(",
     scenario: "写出相邻交换",
+  },
+  {
+    directory: "s2-07",
+    storageKey: "csp-cpp-s2-07-progress-v1",
+    micro: "enumMicro",
+    input: "enumInput",
+    check: "enumCheckButton",
+    hint: "enumHintButton",
+    ref: "enumRefButton",
+    reset: "enumResetButton",
+    hintPanel: "enumHint",
+    refPanel: "enumRef",
+    typedField: "enumTyped",
+    draftField: "enumDraft",
+    good: "if (i % 2 == 0) evenCount++;",
+    fullWidth: "if（i ％ 2 == 0）evenCount＋＋；",
+    fullWidthHint: "半角",
+    outOfBounds: "evenCount++;",
+    outOfBoundsMessage: "漏分支",
+    blankWant: "if (",
+    scenario: "写出遇到偶数时的判断与更新",
+  },
+  {
+    directory: "s2-08",
+    storageKey: "csp-cpp-s2-08-progress-v1",
+    micro: "opsMicro",
+    input: "opsInput",
+    check: "opsCheckButton",
+    hint: "opsHintButton",
+    ref: "opsRefButton",
+    reset: "opsResetButton",
+    hintPanel: "opsHint",
+    refPanel: "opsRef",
+    typedField: "opsTyped",
+    draftField: "opsDraft",
+    good: "n * n",
+    fullWidth: "n ＊ n",
+    fullWidthHint: "半角",
+    outOfBounds: "n + n",
+    outOfBoundsMessage: "相乘",
+    blankWant: "n *",
+    scenario: "写出双层循环的次数算式",
   },
 ];
 

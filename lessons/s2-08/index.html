@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,28 @@
               <div class="box-meta" id="variableMeta">先点“看 n=3 的单层循环，大约 3 次”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="opsMicro" hidden>
+              <p class="step-lead">
+                三步对照数完了，现在亲手把这个次数算式敲出来。两层循环套在一起，外层转一圈，内层都要整圈走完，所以是 <button type="button" class="faq-term" data-faq="quadratic-time">O(n²)</button>：大约 n 个 n 相加。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="双层循环操作次数的脚手架，只留一空">
+                <ol>
+                  <li>int n = 1000;</li>
+                  <li>for (int i = 0; i &lt; n; i++)</li>
+                  <li>  for (int j = 0; j &lt; n; j++) { /* 内层每圈都整圈走完 */ }</li>
+                  <li class="focus-line">int doubleLoopOps = <input id="opsInput" class="micro-input" type="text" value="" placeholder="n ? n" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="24" aria-label="用 n 写出双层循环大约做多少次" />;  // 用 n 写出这个次数</li>
+                  <li>// n = 3 时这里是 9，n = 1000 时是 1000000</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="双层循环操作次数的检查与兜底">
+                <button id="opsCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="opsHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="opsRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="opsResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="opsHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="opsRef" class="micro-ref" hidden>int doubleLoopOps = n * n; // 外层 n 次，内层每次再 n 次，所以大约 n × n</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1540,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        opsDraft: "",
+        opsTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1564,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const opsMicro = document.querySelector("#opsMicro");
+      const opsInput = document.querySelector("#opsInput");
+      const opsHint = document.querySelector("#opsHint");
+      const opsRef = document.querySelector("#opsRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1597,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            opsDraft: typeof stored.opsDraft === "string" ? stored.opsDraft : "",
+            opsTyped: stored.opsTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1813,33 @@
         }
       }
 
+      function normalizeOpsInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "").replace(/;$/, "");
+      }
+
+      function checkOpsFix(raw) {
+        const text = normalizeOpsInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下双层循环大约做多少次：外层转一圈，内层都要整圈走完。" };
+        if (/[（），；：、。！？［］【】％＝×＊＋－]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：乘号要敲半角的 *（Shift + 8），括号和分号也要半角。" };
+        if (text === "n*n") return { ok: true, message: "" };
+
+        if (text.includes("^"))
+          return { ok: false, message: "C++ 里的 ^ 是按位异或，不是乘方。这里要的是乘法 *。" };
+        if (/^pow\(/i.test(text)) return { ok: false, message: "调用 pow 还要记函数和头文件，现在用最直接的写法：n * n。" };
+        if (/^n\*n\*n$/.test(text)) return { ok: false, message: "这是三层循环的次数。这个脚手架只有两层：外面一层，里面一层。" };
+        if (/^n\+n$/.test(text))
+          return { ok: false, message: "两层是套在一起，不是并排：外层每转一圈，内层都整圈走完，所以次数要相乘。" };
+        if (/^2\*n$|^n\*2$/.test(text))
+          return { ok: false, message: "乘以 2 是把两层当成并排。套在一起时，外层每转一圈内层都走 n 次，所以要乘 n。" };
+        if (/^\d+\*\d+$/.test(text))
+          return { ok: false, message: "数字乘得没错，但这一空要用 n 写：n 换成别的值，算式还要照样能用。" };
+        if (text === "n") return { ok: false, message: "这只数了一层循环。里面还套着一层，两层都要走 n 次。" };
+        if (text.includes("n") && !text.includes("*"))
+          return { ok: false, message: "两层要相乘：写成 n 乘 n，中间用半角的 *。" };
+        return { ok: false, message: "这一空要写成 n * n：外层 n 次，内层每次再 n 次，把两层乘起来。" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1855,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "单层约 3 次，双层约 9 次";
           variableMeta.textContent = "n 再变大，9 会变成 n × n，差得更多。";
-          showFeedback(flowFeedback, "你已经数完 n=3 的两种写法。下一步按大 n 选写法和测试点。");
+          showFeedback(
+            flowFeedback,
+            state.opsTyped
+              ? "你已经数完 n=3 的两种写法，还亲手写出了双层的次数算式。下一步按大 n 选写法和测试点。"
+              : "你已经数完 n=3 的两种写法。现在在下面的空里亲手写出双层的次数算式：两层相乘。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "单层约 3 次，双层约 9 次";
           variableMeta.textContent = "3 × 3 = 9。下一步确认 n 变大后差得更多。";
@@ -1772,6 +1874,10 @@
           variableMeta.textContent = "先点“看 n=3 的单层循环，大约 3 次”。";
           flowFeedback.textContent = "";
         }
+
+        if (opsMicro) opsMicro.hidden = !state.evenChecked;
+        if (opsInput && document.activeElement !== opsInput) opsInput.value = state.opsDraft ?? "";
+        opsInput?.classList.toggle("is-correct", state.opsTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2129,80 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这次对照已经走完，可以进入下一任务。");
+          announce(
+            state.opsTyped
+              ? "这次对照已经数完，可以进入下一任务。"
+              : "结果确认过了。亲手把次数算式写进下面的空里就能继续。",
+          );
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：n=3 时单层约 3 次、双层约 9 次。下一步按大 n 选写法和测试点。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "结果确认过了：n=3 时单层约 3 次、双层约 9 次。现在在下面的空里亲手写出双层的次数算式。");
+        announce("单层大约 3 次，双层大约 9 次。现在亲手用 n 写出双层的次数算式：n * n。");
+        playSound("calm");
+      });
+
+      opsInput?.addEventListener("input", (event) => {
+        state.opsDraft = event.target.value;
+        state.opsTyped = false;
+        opsInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#opsCheckButton")?.addEventListener("click", () => {
+        const result = checkOpsFix(state.opsDraft);
+        if (!result.ok) {
+          showFeedback(opsHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          opsInput?.classList.add("is-wrong");
+          return;
+        }
+        opsInput?.classList.remove("is-wrong");
+        if (!state.opsTyped) {
+          state.opsTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：双层大约 n * n 次，这个算式是你亲手写出来的。下一步按大 n 选写法和测试点。");
+        }
+      });
+
+      document.querySelector("#opsHintButton")?.addEventListener("click", () => {
+        const text = normalizeOpsInput(state.opsDraft);
+        const hint = !text
+          ? "外层走 n 次，内层每次也走 n 次。要想“n 个 n 相加”写成哪个算式。"
+          : text.includes("*")
+            ? "已经有乘号了。检查两边是不是都用 n，中间是半角的 *，不要写成 n + n 或 n ^ 2。"
+            : "这一空要的是 n * n：两层套在一起，次数要相乘。";
+        showFeedback(opsHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#opsRefButton")?.addEventListener("click", () => {
+        if (opsRef) opsRef.hidden = !opsRef.hidden;
+        announce(opsRef && !opsRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#opsResetButton")?.addEventListener("click", () => {
+        state.opsDraft = "";
+        state.opsTyped = false;
+        if (opsHint) opsHint.textContent = "";
+        if (opsRef) opsRef.hidden = true;
+        opsInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (opsInput) opsInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
