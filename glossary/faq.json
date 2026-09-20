@@ -169,6 +169,20 @@
       ]
     },
     {
+      "id": "bool",
+      "term": "bool",
+      "aliases": ["布尔", "true", "false", "真", "假"],
+      "summary": "只有真、假两个值的类型。",
+      "answer": "`bool` 只有 `true`（真）和 `false`（假）两个值，用来记录“发生过没有”这类只有两种情况的事，例如访问标记 `visited[u]`。`if (visited[u])` 就是“如果它是真”。",
+      "remember": "bool 只有 true 和 false，if 直接拿它做判断。",
+      "links": [
+        {
+          "title": "布尔类型（cppreference）",
+          "url": "https://zh.cppreference.com/w/cpp/language/types"
+        }
+      ]
+    },
+    {
       "id": "assignment",
       "term": "赋值",
       "aliases": ["=", "赋值语句"],

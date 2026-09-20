@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(380px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,34 @@
               <div class="box-meta" id="variableMeta">先点“划分：写出每个子任务的范围”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="fallbackMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在把“保底方案”落成一行代码：读入 n 之后，先用 <button type="button" class="faq-term" data-faq="if">if</button> 判断这次的数据落在哪个子任务里——落在子任务 1 就交保底答案，然后立刻结束程序，别让后面还没调通的优化解法把保底分也弄丢。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="子任务保底方案的脚手架，只留一空">
+                <ol>
+                  <li>// 题目：满分 100 分。子任务 1：1 &lt;= n &lt;= 1000（30 分）；子任务 2：1 &lt;= n &lt;= 100000（70 分）</li>
+                  <li>// brute(n) 保底方案：暴力 O(n²)，只够过子任务 1（已写好，这里不展开）</li>
+                  <li>// fast(n)  冲刺方案：优化 O(n log n)，能过子任务 2（还没调通）</li>
+                  <li>int main() {</li>
+                  <li>    int n;</li>
+                  <li>    cin &gt;&gt; n;</li>
+                  <li class="focus-line">    <input id="fallbackInput" class="micro-input" type="text" value="" placeholder="if (____) { ... }" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="70" aria-label="写出子任务 1 的保底分支那一行" />   // 落在子任务 1 就交保底，稳稳拿 30 分</li>
+                  <li>    cout &lt;&lt; fast(n);          // 子任务 2：n 更大，只能靠优化解法</li>
+                  <li>    return 0;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="保底分支那一行的检查与兜底">
+                <button id="fallbackCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="fallbackHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="fallbackRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="fallbackResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="fallbackHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="fallbackRef" class="micro-ref" hidden>    if (n &lt;= 1000) { cout &lt;&lt; brute(n); return 0; }   // 子任务 1 的范围：先交保底答案，再 return 0; 结束程序</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1546,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        fallbackDraft: "",
+        fallbackTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1570,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const fallbackMicro = document.querySelector("#fallbackMicro");
+      const fallbackInput = document.querySelector("#fallbackInput");
+      const fallbackHint = document.querySelector("#fallbackHint");
+      const fallbackRef = document.querySelector("#fallbackRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1603,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            fallbackDraft: typeof stored.fallbackDraft === "string" ? stored.fallbackDraft : "",
+            fallbackTyped: stored.fallbackTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1604,16 +1680,96 @@
         });
       }
 
+      function normalizeFallbackInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkFallbackBranch(raw) {
+        const text = normalizeFallbackInput(raw);
+        if (!text)
+          return {
+            ok: false,
+            message: "先在空里写出子任务 1 的保底分支：n 落在子任务 1 的范围里，就输出暴力解的答案并结束程序。",
+          };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞]/.test(text))
+          return {
+            ok: false,
+            message: "用了中文或全角符号哦：小括号、花括号、小于等于、流操作符和分号都要敲半角 ( ) { } <= << ; 。",
+          };
+
+        if (/^if\(n<=1000\)\{cout<<brute\(n\);return0;\}$/.test(text)) return { ok: true, message: "" };
+        if (/^if\(n<1001\)\{cout<<brute\(n\);return0;\}$/.test(text)) return { ok: true, message: "" };
+        if (/^if\(n<=1000\)\{cout<<brute\(n\)return0\}$/.test(text))
+          return {
+            ok: false,
+            message: "是不是漏了半角分号呀？cout 那一条和 return 0 那一条都要用 ; 结尾，少一个都编译不过。",
+          };
+        if (/^if\(n<=1000\)\{cout<<brute\(n\);\}$/.test(text))
+          return {
+            ok: false,
+            message: "少了 return 0; ：打完保底答案还要结束程序，否则会继续走到子任务 2 的优化解法上。",
+          };
+        if (/^if\(n<=1000\)cout<<brute\(n\);return0;$/.test(text))
+          return {
+            ok: false,
+            message: "少了花括号 { } ：保底分支里有两件事——输出答案和结束程序，要用花括号把它们包成一组。",
+          };
+        if (/^if\(n<=1000\)\{return0;cout<<brute\(n\);\}$/.test(text))
+          return {
+            ok: false,
+            message: "两句的顺序反了：要先 cout << brute(n); 输出保底答案，再 return 0; 结束程序，否则答案还没打印就退出了。",
+          };
+        if (/^if\(n>=1000\)\{cout<<brute\(n\);return0;\}$/.test(text))
+          return { ok: false, message: "不等号方向反了：子任务 1 是 n 不超过 1000，要写 n <= 1000 。" };
+        if (/^if\(n<=100000\)\{cout<<brute\(n\);return0;\}$/.test(text))
+          return {
+            ok: false,
+            message: "这是子任务 2 的上限：暴力解在 n 到 10 万时会超时，保底条件要写子任务 1 的上限 1000 。",
+          };
+        if (/^if\(n<1000\)\{cout<<brute\(n\);return0;\}$/.test(text))
+          return { ok: false, message: "少了等号：子任务 1 的边界包含 1000 本身，要写 n <= 1000 。" };
+        if (/^if\(n<=100\)\{cout<<brute\(n\);return0;\}$/.test(text))
+          return { ok: false, message: "边界数字不对：子任务 1 的范围是 n <= 1000 ，不是 100 。" };
+        if (/^if\(n<=1000\)\{cout<<fast\(n\);return0;\}$/.test(text))
+          return {
+            ok: false,
+            message: "这一空要交的是保底方案 brute(n) ：fast(n) 是还没调通的冲刺解，用它就不是保底了。",
+          };
+        if (/^while\(n<=1000\)\{cout<<brute\(n\);return0;\}$/.test(text))
+          return { ok: false, message: "范围判断要用 if 而不是 while ：n 读进来以后只需要判断一次。" };
+        if (/^cout<<brute\(n\);return0;$/.test(text))
+          return {
+            ok: false,
+            message: "少了判断范围：要先写 if (n <= 1000) 确认这次的数据落在子任务 1 里，再交保底答案。",
+          };
+        if (/^if\(n<=1000\)/.test(text))
+          return {
+            ok: false,
+            message: "范围判断对了：大括号里要按顺序写 cout << brute(n); 和 return 0; 两条语句。",
+          };
+        if (/^if\(/.test(text))
+          return { ok: false, message: "范围要写成 n <= 1000 ：这是子任务 1 的上限，也就是那 30 分对应的数据范围。" };
+        if (/^while\(/.test(text))
+          return { ok: false, message: "这里要用 if 判断范围，不是 while 循环：读入之后只需要判断一次。" };
+
+        return {
+          ok: false,
+          message: "这一空要写成 if (n <= 1000) { cout << brute(n); return 0; } ：n 落在子任务 1 的范围里，就先交保底答案并结束程序。",
+        };
+      }
+
       function conceptSolved() {
         return state.methodSolved && state.tieRuleSolved;
       }
 
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.toolsMatched, state.transitioned && state.fallbackTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.fallbackTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1772,6 +1928,11 @@
           variableMeta.textContent = "先点“划分：写出每个子任务的范围”。";
           flowFeedback.textContent = "";
         }
+
+        if (fallbackMicro) fallbackMicro.hidden = !state.transitioned;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (fallbackInput && document.activeElement !== fallbackInput) fallbackInput.value = state.fallbackDraft ?? "";
+        fallbackInput?.classList.toggle("is-correct", state.fallbackTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2189,74 @@
         }
 
         state.transitioned = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：子任务划分、保底方案、冲刺尝试都对上了，至少稳拿 30 分。现在在下面的空里亲手写出保底分支那一行。");
+        announce("三步已经走完。现在亲手写出保底分支那一行：n 落在子任务 1 的范围里，就先交暴力的答案并结束程序。");
+        playSound("calm");
+      });
+
+      fallbackInput?.addEventListener("input", (event) => {
+        state.fallbackDraft = event.target.value;
+        state.fallbackTyped = false;
+        fallbackInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#fallbackCheckButton")?.addEventListener("click", () => {
+        const result = checkFallbackBranch(state.fallbackDraft);
+        if (!result.ok) {
+          showFeedback(fallbackHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          fallbackInput?.classList.add("is-wrong");
+          return;
+        }
+        fallbackInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(fallbackHint, result.message);
+        if (!state.fallbackTyped) {
+          state.fallbackTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：保底分支那一行是你亲手写的。下一步确定先易后难的顺序和检查时间安排。");
+        }
+      });
+
+      document.querySelector("#fallbackHintButton")?.addEventListener("click", () => {
+        const text = normalizeFallbackInput(state.fallbackDraft);
+        const hint = !text
+          ? "要写的是 if (n <= 1000) { cout << brute(n); return 0; } ：先判断落在子任务 1，再交保底答案并结束程序。"
+          : !text.includes("if")
+            ? "先写 if 开始判断：这次的数据落在哪个子任务里，是保底和冲刺的分岔口。"
+            : text.includes("fast")
+              ? "保底分支里要交的是 brute(n) ：fast(n) 是还没调通的冲刺解，放进去就不是保底了。"
+              : "已经有 if 了。检查四样：范围写 n <= 1000（子任务 1）；答案是 brute(n)；打完要 return 0; ；每一句都要半角分号。";
+        showFeedback(fallbackHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#fallbackRefButton")?.addEventListener("click", () => {
+        if (fallbackRef) fallbackRef.hidden = !fallbackRef.hidden;
+        announce(fallbackRef && !fallbackRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#fallbackResetButton")?.addEventListener("click", () => {
+        state.fallbackDraft = "";
+        state.fallbackTyped = false;
+        if (fallbackHint) fallbackHint.textContent = "";
+        if (fallbackRef) fallbackRef.hidden = true;
+        fallbackInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (fallbackInput) fallbackInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：划分、保底、冲刺都走完了，至少稳拿 30 分。下一步看做题顺序和检查时间安排。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

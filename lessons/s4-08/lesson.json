@@ -19,5 +19,5 @@
     "owner": "external",
     "status": "not-managed-in-this-repository"
   },
-  "faqTermIds": ["subtask", "partial-score", "fallback-solution", "easy-first-order", "complexity-downgrade"]
+  "faqTermIds": ["subtask", "partial-score", "fallback-solution", "easy-first-order", "complexity-downgrade", "if"]
 }
