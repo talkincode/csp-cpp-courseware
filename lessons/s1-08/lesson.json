@@ -11,10 +11,10 @@
     "status": "implemented",
     "mode": "randomized-choice",
     "questionCount": 3,
-    "questionBankSize": 5,
+    "questionBankSize": 6,
     "choiceDominant": true,
-    "objectiveCoverage": { "assessed": 2, "total": 3 },
-    "uncoveredObjectives": [1],
+    "objectiveCoverage": { "assessed": 3, "total": 3 },
+    "uncoveredObjectives": [],
     "reviewState": "awaiting-user-review"
   },
   "video": {
