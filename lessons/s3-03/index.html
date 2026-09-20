@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1339,6 +1379,29 @@
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
+            <div id="midMicro" hidden>
+              <p class="step-lead">
+                区间收缩走完了，现在亲手把算 <button type="button" class="faq-term" data-faq="midpoint">中点</button> 的那一行敲出来：中点在 <button type="button" class="faq-term" data-faq="left-right-bound">左右边界</button> 的正中间。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="二分中点写法的脚手架，只留一空">
+                <ol>
+                  <li>while (left &lt;= right) {</li>
+                  <li class="focus-line">  int mid = <input id="midInput" class="micro-input" type="text" value="" placeholder="(left ? right) / 2" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="用 left 和 right 写出中点算式" />;   // 取中点</li>
+                  <li>  if (a[mid] &lt; x) left = mid + 1;</li>
+                  <li>  else if (a[mid] &gt; x) right = mid - 1;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="中点算式的检查与兜底">
+                <button id="midCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="midHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="midRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="midResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="midHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="midRef" class="micro-ref" hidden>  int mid = (left + right) / 2; // left = 0、right = 4 时 mid = 2，正好落在中间</pre>
+            </div>
+
           <section class="step-panel" data-panel="2" hidden>
             <h2>任务 3：测首尾答案，并看区间不缩小会怎样</h2>
             <p class="step-lead">
@@ -1480,6 +1543,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        midDraft: "",
+        midTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1502,6 +1567,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const midMicro = document.querySelector("#midMicro");
+      const midInput = document.querySelector("#midInput");
+      const midHint = document.querySelector("#midHint");
+      const midRef = document.querySelector("#midRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1531,6 +1600,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            midDraft: typeof stored.midDraft === "string" ? stored.midDraft : "",
+            midTyped: stored.midTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1745,6 +1816,33 @@
         }
       }
 
+      function normalizeMidInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "").replace(/;$/, "");
+      }
+
+      function checkMidFix(raw) {
+        const text = normalizeMidInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下中点算式：把左右边界加起来，再取一半。" };
+        if (/[（），；：、。！？［］【】＝×＊＋－]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：括号、加号和除号都要敲半角 ( ) + /。" };
+        if (text === "(left+right)/2") return { ok: true, message: "" };
+        if (text === "left+(right-left)/2")
+          return { ok: true, message: "写成了 left + (right - left) / 2，结果和中点一样，还更不容易超出范围，这是拓展写法。" };
+
+        if (/^left\+right\/2$/.test(text))
+          return { ok: false, message: "少了括号：不加括号会先算 right / 2，中点就偏了。要把加法包起来：(left + right) / 2。" };
+        if (/^\(left\+right\)\*2$/.test(text))
+          return { ok: false, message: "乘 2 会把结果顶到区间外面。中点必须在左右边界的中间，所以要除以 2，不是乘 2。" };
+        if (/^\(left-right\)\/2$/.test(text) || /^\(right-left\)\/2$/.test(text))
+          return { ok: false, message: "相减只得到两个边界相差多少的一半。中点是两端相加再取一半。" };
+        if (/^\(left\+right\)$/.test(text)) return { ok: false, message: "还差一步：两端加起来之后要除以 2，写成 / 2。" };
+        if (/^\(left\+right\+1\)\/2$/.test(text))
+          return { ok: false, message: "先写最直白的中点：两端相加除以 2，这一空不加 1。" };
+        if (text.includes("left") && text.includes("right") && !text.includes("/"))
+          return { ok: false, message: "有左右边界了，还差取一半：要除以 2。" };
+        return { ok: false, message: "这一空要写成 (left + right) / 2：中点在左右边界的正中间。" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1760,7 +1858,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "找到 7，并确认 1 和 9 也要能测到";
           variableMeta.textContent = "left=3 后看到 a[3]=7；首尾答案不能漏。";
-          showFeedback(flowFeedback, "你已经按顺序缩小区间。下一步测首尾，并看区间不缩小会怎样。");
+          showFeedback(
+            flowFeedback,
+            state.midTyped
+              ? "你已经按顺序缩小区间，还亲手写出了中点算式。下一步测首尾，并看区间不缩小会怎样。"
+              : "你已经按顺序缩小区间。现在在下面的空里亲手写出中点算式：左右边界加起来再取一半。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "left = 3，right = 4，a[3] = 7";
           variableMeta.textContent = "已经找到 7。下一步确认首尾 1 和 9 也必须能查到。";
@@ -1774,6 +1877,10 @@
           variableMeta.textContent = "先点“看中点 a[2] = 5，5 < 7，left 移到 3”。";
           flowFeedback.textContent = "";
         }
+
+        if (midMicro) midMicro.hidden = !state.evenChecked;
+        if (midInput && document.activeElement !== midInput) midInput.value = state.midDraft ?? "";
+        midInput?.classList.toggle("is-correct", state.midTyped);
       }
 
       function renderDebugTask() {
@@ -2025,15 +2132,77 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这三步已经走完，可以进入下一任务。");
+          announce("这三步已经走完，在下面的空里写出中点算式。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：a[2] = 5 后 left = 3，再看到 a[3] = 7。下一步测首尾并看死循环。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：a[2] = 5 后 left 移到 3，再看到 a[3] = 7。现在在下面的空里亲手写出中点算式。");
+        announce("a[2] = 5 后 left = 3，再看 a[3] = 7。现在亲手写出中点算式：左右边界加起来取一半。");
+        playSound("calm");
+      });
+
+      midInput?.addEventListener("input", (event) => {
+        state.midDraft = event.target.value;
+        state.midTyped = false;
+        midInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#midCheckButton")?.addEventListener("click", () => {
+        const result = checkMidFix(state.midDraft);
+        if (!result.ok) {
+          showFeedback(midHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          midInput?.classList.add("is-wrong");
+          return;
+        }
+        midInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(midHint, result.message);
+        if (!state.midTyped) {
+          state.midTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：(left + right) / 2 这个中点算式是你亲手写的。下一步测首尾并看死循环。");
+        }
+      });
+
+      document.querySelector("#midHintButton")?.addEventListener("click", () => {
+        const text = normalizeMidInput(state.midDraft);
+        const hint = !text
+          ? "left = 0、right = 4 时中点是 2：把两端加起来得到 4，再取一半。"
+          : text.includes("/")
+            ? "已经有除号了。检查被除的是不是两端相加，且括号把加法包住。"
+            : "这一空要的是 (left + right) / 2：两端相加后再取一半。";
+        showFeedback(midHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#midRefButton")?.addEventListener("click", () => {
+        if (midRef) midRef.hidden = !midRef.hidden;
+        announce(midRef && !midRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#midResetButton")?.addEventListener("click", () => {
+        state.midDraft = "";
+        state.midTyped = false;
+        if (midHint) midHint.textContent = "";
+        if (midRef) midRef.hidden = true;
+        midInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (midInput) midInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
