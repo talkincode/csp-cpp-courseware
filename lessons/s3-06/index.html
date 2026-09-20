@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(280px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1339,6 +1379,29 @@
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
+            <div id="greedyMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在亲手把排好活动顺序的那一行敲出来：<button type="button" class="faq-term" data-faq="selection-criterion">选择标准</button> 是结束最早，所以要先按结束时间 <button type="button" class="faq-term" data-faq="sort-then-decide">排序再决策</button>。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="贪心先排序的脚手架，只留一空">
+                <ol>
+                  <li>struct Act { int s, e; };</li>
+                  <li>bool by_end(Act x, Act y) { return x.e &lt; y.e; }  // 结束早的排在前面</li>
+                  <li>Act a[4] = {{0,0},{1,4},{1,2},{2,5}};  // 下标从 1 开始</li>
+                  <li class="focus-line">  <input id="greedyInput" class="micro-input" type="text" value="" placeholder="sort(a ..., a ..., by_...)" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写出把 a[1] 到 a[3] 按结束时间排序的那一行" />;   // 排好活动顺序</li>
+                  <li>int lastEnd = 0, cnt = 0;</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="贪心排序语句的检查与兜底">
+                <button id="greedyCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="greedyHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="greedyRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="greedyResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="greedyHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="greedyRef" class="micro-ref" hidden>  sort(a + 1, a + 4, by_end); // 排完是 [1,2]、[2,5]、[1,4]，再从前往后选</pre>
+            </div>
+
           <section class="step-panel" data-panel="2" hidden>
             <h2>任务 3：核对空选择，并用反例推翻错误标准</h2>
             <p class="step-lead">
@@ -1478,6 +1541,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        greedyDraft: "",
+        greedyTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1571,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const greedyMicro = document.querySelector("#greedyMicro");
+      const greedyInput = document.querySelector("#greedyInput");
+      const greedyHint = document.querySelector("#greedyHint");
+      const greedyRef = document.querySelector("#greedyRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1598,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            greedyDraft: typeof stored.greedyDraft === "string" ? stored.greedyDraft : "",
+            greedyTyped: stored.greedyTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1679,51 @@
         return state.precedenceSolved && state.parensSolved;
       }
 
+      function normalizeGreedyInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "").replace(/;$/, "");
+      }
+
+      function checkGreedySort(raw) {
+        const text = normalizeGreedyInput(raw);
+        if (!text) return { ok: false, message: "先在空里写出排序那一行：贪心要先按结束时间排好，再从左到右决策。" };
+        if (/[（），；：、。！？［］【】＝＋－×＊]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：小括号、加号、逗号都要敲半角 ( ) + ,。" };
+        if (text === "sort(a+1,a+4,by_end)") return { ok: true, message: "" };
+
+        if (/^sort\(a\+1,a\+4,by_start\)$/.test(text))
+          return { ok: false, message: "按开始时间排会先拿 [1, 4]，只能选 1 个；按结束时间排能选 2 个。这就是反例。" };
+        if (/^sort\(a\+1,a\+4,by_length\)$/.test(text))
+          return { ok: false, message: "按时长排会先拿最长的 [1, 4]，同样只能选 1 个。贪心规则是按结束时间，不是按时长。" };
+        if (/^sort\(a\+1,a\+4,by_e\)$/.test(text) || /^sort\(a\+1,a\+4,by_bigger\)$/.test(text))
+          return { ok: false, message: "比较规则的名字要对上脚手架：排序用的是 by_end，按结束时间从早到晚。" };
+        if (/^sort\(a\+1,a\+4\)$/.test(text))
+          return { ok: false, message: "少了第三个参数：不写比较规则就不会按结束时间排，要补上 by_end。" };
+        if (/^sort\(a\+1,a\+4,by_end,greater\)$/.test(text))
+          return { ok: false, message: "第四个参数用不上：这一空只写起点、终点和比较规则三样。" };
+        if (/^sort\(a,a\+4,by_end\)$/.test(text))
+          return { ok: false, message: "起点写成 a 会把 a[0] 也排进去。活动从 a[1] 开始，要写 a + 1。" };
+        if (/^sort\(a\+1,a\+3,by_end\)$/.test(text))
+          return { ok: false, message: "终点写成 a + 3 只排到前 2 个活动。三个活动要一直排到 a + 4。" };
+        if (/^sort\(a\+4,a\+1,by_end\)$/.test(text))
+          return { ok: false, message: "起止反了：起点要写在前面，终点写在后面，写成 a + 1, a + 4。" };
+        if (!text.includes("sort"))
+          return { ok: false, message: "这一空要调用 sort：先排序再决策，手写两层比较会更容易出错。" };
+
+        return { ok: false, message: "这一空要写成 sort(a + 1, a + 4, by_end)：排 a[1] 到 a[3]，按结束时间从早到晚。" };
+      }
+
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [
+          state.formulasMatched,
+          state.evenChecked && state.greedyTyped,
+          conceptSolved(),
+          state.quizSubmitted,
+        ].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        // 任务 2 的下一步必须亲手写对排序那一行才点亮：光点三步按钮不算学会。
+        return [true, state.formulasMatched, state.evenChecked && state.greedyTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1772,6 +1882,11 @@
           variableMeta.textContent = "先点“还没选：已选空，lastEnd = 0”。";
           flowFeedback.textContent = "";
         }
+
+        if (greedyMicro) greedyMicro.hidden = !state.evenChecked;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (greedyInput && document.activeElement !== greedyInput) greedyInput.value = state.greedyDraft ?? "";
+        greedyInput?.classList.toggle("is-correct", state.greedyTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2138,77 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这三步已经走完，可以进入下一任务。");
+          announce("这三步已经走完，在下面的空里写出排序那一行。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：空选择，再选书法 [1, 2]，再选围棋 [2, 5]。现在在下面的空里亲手写出排序那一行。");
+        announce("已经选出 2 个活动。现在亲手写出排序那一行：先按结束时间排好，再从左到右决策。");
+        playSound("calm");
+      });
+
+      greedyInput?.addEventListener("input", (event) => {
+        state.greedyDraft = event.target.value;
+        state.greedyTyped = false;
+        greedyInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#greedyCheckButton")?.addEventListener("click", () => {
+        const result = checkGreedySort(state.greedyDraft);
+        if (!result.ok) {
+          showFeedback(greedyHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          greedyInput?.classList.add("is-wrong");
+          return;
+        }
+        greedyInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(greedyHint, result.message);
+        if (!state.greedyTyped) {
+          state.greedyTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：sort(a + 1, a + 4, by_end) 这一行是你亲手写的。下一步看空选择并找反例。");
+        }
+      });
+
+      document.querySelector("#greedyHintButton")?.addEventListener("click", () => {
+        const text = normalizeGreedyInput(state.greedyDraft);
+        const hint = !text
+          ? "要排的是 a[1]、a[2]、a[3]：起点 a + 1，终点 a + 4，比较规则用脚手架里的 by_end。"
+          : text.includes("sort")
+            ? "已经有 sort 了。检查三样：起点 a + 1、终点 a + 4、比较规则 by_end。"
+            : "这一空要的是 sort(a + 1, a + 4, by_end)：按结束时间从早到晚排好，再从前往后选。";
+        showFeedback(greedyHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#greedyRefButton")?.addEventListener("click", () => {
+        if (greedyRef) greedyRef.hidden = !greedyRef.hidden;
+        announce(greedyRef && !greedyRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#greedyResetButton")?.addEventListener("click", () => {
+        state.greedyDraft = "";
+        state.greedyTyped = false;
+        if (greedyHint) greedyHint.textContent = "";
+        if (greedyRef) greedyRef.hidden = true;
+        greedyInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (greedyInput) greedyInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：空选择，再选书法 [1, 2]，再选围棋 [2, 5]。下一步看空选择和反例。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

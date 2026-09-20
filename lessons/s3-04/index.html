@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(260px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1339,6 +1379,30 @@
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
+            <div id="prefixMicro" hidden>
+              <p class="step-lead">
+                填表走完了，现在亲手把填每一格的那一行敲出来：<button type="button" class="faq-term" data-faq="prefix-array">前缀和数组</button> 的第 i 格要接住上一格的累计。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="前缀和填表的脚手架，只留一空">
+                <ol>
+                  <li>int a[5] = {0, 2, 5, 1, 4};  // a[1..4]</li>
+                  <li>int sum[5] = {0};  // sum[0] = 0</li>
+                  <li>for (int i = 1; i &lt;= 4; i++) {</li>
+                  <li class="focus-line">  <input id="prefixInput" class="micro-input" type="text" value="" placeholder="sum[i] = sum[?] + a[?]" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="用上一格的累计和本格的数写出填这一格的语句" />;   // 填这一格</li>
+                  <li>}</li>
+                  <li>// 查询 [l, r]：sum[r] - sum[l - 1]</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="前缀和填表语句的检查与兜底">
+                <button id="prefixCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="prefixHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="prefixRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="prefixResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="prefixHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="prefixRef" class="micro-ref" hidden>  sum[i] = sum[i - 1] + a[i]; // i = 3 时：上一格 7，加上 a[3] = 1，得到 8</pre>
+            </div>
+
           <section class="step-panel" data-panel="2" hidden>
             <h2>任务 3：查一段，并看从第一个元素开始会怎样</h2>
             <p class="step-lead">
@@ -1478,6 +1542,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        prefixDraft: "",
+        prefixTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1572,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const prefixMicro = document.querySelector("#prefixMicro");
+      const prefixInput = document.querySelector("#prefixInput");
+      const prefixHint = document.querySelector("#prefixHint");
+      const prefixRef = document.querySelector("#prefixRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1599,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            prefixDraft: typeof stored.prefixDraft === "string" ? stored.prefixDraft : "",
+            prefixTyped: stored.prefixTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1680,49 @@
         return state.precedenceSolved && state.parensSolved;
       }
 
+      function normalizePrefixInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "").replace(/;$/, "");
+      }
+
+      function checkPrefixLine(raw) {
+        const text = normalizePrefixInput(raw);
+        if (!text) return { ok: false, message: "先在空里写下填这一格的语句：上一格的累计加上本格的数。" };
+        if (/[（），；：、。！？［］【】＝＋－×＊]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：方括号、等号、加号都要敲半角 [ ] = +。" };
+        if (text === "sum[i]=sum[i-1]+a[i]") return { ok: true, message: "" };
+
+        if (/^sum\[i\]=sum\[i\]\+a\[i\]$/.test(text))
+          return { ok: false, message: "少减了 1：要接住上一格的累计，写成 sum[i - 1]。写 sum[i] 的话这一格还是 0，前缀和就退化成原数组了。" };
+        if (/^sum\[i\]=sum\[i-1\]$/.test(text))
+          return { ok: false, message: "少了这一格的数：后半段还要把 a[i] 加进去，光接上一格等于没算。" };
+        if (/^sum\[i\]=sum\[i-1\]\+a\[i-1\]$/.test(text))
+          return { ok: false, message: "数组下标错位了：第 i 格对应的是 a[i]，不是 a[i - 1]。" };
+        if (/^sum\[i\]=sum\[i-1\]\+a\[i\+1\]$/.test(text))
+          return { ok: false, message: "用了下一格：第 i 格只用到 a[i]，还没读到的数不能提前加。" };
+        if (/^sum\[i\]=sum\[i\+1\]\+a\[i\]$/.test(text))
+          return { ok: false, message: "方向反了：累计要往前接，写成 sum[i - 1] 才是上一格。" };
+        if (/^sum\[i\]=a\[i-1\]\+a\[i\]$/.test(text))
+          return { ok: false, message: "只加了相邻两格：前缀和要带上上一格的累计 sum[i - 1]，不然只会得到两个数之和。" };
+        if (/^sum\[i\]=sum\[i-1\]\+i$/.test(text))
+          return { ok: false, message: "加的是数组里的数：要写 a[i]，不是下标 i。" };
+        if (/^sum\[i-1\]=sum\[i\]\+a\[i\]$/.test(text))
+          return { ok: false, message: "等号两边反了：要填的是第 i 格，等号左边该写 sum[i]。" };
+
+        return { ok: false, message: "这一空要写成 sum[i] = sum[i - 1] + a[i]：上一格累计加上本格。" };
+      }
+
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [
+          state.formulasMatched,
+          state.evenChecked && state.prefixTyped,
+          conceptSolved(),
+          state.quizSubmitted,
+        ].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        // 任务 2 的下一步必须亲手写对填表语句才点亮：光点三步按钮不算学会。
+        return [true, state.formulasMatched, state.evenChecked && state.prefixTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1758,7 +1867,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "sum = [0, 2, 7, 8, 12]，可以开始查询";
           variableMeta.textContent = "sum[2] = 7 之后填完 sum[4] = 12。";
-          showFeedback(flowFeedback, "你已经按顺序填完前缀和。下一步查询 [2, 4]，并看 l=1 怎么处理。");
+          showFeedback(
+            flowFeedback,
+            state.prefixTyped
+              ? "你已经按顺序填完前缀和，还亲手写出了填表语句。下一步查询 [2, 4]，并看 l=1 怎么处理。"
+              : "你已经按顺序填完前缀和。现在在下面的空里亲手写出填每一格的语句：上一格累计加上本格。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "sum[2] = 7";
           variableMeta.textContent = "2 + 5 = 7。下一步填完 sum[4] = 12。";
@@ -1772,6 +1886,11 @@
           variableMeta.textContent = "先点“sum[1] = 2，从第一个数开始”。";
           flowFeedback.textContent = "";
         }
+
+        if (prefixMicro) prefixMicro.hidden = !state.evenChecked;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (prefixInput && document.activeElement !== prefixInput) prefixInput.value = state.prefixDraft ?? "";
+        prefixInput?.classList.toggle("is-correct", state.prefixTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2142,77 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这三步已经走完，可以进入下一任务。");
+          announce("这三步已经走完，在下面的空里写出填表语句。");
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：sum[2] = 7 之后填完 sum[4] = 12。现在在下面的空里亲手写出填表语句。");
+        announce("sum[1] = 2，sum[2] = 7，填完 sum[4] = 12。现在亲手写填表语句：上一格累计加上本格。");
+        playSound("calm");
+      });
+
+      prefixInput?.addEventListener("input", (event) => {
+        state.prefixDraft = event.target.value;
+        state.prefixTyped = false;
+        prefixInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#prefixCheckButton")?.addEventListener("click", () => {
+        const result = checkPrefixLine(state.prefixDraft);
+        if (!result.ok) {
+          showFeedback(prefixHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          prefixInput?.classList.add("is-wrong");
+          return;
+        }
+        prefixInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(prefixHint, result.message);
+        if (!state.prefixTyped) {
+          state.prefixTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：sum[i] = sum[i - 1] + a[i] 这一行是你亲手写的。下一步查询 [2, 4] 并看偏移。");
+        }
+      });
+
+      document.querySelector("#prefixHintButton")?.addEventListener("click", () => {
+        const text = normalizePrefixInput(state.prefixDraft);
+        const hint = !text
+          ? "i = 3 时：上一格 sum[2] = 7，本格 a[3] = 1，填出来就是 8。"
+          : text.includes("sum[i-1]")
+            ? "已经接上上一格了。检查后半段：本格的数要写 a[i]。"
+            : "这一空要的是 sum[i] = sum[i - 1] + a[i]：等号左边是这一格，右边是上一格累计加本格。";
+        showFeedback(prefixHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#prefixRefButton")?.addEventListener("click", () => {
+        if (prefixRef) prefixRef.hidden = !prefixRef.hidden;
+        announce(prefixRef && !prefixRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#prefixResetButton")?.addEventListener("click", () => {
+        state.prefixDraft = "";
+        state.prefixTyped = false;
+        if (prefixHint) prefixHint.textContent = "";
+        if (prefixRef) prefixRef.hidden = true;
+        prefixInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (prefixInput) prefixInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：sum[1] = 2，sum[2] = 7，再填完 sum[4] = 12。下一步查询并看偏移。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

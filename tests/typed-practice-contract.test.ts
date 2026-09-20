@@ -8,9 +8,6 @@ const lessonsRoot = `${projectRoot}/lessons`;
 // 已经完成迁移的课件要一直守住完整契约；还没迁移的在下面显式登记，清单必须和现场精确一致——
 // 这样「补完一课却忘了从清单里划掉」和「新写一课却没有输入框」都会当场失败。
 const pendingTypedPractice = [
-  "s3-04",
-  "s3-05",
-  "s3-06",
   "s3-07",
   "s3-08",
   "s4-01",
@@ -81,6 +78,50 @@ function readAttribute(tag: string, name: string): string | null {
   const match = tag.match(new RegExp(`\\b${name}="([^"]*)"`));
 
   return match ? match[1] : null;
+}
+
+function extractFunctionBody(source: string, name: string): string {
+  const start = source.indexOf(`function ${name}(`);
+  if (start === -1) return "";
+  const bodyStart = source.indexOf("{", start);
+  let depth = 0;
+
+  for (let index = bodyStart; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    if (source[index] === "}") {
+      depth -= 1;
+      if (depth === 0) return source.slice(bodyStart, index + 1);
+    }
+  }
+
+  return "";
+}
+
+// 微编程的指正是靠正则认孩子写的字。这里把正则源码反解成「它想匹配的那串字」：
+// 去掉首尾锚点，把 \+ \* \( \) \[ \] \; 这类转义还原成字面字符。
+function intendedLiteral(pattern: string): string {
+  return pattern
+    .replace(/^\^/, "")
+    .replace(/\$$/, "")
+    .split(/(\\[=+*?.;,()[\]{}|<>!/-])/)
+    .map((part) => (part.length === 2 && part.startsWith("\\") ? part[1] : part))
+    .join("");
+}
+
+type RejectionBranch = { directory: string; fn: string; pattern: string };
+
+function readRejectionBranches(page: { directory: string; source: string }): RejectionBranch[] {
+  const branches: RejectionBranch[] = [];
+
+  for (const match of page.source.matchAll(/function (check[A-Za-z0-9]*)\(/g)) {
+    const body = extractFunctionBody(page.source, match[1]);
+
+    for (const branch of body.matchAll(/if \(\/(.+?)\/\.test\([A-Za-z]+\)\)\s*\n\s*return \{ ok: false/g)) {
+      branches.push({ directory: page.directory, fn: match[1], pattern: branch[1] });
+    }
+  }
+
+  return branches;
 }
 
 const pages = await readLessonPages();
@@ -191,6 +232,32 @@ test("每个已迁移课件都把草稿与完成状态写进本地进度", () =>
       done: true,
     });
   }
+});
+
+test("每条只写字面量的指正正则都能匹配它想表达的那串字", () => {
+  const branches = pages.flatMap((page) => readRejectionBranches(page));
+
+  // 抽取本身要能被验证：正则写法一变、抽取失效，条数会塌下来，这里会当场报警。
+  expect(branches.length).toBeGreaterThanOrEqual(40);
+
+  // 含字符类 / 多选分支 / \d 简写的模式本来就不是字面串，反解出来对不上是正常的。
+  // 剩下的“纯字面”模式如果连自己那串字都匹配不上，就是字面元字符忘了转义——
+  // 典型是 \+ 写成 +，正则会把 + 当量词，这条分支永远不可达，孩子写错也得不到指正。
+  const broken = branches
+    .filter((branch) => {
+      const bare = branch.pattern.replace(/\\./g, "");
+      return !/[[\]|]/.test(bare) && !/\\[dwsDWSnrt]/.test(branch.pattern);
+    })
+    .filter((branch) => {
+      try {
+        return !new RegExp(branch.pattern).test(intendedLiteral(branch.pattern));
+      } catch {
+        return true;
+      }
+    })
+    .map((branch) => `${branch.directory} ${branch.fn} /${branch.pattern}/`);
+
+  expect(broken).toEqual([]);
 });
 
 test("课件不会把学习者在输入框里写的内容当成代码执行", () => {
