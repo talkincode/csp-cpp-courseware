@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(320px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,33 @@
               <div class="box-meta" id="variableMeta">先点“选择：把 1 加入集合”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="pruneMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在把搜索树上的判断落成一行代码：数字都是正数，一旦当前和超过 <span class="inline-code">target</span>，这条分支就不可能再凑出来，用 <button type="button" class="faq-term" data-faq="pruning">剪枝</button> 把它停掉。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="搜索与剪枝的脚手架，只留一空">
+                <ol>
+                  <li>// a[1..n] 是候选数字，ans 统计能凑出 target 的方案数</li>
+                  <li>int a[25], n = 3, target = 4, ans = 0;</li>
+                  <li>void dfs(int i, int sum) {</li>
+                  <li>    if (sum == target) { ans += 1; }   // 刚好凑出 target：记下一种方案</li>
+                  <li>    if (i &gt; n) return;                 // 数字都试完了，这条分支结束</li>
+                  <li class="focus-line">    <input id="pruneInput" class="micro-input" type="text" value="" placeholder="if (____) return;" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写出判断这条分支要不要停下来的那一行" />   // 剪枝：再往下选只会更大，先停</li>
+                  <li>    dfs(i + 1, sum + a[i]);   // 选第 i 个数字</li>
+                  <li>    dfs(i + 1, sum);          // 不选第 i 个数字</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="剪枝那一行的检查与兜底">
+                <button id="pruneCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="pruneHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="pruneRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="pruneResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="pruneHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="pruneRef" class="micro-ref" hidden>    if (sum &gt; target) return;   // 数字都是正数：当前和超过 target，再往下选只会更大</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1545,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        pruneDraft: "",
+        pruneTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1569,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const pruneMicro = document.querySelector("#pruneMicro");
+      const pruneInput = document.querySelector("#pruneInput");
+      const pruneHint = document.querySelector("#pruneHint");
+      const pruneRef = document.querySelector("#pruneRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1602,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            pruneDraft: typeof stored.pruneDraft === "string" ? stored.pruneDraft : "",
+            pruneTyped: stored.pruneTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1683,51 @@
         return state.precedenceSolved && state.parensSolved;
       }
 
+      function normalizePruneInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkPruneLine(raw) {
+        const text = normalizePruneInput(raw);
+        if (!text) return { ok: false, message: "先在空里写出剪枝那一行：当前和已经超过 target 时，这条分支不用再往下选了。" };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：小括号、大于号和分号都要敲半角 ( > ; 。" };
+        if (!text.endsWith(";"))
+          return { ok: false, message: "是不是漏了末尾的半角分号呀？C++ 每条语句末尾都要写 ; 。" };
+
+        const body = text.slice(0, -1);
+        if (/^if\(sum>target\)return$/.test(body)) return { ok: true, message: "" };
+        if (/^if\(target<sum\)return$/.test(body)) return { ok: true, message: "" };
+        if (/^if\(sum>=target\)return$/.test(body))
+          return { ok: false, message: "边界差一点：和刚好等于 target 是命中，不能剪掉，所以要用 > ，不能写 >= 。" };
+        if (/^if\(sum!=target\)return$/.test(body))
+          return { ok: false, message: "和还没凑够的分支也会被这样剪掉，等于把所有解都丢了：只有超过 target 才剪。" };
+        if (/^if\(sum<target\)return$/.test(body))
+          return { ok: false, message: "方向反了：数字都是正数，还没到 target 时还要继续选，要剪的是超过 target 的分支。" };
+        if (/^if\(sum>target\)break$/.test(body))
+          return { ok: false, message: "break 只能跳出循环，这里是递归函数，要写 return 才能结束这条分支。" };
+        if (/^if\(sum\+a\[i\]>target\)return$/.test(body))
+          return { ok: false, message: "a[i] 会重复加：递归往下走时已经把它加进 sum 了，这里直接比 sum 和 target 。" };
+        if (/^if\(sum>n\)return$/.test(body))
+          return { ok: false, message: "比错对象了：n 是数字的个数，剪枝要比的是当前和 sum 和目标 target 。" };
+        if (/^if\(.+\)return$/.test(body))
+          return { ok: false, message: "括号里的条件还没对：要比的是当前和 sum 有没有超过目标 target 。" };
+        if (/^sum>target$/.test(body))
+          return { ok: false, message: "还差 if 和一对半角小括号：要写成 if (sum > target) return; 。" };
+        if (/^return$/.test(body))
+          return { ok: false, message: "少了判断条件：不是每次都要停，要写成 if (sum > target) return; 。" };
+
+        return { ok: false, message: "这一空要写成 if (sum > target) return;：当前和超过 target 就停掉这条分支。" };
+      }
+
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.formulasMatched, state.evenChecked && state.pruneTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched, state.evenChecked && state.pruneTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1758,7 +1872,7 @@
         if (state.evenChecked) {
           variableValue.textContent = "集合 {1, 3}；sum = 4，命中；回溯后集合清空";
           variableMeta.textContent = "三步走完。不要跳过回溯这一步。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步确定处理思路和两个边界。");
+          showFeedback(flowFeedback, "你已经按顺序走完。下一步在下面的空里亲手写出剪枝那一行。");
         } else if (state.remaindered) {
           variableValue.textContent = "已选择 1 和 3，已判断剪枝";
           variableMeta.textContent = "剪枝判断写清了。下一步点“回溯：撤销选择，继续搜索”。";
@@ -1772,6 +1886,11 @@
           variableMeta.textContent = "先点“选择：把 1 加入集合”。";
           flowFeedback.textContent = "";
         }
+
+        if (pruneMicro) pruneMicro.hidden = !state.evenChecked;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (pruneInput && document.activeElement !== pruneInput) pruneInput.value = state.pruneDraft ?? "";
+        pruneInput?.classList.toggle("is-correct", state.pruneTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2147,72 @@
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：选择、剪枝、回溯都对上了。现在在下面的空里亲手写出剪枝那一行。");
+        announce("三步已经走完。现在亲手写出剪枝那一行：数字都是正数，当前和超过 target 就停掉这条分支。");
+        playSound("calm");
+      });
+
+      pruneInput?.addEventListener("input", (event) => {
+        state.pruneDraft = event.target.value;
+        state.pruneTyped = false;
+        pruneInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#pruneCheckButton")?.addEventListener("click", () => {
+        const result = checkPruneLine(state.pruneDraft);
+        if (!result.ok) {
+          showFeedback(pruneHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          pruneInput?.classList.add("is-wrong");
+          return;
+        }
+        pruneInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(pruneHint, result.message);
+        if (!state.pruneTyped) {
+          state.pruneTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：剪枝那一行是你亲手写的。下一步确定处理思路和两个边界。");
+        }
+      });
+
+      document.querySelector("#pruneHintButton")?.addEventListener("click", () => {
+        const text = normalizePruneInput(state.pruneDraft);
+        const hint = !text
+          ? "要写的是 if (sum > target) return;：数字都是正数，当前和超过 target 就停。"
+          : text.includes("sum")
+            ? "已经写到 sum 了。检查三样：和 target 比、用大于号、最后别忘了半角分号。"
+            : "这一空要的是 if (sum > target) return;：先写 if，再在括号里比较当前和 sum 和 target 。";
+        showFeedback(pruneHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#pruneRefButton")?.addEventListener("click", () => {
+        if (pruneRef) pruneRef.hidden = !pruneRef.hidden;
+        announce(pruneRef && !pruneRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#pruneResetButton")?.addEventListener("click", () => {
+        state.pruneDraft = "";
+        state.pruneTyped = false;
+        if (pruneHint) pruneHint.textContent = "";
+        if (pruneRef) pruneRef.hidden = true;
+        pruneInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (pruneInput) pruneInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：选择、剪枝和回溯都走完了。下一步看处理思路和边界。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
