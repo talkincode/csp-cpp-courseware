@@ -461,6 +461,49 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input.is-wide {
+        width: min(340px, 100%);
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1219,7 +1262,7 @@
       }
     </style>
   </head>
-  <body data-faq-terms="enumeration enumeration-range state-update simulation missed-branch">
+  <body data-faq-terms="enumeration enumeration-range state-update simulation missed-branch modulo">
     <header class="topbar">
       <a class="back-link" href="../../index.html">← 返回课程路线</a>
       <span class="course-marker">第二阶段 · S2-07 · 60 分钟</span>
@@ -1337,6 +1380,28 @@
               <div class="box-meta" id="variableMeta">先点“看 i=1，奇数不加”，看状态怎么停留。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div id="enumMicro" hidden>
+              <p class="step-lead">
+                三步对照走完了，现在亲手把这一步敲出来。枚举里最容易漏的就是判断：只有 <button type="button" class="faq-term" data-faq="state-update">状态更新</button> 的条件成立时才让计数加一，条件用 <button type="button" class="faq-term" data-faq="modulo">取模</button> 写成 <span class="inline-code">i % 2 == 0</span> 来判断偶数。下面是只读脚手架，只留一空给你敲键盘。
+              </p>
+              <div class="code-sheet" aria-label="枚举 1 到 n 数偶数的脚手架，只留一空">
+                <ol>
+                  <li>int evenCount = 0;</li>
+                  <li>for (int i = 1; i &lt;= n; i++) {</li>
+                  <li class="focus-line">  <input id="enumInput" class="micro-input is-wide" type="text" value="" placeholder="if ( ? ) evenCount ?" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写出遇到偶数时更新 evenCount 的那一行" />  // 只有偶数才让计数加一</li>
+                  <li>}</li>
+                  <li>// n = 3 时 evenCount 是 1</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="枚举条件与状态更新的检查与兜底">
+                <button id="enumCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="enumHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="enumRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="enumResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="enumHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="enumRef" class="micro-ref" hidden>for (int i = 1; i &lt;= n; i++) { if (i % 2 == 0) evenCount++; } // 只有偶数才加一</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1543,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        enumDraft: "",
+        enumTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1567,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const enumMicro = document.querySelector("#enumMicro");
+      const enumInput = document.querySelector("#enumInput");
+      const enumHint = document.querySelector("#enumHint");
+      const enumRef = document.querySelector("#enumRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1600,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            enumDraft: typeof stored.enumDraft === "string" ? stored.enumDraft : "",
+            enumTyped: stored.enumTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1743,6 +1816,56 @@
         }
       }
 
+      function normalizeEnumInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkEnumFix(raw) {
+        const counterForms = [
+          "evenCount++;",
+          "++evenCount;",
+          "evenCount+=1;",
+          "evenCount=evenCount+1;",
+          "evenCount=1+evenCount;",
+        ];
+        const text = normalizeEnumInput(raw);
+        if (!text) return { ok: false, message: "先在空里写出遇到偶数时更新计数的那一行：先判断，再把 evenCount 加一。" };
+        if (/[（），；：、。！？［］【】％＝×＆]/.test(text))
+          return { ok: false, message: "用了中文符号哦：小括号、百分号和分号都要半角，把输入法切到英文再敲一次。" };
+
+        const guarded = text.match(/^if\((.*)\)(.*)$/);
+        if (!guarded) {
+          if (!text.includes("if"))
+            return {
+              ok: false,
+              message: "少了判断：不加 if，奇数 1 和 3 也会被数进去，偶数个数就错了。这就是漏分支。",
+            };
+          return { ok: false, message: "条件要写在 if 后面的半角小括号里：先写 if ( 条件 )，再写条件成立时要做的事。" };
+        }
+
+        const condition = guarded[1];
+        const update = guarded[2].replace(/^\{(.*)\}$/, "$1");
+
+        if (condition.includes("/") && !condition.includes("%"))
+          return {
+            ok: false,
+            message: "整数除法不能判断偶数：3 / 2 在 C++ 里等于 1，不是 0。判断偶数要用取模 i % 2 == 0。",
+          };
+        if (/^i%2(==1|!=0)$/.test(condition))
+          return { ok: false, message: "这个条件数的是奇数。题目要的是偶数个数，条件应该是 i % 2 == 0。" };
+        if (condition.includes("=") && !condition.includes("=="))
+          return { ok: false, message: "判断相等要用两个等号 ==；一个等号是把右边赋给左边，条件就不成立了。" };
+
+        if (!counterForms.includes(update)) {
+          if (!update.endsWith(";")) return { ok: false, message: "这一行末尾还差一个半角分号 ;，补上再检查一次。" };
+          if (!update.includes("evenCount"))
+            return { ok: false, message: "要加一的是记录偶数个数的 evenCount，不是别的变量。" };
+          return { ok: false, message: "加一写成 evenCount++ 最省事，也可以写成 evenCount = evenCount + 1。" };
+        }
+        if (condition !== "i%2==0") return { ok: false, message: "加一写对了，条件再改一下：i % 2 == 0 才是偶数。" };
+        return { ok: true, message: "" };
+      }
+
       function renderFlowTask() {
         const divideButton = document.querySelector("#divideButton");
         const remainderButton = document.querySelector("#remainderButton");
@@ -1758,7 +1881,12 @@
         if (state.evenChecked) {
           variableValue.textContent = "evenCount = 1";
           variableMeta.textContent = "1 到 3 走完，只有 2 是偶数，所以结果是 1。";
-          showFeedback(flowFeedback, "你已经走完 i=1 → i=2 → i=3。下一步对照漏分支。");
+          showFeedback(
+            flowFeedback,
+            state.enumTyped
+              ? "你已经走完 i=1 → i=2 → i=3，还亲手写出了判断和更新。下一步对照漏分支。"
+              : "你已经走完 i=1 → i=2 → i=3。现在在下面的空里亲手写出这一步：只有偶数才让 evenCount 加一。",
+          );
         } else if (state.remaindered) {
           variableValue.textContent = "i=2, evenCount=1";
           variableMeta.textContent = "2 是偶数，已经加一。下一步看 i=3 并确认结果。";
@@ -1772,6 +1900,10 @@
           variableMeta.textContent = "先点“看 i=1，奇数不加”，看状态怎么停留。";
           flowFeedback.textContent = "";
         }
+
+        if (enumMicro) enumMicro.hidden = !state.evenChecked;
+        if (enumInput && document.activeElement !== enumInput) enumInput.value = state.enumDraft ?? "";
+        enumInput?.classList.toggle("is-correct", state.enumTyped);
       }
 
       function renderDebugTask() {
@@ -2023,15 +2155,80 @@
           return;
         }
         if (state.evenChecked) {
-          announce("这次对照已经走完，可以进入下一任务。");
+          announce(
+            state.enumTyped
+              ? "这次对照已经走完，可以进入下一任务。"
+              : "结果确认过了。亲手把判断和更新写进下面的空里就能继续。",
+          );
           return;
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
         saveState();
-        render();
-        reward("任务 2 完成：1 到 3 里只有一个偶数，evenCount 是 1。下一步对照漏分支。");
+        renderFlowTask();
+        showFeedback(flowFeedback, "结果确认过了：1 到 3 里只有 2 是偶数，evenCount 是 1。现在在下面的空里亲手写出这一步。");
+        announce("1 到 3 走完了，evenCount 是 1。现在亲手写出遇到偶数时更新计数的那一行：if (i % 2 == 0) evenCount++;。");
+        playSound("calm");
+      });
+
+      enumInput?.addEventListener("input", (event) => {
+        state.enumDraft = event.target.value;
+        state.enumTyped = false;
+        enumInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#enumCheckButton")?.addEventListener("click", () => {
+        const result = checkEnumFix(state.enumDraft);
+        if (!result.ok) {
+          showFeedback(enumHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          enumInput?.classList.add("is-wrong");
+          return;
+        }
+        enumInput?.classList.remove("is-wrong");
+        if (!state.enumTyped) {
+          state.enumTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：只有偶数才让 evenCount 加一，这一行是你亲手写出来的。下一步对照漏分支。");
+        }
+      });
+
+      document.querySelector("#enumHintButton")?.addEventListener("click", () => {
+        const text = normalizeEnumInput(state.enumDraft);
+        const hint = !text
+          ? "先写 if，再写条件，最后写要做的事：条件用取模判断偶数，写 i % 2 == 0。"
+          : text.includes("if(")
+            ? "已经有 if( 了。检查括号里是不是 i % 2 == 0（两个等号），以及 evenCount 后面有没有半角分号。"
+            : "这一空要的是 if (i % 2 == 0) evenCount++;：i 是偶数才加一，奇数 1 和 3 不能加。";
+        showFeedback(enumHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#enumRefButton")?.addEventListener("click", () => {
+        if (enumRef) enumRef.hidden = !enumRef.hidden;
+        announce(enumRef && !enumRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#enumResetButton")?.addEventListener("click", () => {
+        state.enumDraft = "";
+        state.enumTyped = false;
+        if (enumHint) enumHint.textContent = "";
+        if (enumRef) enumRef.hidden = true;
+        enumInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (enumInput) enumInput.value = "";
+        saveState();
+        renderFlowTask();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

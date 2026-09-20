@@ -530,6 +530,14 @@ test("S2-07 supplies a guided enumeration-and-simulation lesson and randomized c
   expect(source).toContain("for (int i = 1; i <= n; i++)");
   expect(source).toContain("evenCount");
   expect(source).toContain("i % 2 == 0");
+  // 微编程：走完 1 到 3 三步后亲手写出判断与更新
+  expect(source).toContain('id="enumInput"');
+  expect(source).toContain('id="enumCheckButton"');
+  expect(source).toContain('id="enumHintButton"');
+  expect(source).toContain('id="enumRefButton"');
+  expect(source).toContain('id="enumResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S2-08 supplies a guided complexity-and-test-point lesson and randomized choice quiz", async () => {
@@ -553,6 +561,14 @@ test("S2-08 supplies a guided complexity-and-test-point lesson and randomized ch
   expect(source).toContain("for (int i = 0; i < n; i++)");
   expect(source).toContain("n * n");
   expect(source).toContain("O(n)");
+  // 微编程：数完 n=3 的单层/双层后亲手写出双层次数算式
+  expect(source).toContain('id="opsInput"');
+  expect(source).toContain('id="opsCheckButton"');
+  expect(source).toContain('id="opsHintButton"');
+  expect(source).toContain('id="opsRefButton"');
+  expect(source).toContain('id="opsResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S3-01 supplies a guided digit-and-gcd lesson and randomized choice quiz", async () => {

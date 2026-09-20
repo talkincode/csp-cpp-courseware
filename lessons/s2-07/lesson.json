@@ -19,5 +19,5 @@
     "owner": "external",
     "status": "not-managed-in-this-repository"
   },
-  "faqTermIds": ["enumeration", "enumeration-range", "state-update", "simulation", "missed-branch"]
+  "faqTermIds": ["enumeration", "enumeration-range", "state-update", "simulation", "missed-branch", "modulo"]
 }
