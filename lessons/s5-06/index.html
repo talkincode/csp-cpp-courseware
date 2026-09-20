@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(150px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1219,7 +1259,7 @@
       }
     </style>
   </head>
-  <body data-faq-terms="error-classification fix-rule redo-key-question boundary-data">
+  <body data-faq-terms="error-classification fix-rule redo-key-question boundary-data loop-variable index-offset">
     <header class="topbar">
       <a class="back-link" href="../../index.html">← 返回课程路线</a>
       <span class="course-marker">第五阶段 · S5-06 · 55 分钟</span>
@@ -1337,6 +1377,35 @@
               <div class="box-meta" id="variableMeta">先点“找错：重新跑一遍样例和边界数据”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="loopBoundMicro" hidden>
+              <p class="step-lead">
+                三步走完了：错找出来了、也归到了实现错、改法写下了。现在把改法落到键盘上——重写的那一行循环里，<button type="button" class="faq-term" data-faq="loop-variable">循环变量</button>要走到的范围就是上一轮出问题的地方。特别注意<button type="button" class="faq-term" data-faq="index-offset">下标偏移</button>那一格，下面是只读脚手架，只留一空给你输入；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="复盘后重写 T2 的脚手架，只留一空">
+                <ol>
+                  <li>// 复盘后重写的 T2：n 个数都是正整数，求最大值（下标从 1 开始用）</li>
+                  <li>int a[105];                       // 最多 100 个数，下标从 1 开始用</li>
+                  <li>int main() {</li>
+                  <li>    int n;</li>
+                  <li>    cin &gt;&gt; n;</li>
+                  <li>    if (n == 0) { cout &lt;&lt; 0 &lt;&lt; "\n"; return 0; }   // 空数据：上一课的教训，别删</li>
+                  <li>    int best = 0;</li>
+                  <li class="focus-line">    for (int i = 1; <input id="loopBoundInput" class="micro-input" type="text" value="" placeholder="i ? n" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="20" aria-label="写出让循环走到最后一个下标的那一个循环条件" />; i += 1) { cin &gt;&gt; a[i]; if (a[i] &gt; best) best = a[i]; }   // 上一轮漏算最后一个元素就是这一格写错了</li>
+                  <li>    cout &lt;&lt; best &lt;&lt; "\n";</li>
+                  <li>    return 0;</li>
+                  <li>}</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="循环条件那一空的检查与兜底">
+                <button id="loopBoundCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="loopBoundHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="loopBoundRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="loopBoundResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="loopBoundHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="loopBoundRef" class="micro-ref" hidden>    for (int i = 1; i &lt;= n; i += 1) { cin &gt;&gt; a[i]; if (a[i] &gt; best) best = a[i]; }   // i 从 1 走到 n，最后一个元素不会漏</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1502,6 +1571,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        loopBoundDraft: "",
+        loopBoundTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1522,6 +1593,10 @@
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
+      const loopBoundMicro = document.querySelector("#loopBoundMicro");
+      const loopBoundInput = document.querySelector("#loopBoundInput");
+      const loopBoundHint = document.querySelector("#loopBoundHint");
+      const loopBoundRef = document.querySelector("#loopBoundRef");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
       const quizForm = document.querySelector("#quizForm");
@@ -1553,6 +1628,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            loopBoundDraft: typeof stored.loopBoundDraft === "string" ? stored.loopBoundDraft : "",
+            loopBoundTyped: stored.loopBoundTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1628,16 +1705,58 @@
         });
       }
 
+      function normalizeLoopBoundInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkLoopBoundLine(raw) {
+        const text = normalizeLoopBoundInput(raw);
+        if (!text)
+          return {
+            ok: false,
+            message: "先在空里写出这一格的循环条件：循环变量 i 要一直走到最后一个元素的下标。",
+          };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞％０-９]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：小于号和等号都要敲半角 < = ，两个符号连起来写成 <= 。" };
+        if (/^i<n\+1$/.test(text))
+          return { ok: true, message: "写法等价：i < n + 1 和 i <= n 是同一个范围，不过直接写 i <= n 更省事。" };
+        if (/^i<=n$/.test(text)) return { ok: true, message: "" };
+        if (/^i<n$/.test(text))
+          return { ok: false, message: "这就是上一轮丢掉 60% 分数的那一格：i < n 走不到 n，最后一个元素从来没被处理。" };
+        if (/^i<=n-1$/.test(text))
+          return { ok: false, message: "和 i < n 是一回事：都少走一格，最后一个元素照样漏算。" };
+        if (/^i\+1<=n$/.test(text))
+          return { ok: false, message: "和 i < n 是一回事：i + 1 <= n 换算回来就是 i <= n - 1 ，最后一个元素还是漏算。" };
+        if (/^i<=n\+1$/.test(text))
+          return { ok: false, message: "多走了一格：i 会跑到 n + 1 ，那一格不是题目的数据，读进来的是没用的值。" };
+        if (/^i>n$/.test(text))
+          return { ok: false, message: "方向反了：i > n 一开始就不成立，循环一次也不做，一个数都读不进来。" };
+        if (/^i=n$/.test(text))
+          return { ok: false, message: "这里只写了一个等号：i = n 是赋值，会把 n 的值写进 i ；判断范围要用 < 或 <= 。" };
+        if (/^i<=n;$/.test(text))
+          return { ok: false, message: "多写了一个分号：for 的小括号里用分号分隔三段，条件这一格只写 i <= n 。" };
+        if (/^a\[i\]<=n$/.test(text))
+          return { ok: false, message: "比的是数组里的数：循环条件管的是下标 i 走到哪里，不是元素的值有多大。" };
+        if (/^i<=105$/.test(text))
+          return { ok: false, message: "写成了数组大小 105：循环要走到题目给的个数 n ，写死数组大小会把没用到的格子也算进来。" };
+        return { ok: false, message: "这一空要写成 i <= n ：循环变量 i 从 1 出发，一直走到最后一个下标 n 。" };
+      }
+
       function conceptSolved() {
         return state.methodSolved && state.tieRuleSolved;
       }
 
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [
+          state.toolsMatched,
+          state.transitioned && state.loopBoundTyped,
+          conceptSolved(),
+          state.quizSubmitted,
+        ].filter(Boolean).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.loopBoundTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1782,7 +1901,7 @@
         if (state.transitioned) {
           variableValue.textContent = "已写下改法并重做验证：T2 同类题这次没有再漏算";
           variableMeta.textContent = "三步走完。找错、归类、改法与重做都已就位。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步看看时间不够或拿不准时该怎么处理。");
+          showFeedback(flowFeedback, "你已经按顺序走完。现在在下面的空里亲手写出改好后的循环条件。");
         } else if (state.initialized) {
           variableValue.textContent = "已归类：实现错——下标从 1 写成从 0，最后一个元素漏算";
           variableMeta.textContent = "分类完成了。下一步点“写改法并重做关键题”。";
@@ -1795,6 +1914,17 @@
           variableValue.textContent = "还没找出具体错在哪";
           variableMeta.textContent = "先点“找错：重新跑一遍样例和边界数据”。";
           flowFeedback.textContent = "";
+        }
+
+        if (loopBoundMicro) {
+          loopBoundMicro.hidden = !state.transitioned;
+        }
+        // 正在输入时不要覆盖，否则光标会被跳到末尾。
+        if (loopBoundInput && document.activeElement !== loopBoundInput) {
+          loopBoundInput.value = state.loopBoundDraft ?? "";
+        }
+        if (loopBoundInput) {
+          loopBoundInput.classList.toggle("is-correct", state.loopBoundTyped);
         }
       }
 
@@ -2052,10 +2182,83 @@
         }
 
         state.transitioned = true;
+        saveState();
+        renderFlowTask();
+        showFeedback(
+          flowFeedback,
+          "三步走完了：错找出来了、归到了实现错、改法也写下了。现在在下面的空里亲手写出改好后的循环条件。",
+        );
+        announce("三步已经走完。现在在下面的空里亲手写出循环条件：让循环变量从 1 一直走到最后一个下标 n 。");
+        playSound("calm");
+      });
+
+      loopBoundInput?.addEventListener("input", (event) => {
+        state.loopBoundDraft = event.target.value;
+        state.loopBoundTyped = false;
+        loopBoundInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#loopBoundCheckButton")?.addEventListener("click", () => {
+        const result = checkLoopBoundLine(state.loopBoundDraft);
+        if (!result.ok) {
+          showFeedback(loopBoundHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          loopBoundInput?.classList.add("is-wrong");
+          return;
+        }
+        loopBoundInput?.classList.remove("is-wrong");
+        if (result.message) {
+          showFeedback(loopBoundHint, result.message);
+        }
+        if (state.loopBoundTyped) return;
+
+        state.loopBoundTyped = true;
         state.activeStep = 2;
         saveState();
         render();
-        reward("任务 2 完成：找错、归类、写改法与重做都走完了。下一步看看时间不够或拿不准时该怎么处理。");
+        reward("任务 2 完成：改法落到了循环条件上，这正是上一轮漏算最后一位的根源。下一步看时间不够或拿不准时怎么处理。");
+      });
+
+      document.querySelector("#loopBoundHintButton")?.addEventListener("click", () => {
+        const text = normalizeLoopBoundInput(state.loopBoundDraft);
+        const hint = !text
+          ? "要写的是 i <= n ：i 从 1 出发，要走到最后一个下标 n 才停。"
+          : text.includes("<")
+            ? "已经用上小于号了。再想一下终点：最后一个元素的下标是 n ，判断要让它也成立。"
+            : "先写循环变量 i ，再写比较符号（< = 连起来写 <= ），最后写终点的 n 。";
+        showFeedback(loopBoundHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#loopBoundRefButton")?.addEventListener("click", () => {
+        if (!loopBoundRef) return;
+        const willOpen = loopBoundRef.hidden;
+        loopBoundRef.hidden = !willOpen;
+        const message = willOpen
+          ? "参考代码已展开：i 从 1 走到 n ，最后一个元素不会漏，这正是改法要求的范围。"
+          : "参考代码已收起，再自己写一遍试试。";
+        showFeedback(loopBoundHint, message);
+        announce(message);
+      });
+
+      document.querySelector("#loopBoundResetButton")?.addEventListener("click", () => {
+        state.loopBoundDraft = "";
+        state.loopBoundTyped = false;
+        saveState();
+        // 按钮点击后浏览器不一定让输入框失焦，所以直接清空，而不是等 render 去覆盖。
+        if (loopBoundInput) {
+          loopBoundInput.value = "";
+          loopBoundInput.classList.remove("is-correct", "is-wrong");
+        }
+        if (loopBoundRef) loopBoundRef.hidden = true;
+        if (loopBoundHint) loopBoundHint.textContent = "";
+        showFeedback(loopBoundHint, "已清空这一空：再写一次让 i 走到 n 的循环条件。");
+        announce("已清空填空，可以重新输入。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

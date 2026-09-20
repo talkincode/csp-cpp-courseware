@@ -19,5 +19,5 @@
     "owner": "external",
     "status": "not-managed-in-this-repository"
   },
-  "faqTermIds": ["error-classification", "fix-rule", "redo-key-question", "boundary-data"]
+  "faqTermIds": ["error-classification", "fix-rule", "redo-key-question", "boundary-data", "loop-variable", "index-offset"]
 }
