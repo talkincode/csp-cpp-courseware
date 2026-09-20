@@ -305,6 +305,8 @@ try {
     out.questions = questions().length;
     out.optionsPerQuestion = questions().map((question) => question.querySelectorAll(".answer-option").length);
     out.objectives = questions().map((question) => (question.querySelector(".question-objective") || {}).textContent || "");
+    out.checkpoints = questions().map((question) => (question.querySelector(".question-checkpoint") || {}).textContent || "");
+    out.goals = typeof courseObjectives === "undefined" ? null : courseObjectives;
     out.levelChips = [...document.querySelectorAll(".level-legend .level-chip")].map((chip) => chip.textContent.trim());
     out.tiers = ["必会", "建议掌握", "拓展"].map((word) => document.body.textContent.includes(word));
     out.seed1 = document.querySelector("#quizSeed").textContent.trim();
@@ -339,6 +341,19 @@ try {
   check("抽出 3 道题且全部为选择题", quiz.questions === 3, `共 ${quiz.questions} 道，非选择题 0 道`);
   check("每题 4 个选项", quiz.optionsPerQuestion.every((count: number) => count === 4), JSON.stringify(quiz.optionsPerQuestion));
   check("每题标注检查目标", quiz.objectives.every((text: string) => text.includes("检查目标")), quiz.objectives[0] ?? "");
+  // 检查目标不能是题库里随手写的一句自由文本：它要能在页面上对上本课 courseData 的学习目标原文。
+  check(
+    "检查目标就是本课学习目标原文",
+    Array.isArray(quiz.goals) &&
+      quiz.goals.length === 3 &&
+      quiz.objectives.every((line: string) => quiz.goals.includes(line.replace("检查目标：", ""))),
+    `目标 ${JSON.stringify(quiz.goals)} 显示 ${JSON.stringify(quiz.objectives[0] ?? "")}`,
+  );
+  check(
+    "每题另起一行写出更细的本题检查",
+    quiz.checkpoints.every((line: string) => /^本题检查：\S/.test(line)),
+    quiz.checkpoints[0] ?? "",
+  );
   check("页面用图例区分必会/建议掌握/拓展", quiz.levelChips.length === 3, JSON.stringify(quiz.levelChips.map((chip: string) => chip.slice(0, 8))));
   check("正文与讲解也区分三档内容", quiz.tiers.every(Boolean), JSON.stringify(quiz.tiers));
   check("未答完不可提交并提示还差几题", quiz.submitDisabledBefore === true && quiz.submitLabelBefore.includes("还差"), `${quiz.submitLabelBefore} disabled=${quiz.submitDisabledBefore}`);
@@ -346,6 +361,21 @@ try {
   check("答满后可提交", quiz.submitDisabledAfterAll === false, `disabled=${quiz.submitDisabledAfterAll}`);
   check("提交前不显示解析", quiz.explanationsBefore === 0, "");
   check("提交后给出得分", /本次答对 \d\/3/.test(quiz.resultText), quiz.resultText);
+  // 这轮三题全选了非正确项，所以得分必须是 0，并且进一步说出错题落在哪条学习目标上——
+  // 光回一句“再看解析”，学习者并不知道该复习这一节的哪部分。
+  // 卷子是随机的，所以只认“抽到的这几道题”对应的目标：既不能漏、也不许凭空多报一条。
+  const missedGoals = [...new Set(quiz.objectives.map((line: string) => line.replace("检查目标：", "")))];
+  const hintSegment = quiz.resultText.split("错题集中在：")[1] ?? "";
+  const mentionedGoals = quiz.goals.filter((goal: string) => hintSegment.includes(goal));
+  check(
+    "未通过的试卷把错题指回具体学习目标",
+    /本次答对 0\/3/.test(quiz.resultText) &&
+      hintSegment.length > 0 &&
+      missedGoals.length > 0 &&
+      missedGoals.every((goal: string) => hintSegment.includes(goal)) &&
+      mentionedGoals.length === missedGoals.length,
+    quiz.resultText,
+  );
   check("提交后逐题解析", quiz.explanationsAfter === 3, `解析 ${quiz.explanationsAfter} 条`);
   check("提交后标注正确与错误选项", quiz.correctMarks === 3 && quiz.incorrectMarks >= 1, `正确 ${quiz.correctMarks} 错误 ${quiz.incorrectMarks}`);
   check("提交后锁定作答不可改动", quiz.lockedInputs === 12, `锁定 ${quiz.lockedInputs} 个选项`);

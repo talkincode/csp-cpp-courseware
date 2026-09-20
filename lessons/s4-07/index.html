@@ -741,8 +741,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1476,10 +1484,17 @@
           "assume-sorted": "编号顺序和是否重复访问无关：不加访问标记时，DFS 仍可能沿着边回到已经走过的点，导致死循环或重复计数。",
         },
       };
+      const courseObjectives = [
+        "用点和边表示关系",
+        "完成基础 DFS/BFS",
+        "防止重复访问",
+      ];
+
       const questionPool = [
         {
           id: "why-adjacency-list",
           courseId: "S4-07",
+          objectiveIndex: 0,
           objective: "能画邻接关系",
           difficulty: "required",
           type: "choice",
@@ -1492,6 +1507,7 @@
         {
           id: "why-visited-array",
           courseId: "S4-07",
+          objectiveIndex: 2,
           objective: "能写访问标记",
           difficulty: "required",
           type: "choice",
@@ -1504,6 +1520,7 @@
         {
           id: "count-components-sample",
           courseId: "S4-07",
+          objectiveIndex: 2,
           objective: "能写访问标记",
           difficulty: "required",
           type: "choice",
@@ -1516,6 +1533,7 @@
         {
           id: "dfs-vs-bfs-order",
           courseId: "S4-07",
+          objectiveIndex: 1,
           objective: "能说明DFS与BFS顺序差异",
           difficulty: "recommended",
           type: "choice",
@@ -1528,6 +1546,7 @@
         {
           id: "isolated-point-component",
           courseId: "S4-07",
+          objectiveIndex: 0,
           objective: "能画邻接关系",
           difficulty: "recommended",
           type: "choice",
@@ -2009,7 +2028,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -2024,10 +2044,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能写邻接表、加访问标记，并数出 (0,1)(1,2)(3,4) 这张图的连通块数 = 2。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能写邻接表、加访问标记，并数出 (0,1)(1,2)(3,4) 这张图的连通块数 = 2。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

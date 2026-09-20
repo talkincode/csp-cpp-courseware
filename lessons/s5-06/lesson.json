@@ -13,6 +13,8 @@
     "questionCount": 3,
     "questionBankSize": 7,
     "choiceDominant": true,
+    "objectiveCoverage": { "assessed": 2, "total": 3 },
+    "uncoveredObjectives": [2],
     "reviewState": "awaiting-user-review"
   },
   "video": {

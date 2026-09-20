@@ -741,8 +741,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1472,10 +1480,17 @@
           switch: "二维背包是拓展。现在必会是先说清 dp[i] 的含义。",
         },
       };
+      const courseObjectives = [
+        "定义状态含义",
+        "写出小问题到大问题的转移",
+        "重视初始化",
+      ];
+
       const questionPool = [
         {
           id: "what-is-dp",
           courseId: "S3-08",
+          objectiveIndex: 0,
           objective: "定义状态含义",
           difficulty: "required",
           type: "choice",
@@ -1488,6 +1503,7 @@
         {
           id: "what-is-state",
           courseId: "S3-08",
+          objectiveIndex: 0,
           objective: "定义状态含义",
           difficulty: "required",
           type: "choice",
@@ -1500,6 +1516,7 @@
         {
           id: "hand-trace",
           courseId: "S3-08",
+          objectiveIndex: 1,
           objective: "写出小问题到大问题的转移",
           difficulty: "required",
           type: "choice",
@@ -1512,6 +1529,7 @@
         {
           id: "why-init",
           courseId: "S3-08",
+          objectiveIndex: 2,
           objective: "重视初始化",
           difficulty: "recommended",
           type: "choice",
@@ -1524,6 +1542,7 @@
         {
           id: "n1-and-extension",
           courseId: "S3-08",
+          objectiveIndex: 1,
           objective: "能用小 n 验证转移",
           difficulty: "recommended",
           type: "choice",
@@ -1975,7 +1994,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -1990,10 +2010,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能解释 dp[i]，并手算出 dp[3] = 3。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能解释 dp[i]，并手算出 dp[3] = 3。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

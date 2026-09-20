@@ -741,8 +741,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1471,10 +1479,17 @@
           switch: "枚举所有 2^n 种子集也能算对，但 n 到 1e5 时太慢。必会是按规则选，排序后再扫一遍。",
         },
       };
+      const courseObjectives = [
+        "提出局部选择规则",
+        "用反例检查规则",
+        "理解贪心并非总是可用",
+      ];
+
       const questionPool = [
         {
           id: "what-greedy",
           courseId: "S3-06",
+          objectiveIndex: 0,
           objective: "提出局部选择规则",
           difficulty: "required",
           type: "choice",
@@ -1487,6 +1502,7 @@
         {
           id: "activity-rule",
           courseId: "S3-06",
+          objectiveIndex: 0,
           objective: "说出选不重叠活动的标准",
           difficulty: "required",
           type: "choice",
@@ -1499,6 +1515,7 @@
         {
           id: "trace-greedy",
           courseId: "S3-06",
+          objectiveIndex: 1,
           objective: "用小规模验证贪心过程",
           difficulty: "required",
           type: "choice",
@@ -1511,6 +1528,7 @@
         {
           id: "empty-choice",
           courseId: "S3-06",
+          objectiveIndex: 1,
           objective: "验证空选择",
           difficulty: "recommended",
           type: "choice",
@@ -1523,6 +1541,7 @@
         {
           id: "longest-counterexample",
           courseId: "S3-06",
+          objectiveIndex: 2,
           objective: "用反例检查规则",
           difficulty: "recommended",
           type: "choice",
@@ -1976,7 +1995,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -1991,10 +2011,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能说出贪心规则，并用小例子验证。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能说出贪心规则，并用小例子验证。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";

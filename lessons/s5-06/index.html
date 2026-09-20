@@ -741,8 +741,16 @@
 
       .question-objective {
         margin: 7px 0 0;
+        color: var(--ink);
+        font-size: 0.76rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .question-checkpoint {
+        margin: 2px 0 0;
         color: var(--muted);
-        font-size: 0.73rem;
+        font-size: 0.7rem;
         line-height: 1.45;
       }
 
@@ -1477,10 +1485,17 @@
           "delay-fix": "把改法留到考前再想风险很高：复盘时记忆最清楚、最容易想出具体规则，拖到考前往往已经忘了细节。",
         },
       };
+      const courseObjectives = [
+        "从失分中抽取可改规则",
+        "区分不同错误类型",
+        "重做关键题验证修复",
+      ];
+
       const questionPool = [
         {
           id: "why-classify-first",
           courseId: "S5-06",
+          objectiveIndex: 1,
           objective: "能为每个失分分类",
           difficulty: "required",
           type: "choice",
@@ -1493,6 +1508,7 @@
         {
           id: "identify-misread",
           courseId: "S5-06",
+          objectiveIndex: 1,
           objective: "能为每个失分分类",
           difficulty: "required",
           type: "choice",
@@ -1505,6 +1521,7 @@
         {
           id: "identify-implementation",
           courseId: "S5-06",
+          objectiveIndex: 1,
           objective: "能为每个失分分类",
           difficulty: "required",
           type: "choice",
@@ -1517,6 +1534,7 @@
         {
           id: "identify-boundary",
           courseId: "S5-06",
+          objectiveIndex: 1,
           objective: "能为每个失分分类",
           difficulty: "required",
           type: "choice",
@@ -1529,6 +1547,7 @@
         {
           id: "identify-time",
           courseId: "S5-06",
+          objectiveIndex: 1,
           objective: "能为每个失分分类",
           difficulty: "required",
           type: "choice",
@@ -1541,6 +1560,7 @@
         {
           id: "why-write-fix-rule",
           courseId: "S5-06",
+          objectiveIndex: 0,
           objective: "能给每类写一个改法",
           difficulty: "recommended",
           type: "choice",
@@ -1553,6 +1573,7 @@
         {
           id: "honest-uncertain-classification",
           courseId: "S5-06",
+          objectiveIndex: 1,
           objective: "能为每个失分分类",
           difficulty: "stretch",
           type: "choice",
@@ -2015,7 +2036,8 @@
             return `
               <section class="question">
                 <h3>${questionIndex + 1}. ${escapeHtml(question.prompt)}</h3>
-                <p class="question-objective">检查目标：${escapeHtml(question.objective)}</p>
+                <p class="question-objective">检查目标：${escapeHtml(courseObjectives[question.objectiveIndex])}</p>
+                <p class="question-checkpoint">本题检查：${escapeHtml(question.objective)}</p>
                 <div class="answer-options">${options}</div>
                 ${state.quizSubmitted ? `<p class="explanation"><strong>解析：</strong>${escapeHtml(question.explanation)}</p>` : ""}
               </section>
@@ -2030,10 +2052,21 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
+          const missedGoals = [
+            ...new Set(
+              questions
+                .filter((question) => Number(state.answers[question.id]) !== question.answer)
+                .map((question) => courseObjectives[question.objectiveIndex]),
+            ),
+          ];
+          const reviewHint =
+            missedGoals.length > 0
+              ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
+              : "";
           quizResult.dataset.tone = passed ? "" : "warn";
           quizResult.textContent = passed
-            ? `本次答对 ${score}/3。很好，已经能把失分分类到五种错误之一，并给每一类写出具体改法。`
-            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。`;
+            ? `本次答对 ${score}/3。很好，已经能把失分分类到五种错误之一，并给每一类写出具体改法。${reviewHint}`
+            : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";
