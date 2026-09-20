@@ -333,3 +333,113 @@ test("两个复验脚本都自带项数自查，声明与实跑不符会当场�
     });
   }
 });
+
+// ── 键盘可达与焦点可见段 ────────────────────────────────────────────────────
+// 这一段的检查项分两层：四十课各跑一遍结构检查，另选两课只靠键盘走完整节课。
+// 两层各有自己的每课项数，文档里少写一层或写错数字都会让读文档的人拿到过期事实。
+const keyboardScript = "tests/e2e/keyboard-cdp.ts";
+const keyboardChecklist = "tests/e2e/keyboard-manual-checklist.md";
+
+/** 默认跑键盘深路径的那几课（`CSP_E2E_KEYBOARD_DEEP` 的默认值）。 */
+function keyboardDeepLessons(): string[] {
+  const match = read(keyboardScript).match(/const defaultDeepLessons\s*=\s*\[([^\]]*)\]/);
+  if (!match) throw new Error(`${keyboardScript} 里找不到 defaultDeepLessons 声明`);
+  return [...(match[1] ?? "").matchAll(/"([^"]+)"/g)].map((entry) => entry[1]!);
+}
+
+test("e2e:keyboard 每课项数与深路径课数都绑回脚本声明", () => {
+  const perLesson = declaration(keyboardScript, "checksPerLesson");
+  const perDeep = declaration(keyboardScript, "deepChecksPerLesson");
+  const deepLessons = keyboardDeepLessons();
+  expect(deepLessons.length).toBeGreaterThan(0);
+
+  for (const lesson of deepLessons) {
+    expect({ lesson, inFlowTable: lessonFlows.some((entry) => entry.directory === lesson) }).toEqual({
+      lesson,
+      inFlowTable: true,
+    });
+  }
+});
+
+test("键盘复验每课项数、深路径项数与总项数都写进了文档", async () => {
+  const { loadCurriculum } = await import("../scripts/curriculum.ts");
+  const lessonCount = (await loadCurriculum()).length;
+  const perLesson = declaration(keyboardScript, "checksPerLesson");
+  const perDeep = declaration(keyboardScript, "deepChecksPerLesson");
+  const deepCount = keyboardDeepLessons().length;
+  const total = lessonCount * perLesson + deepCount * perDeep;
+
+  for (const document of [...proseDocuments, keyboardChecklist]) {
+    const claims = claimsAfter(document, "e2e:keyboard");
+    const source = read(document);
+
+    if (document === keyboardChecklist) {
+      // 清单自己就是这段复验的操作手册，不写命令名也要写清两层项数。
+      expect({ document, statesPerLesson: source.includes(`${perLesson} 项`) }).toEqual({
+        document,
+        statesPerLesson: true,
+      });
+      expect({ document, statesPerDeep: source.includes(`${perDeep} 项`) }).toEqual({
+        document,
+        statesPerDeep: true,
+      });
+      expect({ document, statesLessonCount: source.includes(`${lessonCount} 课`) }).toEqual({
+        document,
+        statesLessonCount: true,
+      });
+      continue;
+    }
+
+    expect({ document, claimed: claims.totals.length > 0 }).toEqual({ document, claimed: true });
+    for (const claim of claims.totals) expect({ document, claim }).toEqual({ document, claim: total });
+    for (const claim of claims.perLesson) {
+      const written = [claim.lowest, claim.highest];
+      const allowed = [perLesson, perDeep];
+      expect({ document, written, known: written.every((value) => allowed.includes(value)) }).toEqual({
+        document,
+        written,
+        known: true,
+      });
+    }
+  }
+});
+
+test("键盘清单的自动化复验记录保留历史结果，并新增本轮的整段结果", async () => {
+  const { loadCurriculum } = await import("../scripts/curriculum.ts");
+  const lessonCount = (await loadCurriculum()).length;
+  const perLesson = declaration(keyboardScript, "checksPerLesson");
+  const total = lessonCount * perLesson + keyboardDeepLessons().length * declaration(keyboardScript, "deepChecksPerLesson");
+
+  const rows = read(keyboardChecklist)
+    .split("\n")
+    .filter((line) => line.startsWith("|") && line.includes("keyboard-cdp.ts"));
+
+  expect(rows.length).toBeGreaterThanOrEqual(1);
+  expect(rows[rows.length - 1]).toContain(`${total}/${total} 项检查通过`);
+  expect(rows[rows.length - 1]).toContain(`各 ${perLesson} 项`);
+});
+test("键盘清单的固定项编号与脚本声明的每课项数对齐，且没有重号", () => {
+  const source = read(keyboardChecklist);
+  const perLesson = declaration(keyboardScript, "checksPerLesson");
+  const heading = source.match(/## 每课固定复验的\s*(\d+)\s*项/);
+  if (!heading) throw new Error(`${keyboardChecklist} 里找不到「每课固定复验的 N 项」标题`);
+  expect(Number(heading[1])).toBe(perLesson);
+
+  // 编号只取标题之后、下一个二级标题之前的那一段，避免把深路径那一段的编号算进来。
+  const section = source.slice(heading.index! + heading[0].length).split(/\n##\s/)[0];
+  const numbers = [...section.matchAll(/^\s*(\d+)\.\s/gm)].map((entry) => Number(entry[1]));
+  expect(numbers).toEqual(Array.from({ length: perLesson }, (_, index) => index + 1));
+
+  const deepHeading = source.match(/## 键盘深路径每课固定复验的\s*(\d+)\s*项/);
+  if (!deepHeading) throw new Error(`${keyboardChecklist} 里找不到深路径的「N 项」标题`);
+  expect(Number(deepHeading[1])).toBe(declaration(keyboardScript, "deepChecksPerLesson"));
+});
+
+test("三个复验脚本都自带项数自查，声明与实跑不符会当场失败", () => {
+  for (const document of [typedScript, singleLessonScript, keyboardScript]) {
+    expect({ document, selfCheck: read(document).includes("检查项数与声明不符") }).toEqual({
+      document,
+      selfCheck: true,
+    });
+  }
+});

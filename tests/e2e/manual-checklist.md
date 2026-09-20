@@ -17,6 +17,11 @@
 `bun run e2e:flow` 一次覆盖 S1-02 至 S5-08 全部 39 节已迁移课（741 项，每课 19 项），`bun run e2e:flow:s3`
 这样的分段命令按阶段跑；`CSP_E2E_LESSONS=s3-07 bun tests/e2e/flow-cdp.ts` 只跑一课。
 
+键盘可达与焦点可见（`Tab` 顺序、焦点环、弹层焦点归还、小测作答与提交后的焦点）另有清单：
+[`keyboard-manual-checklist.md`](./keyboard-manual-checklist.md)。`bun run e2e:keyboard` 覆盖全部 40 课，328 项检查
+（结构检查每课 8 项 + S1-02 与 S3-01 的键盘深路径每课 4 项）；只想跑一课或换两课走深路径分别用
+`CSP_E2E_KEYBOARD_LESSONS` 与 `CSP_E2E_KEYBOARD_DEEP` 指定，跑的命令本身不变。
+
 其余课程暂无自动化脚本，仍按下面的手工步骤执行并在报告或本节记录浏览器与日期。
 
 ## 前置条件
