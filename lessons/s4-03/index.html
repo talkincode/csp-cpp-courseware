@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(320px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,32 @@
               <div class="box-meta" id="variableMeta">先点“写出状态：余额初始为 0”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="guardMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在把状态表上的判断落成一行代码：每个事件只处理一次，用 <button type="button" class="faq-term" data-faq="condition-branch">条件分支</button> 决定这次操作做还是跳过。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="存钱罐模拟的脚手架，只留一空">
+                <ol>
+                  <li>// 状态表：balance 是余额，skipped 是跳过次数</li>
+                  <li>int balance = 0, skipped = 0;</li>
+                  <li>for (int i = 1; i &lt;= n; i += 1) {</li>
+                  <li>    int x; cin &gt;&gt; x;   // 正数存入，负数取出，按事件顺序一个一个读</li>
+                  <li class="focus-line">    <input id="guardInput" class="micro-input" type="text" value="" placeholder="if (____)" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="40" aria-label="写出判断这次操作能不能做的那一行" /> { balance += x; }</li>
+                  <li>    else { skipped += 1; }   // 余额不够，跳过这次</li>
+                  <li>}</li>
+                  <li>cout &lt;&lt; balance &lt;&lt; " " &lt;&lt; skipped;</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="判断行的检查与兜底">
+                <button id="guardCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="guardHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="guardRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="guardResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="guardHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="guardRef" class="micro-ref" hidden>    if (balance + x &gt;= 0)   // 操作之后余额不为负才允许：刚好变成 0 也算够</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1544,8 @@
         divided: false,
         remaindered: false,
         evenChecked: false,
+        guardDraft: "",
+        guardTyped: false,
         precedenceSolved: false,
         parensSolved: false,
         quizSeed: createSeed(),
@@ -1506,6 +1574,10 @@
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
       const soundToggle = document.querySelector("#soundToggle");
+      const guardMicro = document.querySelector("#guardMicro");
+      const guardInput = document.querySelector("#guardInput");
+      const guardHint = document.querySelector("#guardHint");
+      const guardRef = document.querySelector("#guardRef");
 
       function createSeed() {
         const values = new Uint32Array(1);
@@ -1529,6 +1601,8 @@
             divided: stored.divided === true,
             remaindered: stored.remaindered === true,
             evenChecked: stored.evenChecked === true,
+            guardDraft: typeof stored.guardDraft === "string" ? stored.guardDraft : "",
+            guardTyped: stored.guardTyped === true,
             precedenceSolved: stored.precedenceSolved === true,
             parensSolved: stored.parensSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1608,12 +1682,44 @@
         return state.precedenceSolved && state.parensSolved;
       }
 
+      function normalizeGuardInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkGuardLine(raw) {
+        const text = normalizeGuardInput(raw);
+        if (!text) return { ok: false, message: "先在空里写出判断那一行：这次操作能不能做，全看余额够不够。" };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：小括号、大于号和加号都要敲半角 ( > + 。" };
+        if (/^if\(balance\+x>=0\)$/.test(text)) return { ok: true, message: "" };
+        if (/^if\(balance>=-x\)$/.test(text)) return { ok: true, message: "" };
+        if (/^(while|for)\(/.test(text))
+          return { ok: false, message: "每个事件只处理一次，不该用循环：这一空要写的是 if ( 条件 ) 。" };
+        if (/^if\(balance\+x>0\)$/.test(text))
+          return { ok: false, message: "边界差一点：刚好把余额用完、变成 0 是允许的，所以要用 >= ，不能写 > 。" };
+        if (/^if\(balance\+x<=0\)$/.test(text))
+          return { ok: false, message: "方向反了：余额够就允许，<= 0 会把够的情况也跳过，要写 >= 0 。" };
+        if (/^if\(balance>=x\)$/.test(text))
+          return { ok: false, message: "x 是负数时 balance >= x 几乎总成立，会扣成负数。要比的是操作之后的 balance + x 。" };
+        if (/^if\(balance-x>=0\)$/.test(text))
+          return { ok: false, message: "符号弄反了：存入加、取出减，x 本身已经带符号，直接用 balance + x 。" };
+        if (/^if\(.+\)$/.test(text))
+          return { ok: false, message: "括号里的条件还没对：要比的是 balance + x 和 0 。" };
+        if (/^balance\+x>=0$/.test(text))
+          return { ok: false, message: "判断还差 if 和一对半角小括号：要写成 if (balance + x >= 0) 。" };
+
+        return { ok: false, message: "这一空要写成 if (balance + x >= 0)：操作后余额不为负才可以扣。" };
+      }
+
       function unlockedStepCount() {
-        return [state.formulasMatched, state.evenChecked, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        // 任务 2 还要亲手写对判断那一行才算推进：光点三步按钮不算学会。
+        return [state.formulasMatched, state.evenChecked && state.guardTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.formulasMatched, state.evenChecked, conceptSolved()][step] ?? false;
+        return [true, state.formulasMatched, state.evenChecked && state.guardTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1758,7 +1864,7 @@
         if (state.evenChecked) {
           variableValue.textContent = "状态 balance=0；事件 +5 -3 -10；追踪 5 → 2 → 跳过";
           variableMeta.textContent = "三步走完。不要跳过样例追踪。";
-          showFeedback(flowFeedback, "你已经按顺序走完。下一步确定处理思路和两个边界。");
+          showFeedback(flowFeedback, "你已经按顺序走完。下一步在下面的空里亲手写出判断那一行。");
         } else if (state.remaindered) {
           variableValue.textContent = "已写状态，已写事件顺序";
           variableMeta.textContent = "顺序写清了。下一步用 5 → 2 → 跳过 追踪样例。";
@@ -1772,6 +1878,11 @@
           variableMeta.textContent = "先点“写出状态：余额初始为 0”。";
           flowFeedback.textContent = "";
         }
+
+        if (guardMicro) guardMicro.hidden = !state.evenChecked;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (guardInput && document.activeElement !== guardInput) guardInput.value = state.guardDraft ?? "";
+        guardInput?.classList.toggle("is-correct", state.guardTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2139,72 @@
         }
 
         state.evenChecked = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：状态、事件顺序、样例追踪 5 → 2 → 跳过 都对上了。现在在下面的空里亲手写出判断那一行。");
+        announce("三步已经走完。现在亲手写出判断那一行：操作之后余额不为负才可以扣，刚好变 0 也算够。");
+        playSound("calm");
+      });
+
+      guardInput?.addEventListener("input", (event) => {
+        state.guardDraft = event.target.value;
+        state.guardTyped = false;
+        guardInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#guardCheckButton")?.addEventListener("click", () => {
+        const result = checkGuardLine(state.guardDraft);
+        if (!result.ok) {
+          showFeedback(guardHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          guardInput?.classList.add("is-wrong");
+          return;
+        }
+        guardInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(guardHint, result.message);
+        if (!state.guardTyped) {
+          state.guardTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：判断那一行是你亲手写的。下一步确定处理思路和两个边界。");
+        }
+      });
+
+      document.querySelector("#guardHintButton")?.addEventListener("click", () => {
+        const text = normalizeGuardInput(state.guardDraft);
+        const hint = !text
+          ? "要写的是 if (balance + x >= 0)：x 已经带符号，操作之后余额不为负就允许。"
+          : text.includes("balance")
+            ? "已经写到 balance 了。检查三样：要不要加 x 、和 0 比、大于等于别写成大于。"
+            : "这一空要的是 if (balance + x >= 0)：先写 if，再在括号里比较操作之后的余额和 0 。";
+        showFeedback(guardHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#guardRefButton")?.addEventListener("click", () => {
+        if (guardRef) guardRef.hidden = !guardRef.hidden;
+        announce(guardRef && !guardRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#guardResetButton")?.addEventListener("click", () => {
+        state.guardDraft = "";
+        state.guardTyped = false;
+        if (guardHint) guardHint.textContent = "";
+        if (guardRef) guardRef.hidden = true;
+        guardInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (guardInput) guardInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：状态、事件顺序和样例追踪都走完了。下一步看处理思路和边界。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {
