@@ -2,7 +2,7 @@
 /**
  * 手写填空微编程的浏览器自动化复验（零依赖）。
  *
- * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 前六课）、bun run e2e:typed（全部）
+ * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 八课）、bun run e2e:typed（全部）
  *
  * 这个脚本最早为 S2 八课而写，后来 S3 的课沿用同一套课件样板，所以也一起跑；
  * 用 CSP_E2E_LESSONS=s3-01,s3-03 可以只跑指定几课。
@@ -352,6 +352,48 @@ const lessons: LessonConfig[] = [
     outOfBoundsMessage: "开始时间",
     blankWant: "sort(a + 1, a + 4, by_end)",
     scenario: "写出按结束时间排序的那一行",
+  },
+  {
+    directory: "s3-07",
+    storageKey: "csp-cpp-s3-07-progress-v1",
+    micro: "stackMicro",
+    input: "stackInput",
+    check: "stackCheckButton",
+    hint: "stackHintButton",
+    ref: "stackRefButton",
+    reset: "stackResetButton",
+    hintPanel: "stackHint",
+    refPanel: "stackRef",
+    typedField: "stackTyped",
+    draftField: "stackDraft",
+    good: "st.pop()",
+    fullWidth: "st．pop（）",
+    fullWidthHint: "半角",
+    outOfBounds: "st.top()",
+    outOfBoundsMessage: "看一眼",
+    blankWant: "st.____()",
+    scenario: "写出配对成功后弹掉栈顶的那一行",
+  },
+  {
+    directory: "s3-08",
+    storageKey: "csp-cpp-s3-08-progress-v1",
+    micro: "dpMicro",
+    input: "dpInput",
+    check: "dpCheckButton",
+    hint: "dpHintButton",
+    ref: "dpRefButton",
+    reset: "dpResetButton",
+    hintPanel: "dpHint",
+    refPanel: "dpRef",
+    typedField: "dpTyped",
+    draftField: "dpDraft",
+    good: "dp[i] = dp[i - 1] + dp[i - 2]",
+    fullWidth: "dp［i］＝dp［i － 1］＋dp［i － 2］",
+    fullWidthHint: "半角",
+    outOfBounds: "dp[i] = dp[i - 1] * dp[i - 2]",
+    outOfBoundsMessage: "相加",
+    blankWant: "dp[i] = dp[i - _] + dp[i - _]",
+    scenario: "写出爬楼梯的转移那一行",
   },
 ];
 
