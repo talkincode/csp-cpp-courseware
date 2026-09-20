@@ -423,6 +423,79 @@ try {
   check("存储不可用时不伪造已保存", !degraded.terminalText.includes("Hello, CSP!"), degraded.terminalText.slice(-24));
   check("存储不可用时不自称已恢复进度", JSON.stringify(degraded.panel) === JSON.stringify([true, false, false, false]), JSON.stringify(degraded.panel));
 
+  section("E2E-S1-01-06 会话中途保存失败与恢复");
+  // 会话中途浏览器可能开始拒绝写入（配额用尽、隐私设置变化）。这条路径以前
+  // 只把 storageAvailable 改成 false，而答题路径不会刷新提示，界面等于替
+  // 学习者断言“已保存”。这里在真实浏览器里把 setItem 打坏，再修好。
+  // 先导航到一个恢复正常存储的文档，再写入基线进度：上一个场景所在的文档
+  // 仍然是存储被禁用的那个，在它里面写 localStorage 会静默失败。
+  await visit(client);
+  const seeded = await client.evaluateJson<any>(`(() => {
+    const key = "csp-cpp-s1-01-progress-v1";
+    try {
+      localStorage.clear();
+      localStorage.setItem(key, JSON.stringify({
+        activeStep: 3,
+        sourceInspected: true,
+        sourceSaved: true,
+        compiled: true,
+        ran: true,
+        debugSolved: true,
+      }));
+    } catch (error) {
+      return JSON.stringify({ ok: false, reason: String(error) });
+    }
+    return JSON.stringify({ ok: (localStorage.getItem(key) ?? "").includes("debugSolved"), reason: "" });
+  })()`);
+  check("基线进度已就绪（会话中途失败场景前置）", seeded.ok === true, seeded.reason);
+  await visit(client);
+
+  const midSession = await client.evaluateJson<any>(`(() => {
+    const key = "csp-cpp-s1-01-progress-v1";
+    const notice = () => document.querySelector("#storageNotice");
+    const ribbon = () => document.querySelector("#completionRibbon").textContent.trim();
+    const answeredIds = () => Object.keys(JSON.parse(localStorage.getItem(key) ?? "{}").answers ?? {});
+    const out = {};
+
+    const radio = document.querySelector('#quizForm input[type="radio"]');
+    out.answerCountBefore = answeredIds().length;
+
+    const realSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = () => {
+      throw new DOMException("quota exceeded for e2e", "QuotaExceededError");
+    };
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change", { bubbles: true }));
+
+    out.noticeHiddenWhileBlocked = notice().hidden;
+    out.noticeText = notice().textContent.trim();
+    out.retryOffered = !!notice().querySelector("[data-retry-storage-save]");
+    out.answerCountWhileBlocked = answeredIds().length;
+    out.answerStayedChecked = document.querySelector('#quizForm input[type="radio"]:checked') !== null;
+    out.ribbonWhileBlocked = ribbon();
+    // 随后的操作提示会刷新顶部提示条，但保存失败的说明必须留在页面上。
+    out.noticeStillVisibleAfterAnnounce = notice().hidden === false;
+
+    Storage.prototype.setItem = realSetItem;
+    notice().querySelector("[data-retry-storage-save]").click();
+
+    out.noticeHiddenAfterRetry = notice().hidden;
+    out.ribbonAfterRetry = ribbon();
+    out.answerCountAfterRetry = answeredIds().length;
+    out.retryAfterRecovery = !!notice().querySelector("[data-retry-storage-save]");
+    return JSON.stringify(out);
+  })()`);
+
+  check("会话中途保存失败立刻可见", midSession.noticeHiddenWhileBlocked === false, `hidden=${midSession.noticeHiddenWhileBlocked}`);
+  check("失败提示说明刷新后不会恢复进度", midSession.noticeText.includes("刷新页面后不会恢复进度"), midSession.noticeText.slice(0, 40));
+  check("失败提示不会被后续操作提示掩盖", midSession.noticeStillVisibleAfterAnnounce === true, midSession.ribbonWhileBlocked);
+  check("失败时提供重试入口", midSession.retryOffered === true, "");
+  check("失败时不把答案写成已保存", midSession.answerCountBefore === 0 && midSession.answerCountWhileBlocked === 0, `已保存答案 ${midSession.answerCountWhileBlocked} 条`);
+  check("失败时当前会话仍保留作答", midSession.answerStayedChecked === true, "");
+  check("重试后恢复保存并说明状态", midSession.noticeHiddenAfterRetry === true && midSession.ribbonAfterRetry.includes("已恢复"), midSession.ribbonAfterRetry);
+  check("重试把待写答案补写落盘", midSession.answerCountAfterRetry === 1, `已保存答案 ${midSession.answerCountAfterRetry} 条`);
+  check("恢复后不再显示重试入口", midSession.retryAfterRecovery === false, "");
+
   section("E2E-S1-01-05 题库异常降级");
   async function probeBrokenPool() {
     await visit(client!, 3);

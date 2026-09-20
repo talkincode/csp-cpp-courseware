@@ -848,6 +848,20 @@
         line-height: 1.55;
       }
 
+      .storage-notice button {
+        margin-left: 6px;
+        padding: 3px 9px;
+        color: #6e421e;
+        background: #ffe1b0;
+        border: 1px solid #c8843c;
+        border-radius: 3px;
+        font-size: 0.74rem;
+      }
+
+      .storage-notice button:hover {
+        background: #ffd28f;
+      }
+
       .confetti-layer {
         position: fixed;
         inset: 0;
@@ -1556,11 +1570,28 @@
       function saveState() {
         try {
           window.localStorage.setItem(storageKey, JSON.stringify(state));
+          if (!storageAvailable) {
+            storageAvailable = true;
+            updateStorageNotice();
+            announce("本地保存已恢复：从现在起的进度会继续保存。");
+          }
           return true;
         } catch {
-          storageAvailable = false;
+          // 保存失败不能只写在变量里：学习者会继续操作，必须当次会话就知道
+          // 这次记录没有落地，否则界面等于在替他断言“已保存”。
+          if (storageAvailable) {
+            storageAvailable = false;
+            announce("这次学习记录没有保存成功：浏览器拒绝了本地存储。你仍可继续本课，但刷新页面后不会恢复当前进度。");
+          }
+          updateStorageNotice();
           return false;
         }
+      }
+
+      function retrySaving() {
+        if (saveState()) return true;
+        announce("浏览器仍然拒绝保存学习记录。你仍可继续本课，刷新后需要重新作答。");
+        return false;
       }
 
       function questionSetForSeed(seed) {
@@ -1632,6 +1663,14 @@
       function updateStorageNotice() {
         storageNotice.hidden = storageAvailable;
         storageNotice.textContent = "浏览器没有允许保存学习记录：本次互动仍可继续，但刷新页面后不会恢复进度。";
+        if (storageAvailable) return;
+
+        const retry = document.createElement("button");
+        retry.type = "button";
+        retry.dataset.retryStorageSave = "1";
+        retry.textContent = "重试保存";
+        retry.addEventListener("click", () => retrySaving());
+        storageNotice.append(" ", retry);
       }
 
       function playSound(kind) {

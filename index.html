@@ -363,6 +363,20 @@
         line-height: 1.55;
       }
 
+      .storage-notice button {
+        margin-left: 6px;
+        padding: 3px 9px;
+        color: #793313;
+        background: #ffe0ad;
+        border: 1px solid #c8843c;
+        border-radius: 3px;
+        font-size: 0.78rem;
+      }
+
+      .storage-notice button:hover {
+        background: #ffd18d;
+      }
+
       .content-grid {
         display: grid;
         grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.42fr);
@@ -1514,11 +1528,41 @@
       function saveProgress() {
         try {
           window.localStorage.setItem(storageKey, JSON.stringify(state.progress));
+          if (!state.storageAvailable) {
+            state.storageAvailable = true;
+            updateStorageNotice();
+            announce("本地保存已恢复：从现在起的进度会继续保存。");
+          }
           return true;
         } catch {
-          state.storageAvailable = false;
+          // 保存失败不能只写在变量里：学习者会继续勾选，必须当次会话就知道
+          // 这次记录没有落地，否则界面等于在替他断言“已保存”。
+          if (state.storageAvailable) {
+            state.storageAvailable = false;
+            announce("这次学习记录没有保存成功：浏览器拒绝了本地存储。你仍可继续浏览，但刷新页面后不会恢复当前进度。");
+          }
+          updateStorageNotice();
           return false;
         }
+      }
+
+      function retrySavingProgress() {
+        if (saveProgress()) return true;
+        announce("浏览器仍然拒绝保存学习记录。你仍可继续浏览，但刷新后进度需要重新勾选。");
+        return false;
+      }
+
+      function updateStorageNotice() {
+        storageNotice.hidden = state.storageAvailable;
+        storageNotice.textContent = "浏览器未允许保存学习记录：进度仅保留在当前会话。你仍可阅读和勾选本课检验项。";
+        if (state.storageAvailable) return;
+
+        const retry = document.createElement("button");
+        retry.type = "button";
+        retry.dataset.retryStorageSave = "1";
+        retry.textContent = "重试保存";
+        retry.addEventListener("click", () => retrySavingProgress());
+        storageNotice.append(" ", retry);
       }
 
       function announce(message) {
@@ -1590,8 +1634,7 @@
         const progress = allProgress();
         document.querySelector("#progressValue").textContent = `${Math.round((progress.completed / progress.total) * 100)}%`;
         document.querySelector("#lessonValue").textContent = `${progress.completedLessons} / ${courseData.length}`;
-        storageNotice.hidden = state.storageAvailable;
-        storageNotice.textContent = "浏览器未允许保存学习记录：进度仅保留在当前会话。你仍可阅读和勾选本课检验项。";
+        updateStorageNotice();
       }
 
       function renderLessonList() {
