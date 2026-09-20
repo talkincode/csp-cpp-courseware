@@ -2166,6 +2166,10 @@
         state.updateTyped = false;
         if (updateHint) updateHint.textContent = "";
         if (updateRef) updateRef.hidden = true;
+        updateInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有「正在输入就不覆盖」的保护，
+        // 点按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (updateInput) updateInput.value = "";
         saveState();
         renderFlowTask();
         renderSteps();

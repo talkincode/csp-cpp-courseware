@@ -215,6 +215,31 @@ test("每个已迁移课件都把草稿与完成状态写进本地进度", () =>
   }
 });
 
+// 重置是明确的清空动作，必须把输入框里看得见的内容也写回空。
+// render 里有「正在输入就不覆盖」的保护（activeElement !== input），而点按钮不一定把焦点移出输入框，
+// 只清状态会让输入框看起来没反应、屏幕上的字和进度对不上。
+test("重置按钮同时清掉输入框里看得见的内容与对错样式", () => {
+  const offenders: string[] = [];
+
+  for (const page of pages) {
+    if (page.microInputs.length === 0) continue;
+
+    const handler = page.source.match(
+      /document\.querySelector\("#[A-Za-z0-9]*ResetButton"\)\??\.addEventListener\("click",[\s\S]*?\n {6}\}\);/,
+    )?.[0];
+
+    if (!handler) {
+      offenders.push(`${page.directory}：找不到重置按钮的点击处理`);
+      continue;
+    }
+
+    if (!/\.value = "";/.test(handler)) offenders.push(`${page.directory}：重置没有把输入框内容写回空`);
+    if (!/classList\.remove\(/.test(handler)) offenders.push(`${page.directory}：重置没有清掉输入框的对错样式`);
+  }
+
+  expect(offenders).toEqual([]);
+});
+
 test("每条只写字面量的指正正则都能匹配它想表达的那串字", () => {
   const branches = pages.flatMap((page) => readRejectionBranches(page));
 
