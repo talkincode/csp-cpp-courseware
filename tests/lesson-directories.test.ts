@@ -95,6 +95,15 @@ test("the first lesson supplies a guided interactive page and randomized choice 
   expect(source).toContain('type: "choice"');
   expect(source).toContain('source: "course-plan / 自编"');
   expect(source).toContain("csp-cpp-s1-01-progress-v1");
+  // 微编程：选对修复后亲手补一个分号，含兜底与移动端防干扰属性
+  expect(source).toContain('id="fixInput"');
+  expect(source).toContain('id="fixCheckButton"');
+  expect(source).toContain('id="fixHintButton"');
+  expect(source).toContain('id="fixRefButton"');
+  expect(source).toContain('id="fixResetButton"');
+  expect(source).toContain('autocapitalize="none"');
+  expect(source).toContain('autocorrect="off"');
+  expect(source).toContain('spellcheck="false"');
 });
 
 test("S1-02 supplies a guided variable lesson and randomized choice quiz", async () => {
