@@ -461,6 +461,46 @@
         font-weight: 800;
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(340px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .inline-code {
         padding: 1px 4px;
         color: #9f3b20;
@@ -1337,6 +1377,34 @@
               <div class="box-meta" id="variableMeta">先点“邻接表：先写出每个点的邻居”。</div>
             </aside>
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
+
+            <div id="guardMicro" hidden>
+              <p class="step-lead">
+                三步走完了，现在把“防止重复访问”落成一行代码：dfs 走到一个点 u 时，先看它来过没有——来过就马上结束这次调用，别再往下走。<button type="button" class="faq-term" data-faq="bool">bool</button> 这种类型只有 true 和 false 两个值，正好用来当访问标记。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+              </p>
+              <div class="code-sheet" aria-label="数连通块的脚手架，只留一空">
+                <ol>
+                  <li>// 最小示例：5 个点（0~4），边 (0,1) (1,2) (3,4)，这是无向图</li>
+                  <li>int adj[1005][1005];   // 邻接表（数组版）：adj[u][k] 是 u 的第 k 个邻居</li>
+                  <li>int deg[1005];         // deg[u] 记录 u 有几个邻居</li>
+                  <li>bool visited[1005];    // 访问标记：false 表示还没来过，true 表示来过了</li>
+                  <li>void dfs(int u) {</li>
+                  <li class="focus-line">    <input id="guardInput" class="micro-input" type="text" value="" placeholder="if (____) return;" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="60" aria-label="写出 dfs 防止重复访问的那一行" />   // 来过就收工，别再往下走</li>
+                  <li>    visited[u] = true;                         // 登记：这个点来过了</li>
+                  <li>    for (int k = 0; k &lt; deg[u]; k += 1) dfs(adj[u][k]);   // 再把每个邻居都走一遍</li>
+                  <li>}</li>
+                  <li>// 数连通块：for (int i = 0; i &lt; n; i += 1) if (!visited[i]) { dfs(i); pieces += 1; }</li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="防止重复访问那一行的检查与兜底">
+                <button id="guardCheckButton" class="primary-action" type="button">检查这一空</button>
+                <button id="guardHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="guardRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="guardResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="guardHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="guardRef" class="micro-ref" hidden>    if (visited[u]) return;      // 来过就返回：这一行才是 visited 数组存在的理由</pre>
+            </div>
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
@@ -1478,6 +1546,8 @@
         stateDefined: false,
         initialized: false,
         transitioned: false,
+        guardDraft: "",
+        guardTyped: false,
         methodSolved: false,
         tieRuleSolved: false,
         quizSeed: createSeed(),
@@ -1500,6 +1570,10 @@
       const debugFeedback = document.querySelector("#debugFeedback");
       const variableValue = document.querySelector("#variableValue");
       const variableMeta = document.querySelector("#variableMeta");
+      const guardMicro = document.querySelector("#guardMicro");
+      const guardInput = document.querySelector("#guardInput");
+      const guardHint = document.querySelector("#guardHint");
+      const guardRef = document.querySelector("#guardRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
       const completionRibbon = document.querySelector("#completionRibbon");
@@ -1529,6 +1603,8 @@
             stateDefined: stored.stateDefined === true,
             initialized: stored.initialized === true,
             transitioned: stored.transitioned === true,
+            guardDraft: typeof stored.guardDraft === "string" ? stored.guardDraft : "",
+            guardTyped: stored.guardTyped === true,
             methodSolved: stored.methodSolved === true,
             tieRuleSolved: stored.tieRuleSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
@@ -1604,16 +1680,83 @@
         });
       }
 
+      function normalizeGuardInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").replace(/\s+/g, "");
+      }
+
+      function checkVisitedGuard(raw) {
+        const text = normalizeGuardInput(raw);
+        if (!text)
+          return {
+            ok: false,
+            message: "先在空里写出“来过就返回”的那一行：有没有它，决定 dfs 会不会沿着一条边来回绕圈。",
+          };
+        if (/[（），；：、。！？［］【】｛｝＝＋－×＊·．“”‘’＜＞]/.test(text))
+          return { ok: false, message: "用了中文或全角符号哦：小括号、方括号和分号都要敲半角 ( ) [ ] ; 。" };
+        if (!text.endsWith(";"))
+          return { ok: false, message: "是不是漏了末尾的半角分号呀？C++ 每条语句末尾都要写 ; 。" };
+
+        const body = text.slice(0, -1);
+        if (/^if\(visited\[u\]\)return$/.test(body)) return { ok: true, message: "" };
+        if (/^if\(visited\[u\]==true\)return$/.test(body)) return { ok: true, message: "" };
+        if (/^if\(true==visited\[u\]\)return$/.test(body)) return { ok: true, message: "" };
+        if (/^if\(!visited\[u\]\)return$/.test(body))
+          return {
+            ok: false,
+            message:
+              "条件写反了：!visited[u] 说的是“还没来过”，那样第一次进 dfs 就立刻返回，一个点都走不到；要写成来过（visited[u]）才返回。",
+          };
+        if (/^if\(visited\[u\]==false\)return$/.test(body))
+          return { ok: false, message: "比较的对象写反了：visited[u] 是 true 才表示来过，要写成 if (visited[u]) 或者 == true 。" };
+        if (/^if\(visited\[u\]=(true|false)\)return$/.test(body))
+          return {
+            ok: false,
+            message:
+              "只有一个等号 = ：那是赋值，会把 visited[u] 改成 true 再立刻返回，等于每个点都当成来过；判断相等要用两个等号 == ，或者直接写 if (visited[u]) 。",
+          };
+        if (/^if\(visited\[u\]\)return0$/.test(body))
+          return { ok: false, message: "dfs 是 void，不收返回值：这里写 return; 就够，return 0; 是 main 结尾的写法。" };
+        if (/^if\(visited\[u\]\)break$/.test(body))
+          return { ok: false, message: "这里要写 return; 而不是 break; ：break 只能跳出最近的循环，这里是要结束这一次 dfs 调用。" };
+        if (/^if\(adj\[u\]\)return$/.test(body))
+          return { ok: false, message: "判断的是访问标记 visited[u] ，不是邻接表 adj[u] ：adj[u] 存的是邻居，说明不了“来过没有”。" };
+        if (/^if\(deg\[u\]\)return$/.test(body))
+          return { ok: false, message: "deg[u] 只是邻居个数，不能表示来过没有：要判断的是 visited[u] 。" };
+        if (/^if\(visited\[i\]\)return$/.test(body))
+          return { ok: false, message: "下标要对上参数：dfs 收进来的点是 u，写成 i 会去查别的点，判断就不准了。" };
+        if (/^visited\[u\]=true$/.test(body))
+          return {
+            ok: false,
+            message: "这一空要写的是“来过就返回”的判断；visited[u] = true; 是下一行的登记动作，脚手架里已经写好了。",
+          };
+        if (/^return$/.test(body))
+          return {
+            ok: false,
+            message: "只有 return; 不够：前面要加上 if (visited[u]) 这个条件，否则第一个点进来就直接返回，DFS 一步都走不动。",
+          };
+        if (/^if\(visited\[u\]\)$/.test(body))
+          return { ok: false, message: "少了 return; ：光判断来过还不够，条件成立时要用 return; 结束这一次 dfs 调用。" };
+        if (/^if\(/.test(body))
+          return { ok: false, message: "判断的对象要写 visited[u] ：它记录这个点来过没有，别的变量都做不到这件事。" };
+
+        return {
+          ok: false,
+          message: "这一空要写成 if (visited[u]) return; ：这个点来过就马上结束这次 dfs，不再重复往下走。",
+        };
+      }
+
       function conceptSolved() {
         return state.methodSolved && state.tieRuleSolved;
       }
 
       function unlockedStepCount() {
-        return [state.toolsMatched, state.transitioned, conceptSolved(), state.quizSubmitted].filter(Boolean).length;
+        return [state.toolsMatched, state.transitioned && state.guardTyped, conceptSolved(), state.quizSubmitted].filter(
+          Boolean,
+        ).length;
       }
 
       function isStepUnlocked(step) {
-        return [true, state.toolsMatched, state.transitioned, conceptSolved()][step] ?? false;
+        return [true, state.toolsMatched, state.transitioned && state.guardTyped, conceptSolved()][step] ?? false;
       }
 
       function clampActiveStep() {
@@ -1772,6 +1915,11 @@
           variableMeta.textContent = "先点“邻接表：先写出每个点的邻居”。";
           flowFeedback.textContent = "";
         }
+
+        if (guardMicro) guardMicro.hidden = !state.transitioned;
+        // 正在输入时不覆盖，否则光标会被跳到末尾。
+        if (guardInput && document.activeElement !== guardInput) guardInput.value = state.guardDraft ?? "";
+        guardInput?.classList.toggle("is-correct", state.guardTyped);
       }
 
       function renderDebugTask() {
@@ -2028,10 +2176,72 @@
         }
 
         state.transitioned = true;
-        state.activeStep = 2;
+        saveState();
+        renderFlowTask();
+        showFeedback(flowFeedback, "三步走完了：邻接表、访问标记、DFS 都对上了，连通块数 = 2。现在在下面的空里亲手写出防止重复访问的那一行。");
+        announce("三步已经走完。现在亲手写出防止重复访问的那一行：这个点来过就立刻返回，不再往下走。");
+        playSound("calm");
+      });
+
+      guardInput?.addEventListener("input", (event) => {
+        state.guardDraft = event.target.value;
+        state.guardTyped = false;
+        guardInput.classList.remove("is-wrong");
+        saveState();
+        renderFlowTask();
+      });
+
+      document.querySelector("#guardCheckButton")?.addEventListener("click", () => {
+        const result = checkVisitedGuard(state.guardDraft);
+        if (!result.ok) {
+          showFeedback(guardHint, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          guardInput?.classList.add("is-wrong");
+          return;
+        }
+        guardInput?.classList.remove("is-wrong");
+        if (result.message) showFeedback(guardHint, result.message);
+        if (!state.guardTyped) {
+          state.guardTyped = true;
+          state.activeStep = 2;
+          saveState();
+          render();
+          reward("任务 2 完成：防止重复访问的那一行是你亲手写的。下一步看 DFS/BFS 的顺序差异和两个边界。");
+        }
+      });
+
+      document.querySelector("#guardHintButton")?.addEventListener("click", () => {
+        const text = normalizeGuardInput(state.guardDraft);
+        const hint = !text
+          ? "要写的是 if (visited[u]) return; ：先判断这个点来过没有，来过就马上返回。"
+          : text.includes("return")
+            ? "已经有 return 了。检查三样：条件是 visited[u]（来过），不是 !visited[u]；末尾有半角分号；点编号用的是参数 u 。"
+            : "先写 if ( 开始判断，再想清楚“什么情况该返回”：来过的点（visited[u]）才返回。";
+        showFeedback(guardHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#guardRefButton")?.addEventListener("click", () => {
+        if (guardRef) guardRef.hidden = !guardRef.hidden;
+        announce(guardRef && !guardRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#guardResetButton")?.addEventListener("click", () => {
+        state.guardDraft = "";
+        state.guardTyped = false;
+        if (guardHint) guardHint.textContent = "";
+        if (guardRef) guardRef.hidden = true;
+        guardInput?.classList.remove("is-wrong", "is-correct");
+        // 重置是明确的清空动作，必须直接写回输入框：renderFlowTask 里有“正在输入就不覆盖”的保护，
+        // 点击按钮不一定把焦点移出输入框（如 Safari），只清状态会让输入框看起来没反应。
+        if (guardInput) guardInput.value = "";
         saveState();
         render();
-        reward("任务 2 完成：邻接表、访问标记、DFS 都走完了，连通块数 = 2。下一步看顺序差异和边界。");
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       document.querySelectorAll("[data-concept]").forEach((button) => {

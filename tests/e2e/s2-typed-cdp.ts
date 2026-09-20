@@ -2,7 +2,7 @@
 /**
  * 手写填空微编程的浏览器自动化复验（零依赖）。
  *
- * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 八课）、bun run e2e:s4-typed（S4 前三课）、bun run e2e:typed（全部）
+ * 用法：bun run e2e:s2-typed（S2 八课）、bun run e2e:s3-typed（S3 八课）、bun run e2e:s4-typed（S4 八课）、bun run e2e:typed（全部）
  *
  * 这个脚本最早为 S2 八课而写，后来 S3 与 S4 的课沿用同一套课件样板，所以也一起跑；
  * 用 CSP_E2E_LESSONS=s3-01,s3-03 可以只跑指定几课。
@@ -524,6 +524,50 @@ const lessons: LessonConfig[] = [
     blankWant: "dp[i] = max(dp[i - 1], ____);",
     taskOnePicks: ['[data-quantity="stateTool"] [data-choice="define-dp"]', '[data-quantity="pickTool"] [data-choice="pick-or-skip"]'],
     scenario: "写出打家劫舍的转移那一行",
+  },
+  {
+    directory: "s4-07",
+    storageKey: "csp-cpp-s4-07-progress-v1",
+    micro: "guardMicro",
+    input: "guardInput",
+    check: "guardCheckButton",
+    hint: "guardHintButton",
+    ref: "guardRefButton",
+    reset: "guardResetButton",
+    hintPanel: "guardHint",
+    refPanel: "guardRef",
+    typedField: "guardTyped",
+    draftField: "guardDraft",
+    good: "if (visited[u]) return;",
+    fullWidth: "if（visited［u］）return；",
+    fullWidthHint: "半角",
+    outOfBounds: "if (!visited[u]) return;",
+    outOfBoundsMessage: "写反",
+    blankWant: "if (____) return;",
+    taskOnePicks: ['[data-quantity="graphTool"] [data-choice="adjacency-list"]', '[data-quantity="visitedTool"] [data-choice="visited-array"]'],
+    scenario: "写出 dfs 防止重复访问的那一行",
+  },
+  {
+    directory: "s4-08",
+    storageKey: "csp-cpp-s4-08-progress-v1",
+    micro: "fallbackMicro",
+    input: "fallbackInput",
+    check: "fallbackCheckButton",
+    hint: "fallbackHintButton",
+    ref: "fallbackRefButton",
+    reset: "fallbackResetButton",
+    hintPanel: "fallbackHint",
+    refPanel: "fallbackRef",
+    typedField: "fallbackTyped",
+    draftField: "fallbackDraft",
+    good: "if (n <= 1000) { cout << brute(n); return 0; }",
+    fullWidth: "if（n ＜= 1000）｛cout ＜＜ brute（n）；return 0；｝",
+    fullWidthHint: "半角",
+    outOfBounds: "if (n <= 100000) { cout << brute(n); return 0; }",
+    outOfBoundsMessage: "10 万",
+    blankWant: "if (____) { ... }",
+    taskOnePicks: ['[data-quantity="orderChoice"] [data-choice="brute-first"]', '[data-quantity="fallbackChoice"] [data-choice="submit-fallback"]'],
+    scenario: "写出子任务 1 的保底分支那一行",
   },
 ];
 

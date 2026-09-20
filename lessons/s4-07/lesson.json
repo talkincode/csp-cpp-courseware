@@ -19,5 +19,5 @@
     "owner": "external",
     "status": "not-managed-in-this-repository"
   },
-  "faqTermIds": ["graph", "adjacency-list", "visited-marker", "dfs", "bfs-intuition", "connected-component"]
+  "faqTermIds": ["graph", "adjacency-list", "visited-marker", "dfs", "bfs-intuition", "connected-component", "bool"]
 }
