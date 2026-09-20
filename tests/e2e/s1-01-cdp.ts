@@ -273,8 +273,14 @@ try {
     out.wrongRibbon = ribbon();
     const right = document.querySelector('[data-fix="semicolon"]');
     right.click();
+    out.choiceFeedback = document.querySelector("#debugFeedback").textContent.trim();
+    out.choiceClass = right.className;
+    out.microVisible = !document.querySelector("#fixMicro").hidden;
+    const input = document.querySelector("#fixInput");
+    input.value = ";";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    document.querySelector("#fixCheckButton").click();
     out.rightFeedback = document.querySelector("#debugFeedback").textContent.trim();
-    out.rightClass = right.className;
     out.rightRibbon = ribbon();
     out.panelAfterFix = [...document.querySelectorAll(".step-panel")].map((panel) => !panel.hidden);
     out.soundToggle = !!document.querySelector("#soundToggle");
@@ -284,7 +290,8 @@ try {
   check("排错任务在任务 2 完成后点亮", debug.wrongVisible === true, "");
   check("错误选项解释为什么不能修复", debug.wrongFeedback.includes("不会修复") && debug.wrongTone === "error", debug.wrongFeedback.slice(0, 50));
   check("错误选项同时向辅助技术播报", debug.wrongRibbon.includes("红色标记的输出行"), debug.wrongRibbon);
-  check("正确选项给出修复结论并标记正确", debug.rightFeedback.includes("修好了") && debug.rightClass.includes("is-correct"), debug.rightFeedback.slice(0, 40));
+  check("正确选项先肯定选择并露出亲手输入", debug.choiceFeedback.includes("选对了") && debug.choiceClass.includes("is-correct") && debug.microVisible === true, debug.choiceFeedback.slice(0, 40));
+  check("亲手补分号后给出修复结论", debug.rightFeedback.includes("修好了"), debug.rightFeedback.slice(0, 40));
   check("完成奖励反馈不冒充竞赛成绩", debug.rightRibbon.includes("任务 3 完成") && !/竞赛|排名|段位|认证|排行榜/.test(debug.rightRibbon), debug.rightRibbon);
   check("音效有独立开关", debug.soundToggle === true, "");
   check("修好后点亮随机小测面板", JSON.stringify(debug.panelAfterFix) === JSON.stringify([false, false, false, true]), JSON.stringify(debug.panelAfterFix));

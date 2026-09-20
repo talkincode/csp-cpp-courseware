@@ -696,6 +696,46 @@
         border-color: var(--success);
       }
 
+      .micro-input {
+        font-family: "SF Mono", "Menlo", monospace;
+        width: min(220px, 100%);
+        padding: 6px 9px;
+        color: var(--ink);
+        background: var(--paper-bright);
+        border: 1.5px solid var(--forest-fog);
+        border-radius: 5px;
+        font-size: 0.92rem;
+      }
+      .micro-input:focus-visible {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 2px;
+        border-color: var(--orange);
+      }
+      .micro-input.is-correct {
+        border-color: var(--success);
+        background: #eef6ec;
+      }
+      .micro-input.is-wrong {
+        border-color: var(--danger);
+        background: #fbeee6;
+      }
+      .micro-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .micro-ref {
+        font-family: "SF Mono", "Menlo", monospace;
+        white-space: pre-wrap;
+        background: var(--forest);
+        color: var(--paper);
+        border-radius: 7px;
+        padding: 14px 16px;
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
       .quiz-tools {
         display: flex;
         flex-wrap: wrap;
@@ -1195,6 +1235,22 @@
               <button type="button" data-fix="cin">把 cout 改成 cin</button>
               <button type="button" data-fix="return">删除 return 0;</button>
             </div>
+            <div id="fixMicro" hidden>
+              <p class="step-lead">选对了。现在亲手把这个分号敲进去：下面是只读脚手架，只留一空给你敲键盘。</p>
+              <div class="code-sheet" aria-label="补分号脚手架，只留一空">
+                <ol>
+                  <li>std::cout &lt;&lt; "Hello, CSP!" &lt;&lt; "\n"<input id="fixInput" class="micro-input" type="text" value="" placeholder=";" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="10" aria-label="在输出行末尾补上分号" /></li>
+                </ol>
+              </div>
+              <div class="micro-actions" aria-label="补分号的检查与兜底">
+                <button id="fixCheckButton" class="primary-action" type="button">检查这个分号</button>
+                <button id="fixHintButton" class="secondary-action" type="button">查看提示</button>
+                <button id="fixRefButton" class="secondary-action" type="button">参考代码</button>
+                <button id="fixResetButton" class="secondary-action" type="button">重置</button>
+              </div>
+              <p id="fixHint" class="inline-feedback" role="status" aria-live="polite"></p>
+              <pre id="fixRef" class="micro-ref" hidden>std::cout &lt;&lt; "Hello, CSP!" &lt;&lt; "\n";</pre>
+            </div>
             <p id="debugFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
           </section>
 
@@ -1296,6 +1352,9 @@
         sourceSaved: false,
         compiled: false,
         ran: false,
+        fixPicked: false,
+        semicolonTyped: false,
+        semicolonDraft: "",
         debugSolved: false,
         quizSeed: createSeed(),
         answers: {},
@@ -1316,6 +1375,10 @@
       const sourceFeedback = document.querySelector("#sourceFeedback");
       const flowFeedback = document.querySelector("#flowFeedback");
       const debugFeedback = document.querySelector("#debugFeedback");
+      const fixMicro = document.querySelector("#fixMicro");
+      const fixInput = document.querySelector("#fixInput");
+      const fixHint = document.querySelector("#fixHint");
+      const fixRef = document.querySelector("#fixRef");
       const terminal = document.querySelector("#terminal");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
@@ -1342,6 +1405,9 @@
             sourceSaved: stored.sourceSaved === true,
             compiled: stored.compiled === true,
             ran: stored.ran === true,
+            fixPicked: stored.fixPicked === true,
+            semicolonTyped: stored.semicolonTyped === true,
+            semicolonDraft: typeof stored.semicolonDraft === "string" ? stored.semicolonDraft : "",
             debugSolved: stored.debugSolved === true,
             quizSeed: Number.isInteger(stored.quizSeed) ? stored.quizSeed : createSeed(),
             answers: stored.answers && typeof stored.answers === "object" && !Array.isArray(stored.answers) ? stored.answers : {},
@@ -1574,16 +1640,35 @@
       function renderDebugTask() {
         const fixButtons = [...document.querySelectorAll("[data-fix]")];
         fixButtons.forEach((button) => {
-          button.disabled = state.debugSolved;
-          button.classList.toggle("is-correct", state.debugSolved && button.dataset.fix === "semicolon");
+          button.disabled = state.fixPicked;
+          button.classList.toggle("is-correct", state.fixPicked && button.dataset.fix === "semicolon");
         });
+
+        if (fixMicro) fixMicro.hidden = !state.fixPicked;
+        if (fixInput && document.activeElement !== fixInput) fixInput.value = state.semicolonDraft ?? "";
+        fixInput?.classList.toggle("is-correct", state.semicolonTyped);
 
         if (state.debugSolved) {
           showFeedback(debugFeedback, "修好了。少分号是典型的编译错误：先看报错附近的这一行，再检查语句是否完整。");
+        } else if (state.fixPicked) {
+          if (!debugFeedback.textContent) showFeedback(debugFeedback, "选对了：最小修复就是补分号。现在亲手把它敲进去。");
         } else {
           debugFeedback.textContent = "";
           debugFeedback.dataset.tone = "";
         }
+      }
+
+      function normalizeSemicolonInput(value) {
+        return (value ?? "").replace(/\u3000/g, " ").trim();
+      }
+
+      function checkSemicolonFix(raw) {
+        const text = normalizeSemicolonInput(raw);
+        if (!text) return { ok: false, message: "先在空里敲一个半角分号 ; 试试。" };
+        if (/[一-龥、。！？；：（）]/.test(text)) return { ok: false, message: "用了中文符号哦：分号要用半角 ; ，把输入法切到英文再敲一次。" };
+        if (text.replace(/\s+/g, "") === ";") return { ok: true, message: "" };
+        if (text.includes(";")) return { ok: false, message: "只需要一个分号哦，多余的字删掉吧。" };
+        return { ok: false, message: "这一空只要一个半角分号 ; ，想想一条语句用什么结束。" };
       }
 
       function questionsAreValid(questions) {
@@ -1798,12 +1883,15 @@
 
       document.querySelectorAll("[data-fix]").forEach((button) => {
         button.addEventListener("click", () => {
+          if (state.fixPicked) return;
           if (button.dataset.fix === "semicolon") {
-            state.debugSolved = true;
-            state.activeStep = 3;
+            state.fixPicked = true;
             saveState();
             render();
-            reward("任务 3 完成：你找到了缺失的分号。现在去做随机小测吧。");
+            showFeedback(debugFeedback, "选对了：最小修复就是补分号。现在亲手把它敲进去。");
+            announce("选对了。现在亲手把这个分号敲进去。");
+            playSound("calm");
+            document.querySelector("#fixInput")?.focus();
             return;
           }
 
@@ -1811,6 +1899,64 @@
           announce("再看一眼红色标记的输出行：它缺的是结束符号。");
           playSound("error");
         });
+      });
+
+      fixInput?.addEventListener("input", (event) => {
+        state.semicolonDraft = event.target.value;
+        state.semicolonTyped = false;
+        state.debugSolved = false;
+        fixInput.classList.remove("is-wrong");
+        saveState();
+        renderDebugTask();
+      });
+
+      document.querySelector("#fixCheckButton")?.addEventListener("click", () => {
+        const result = checkSemicolonFix(state.semicolonDraft);
+        if (!result.ok) {
+          showFeedback(debugFeedback, result.message, "error");
+          announce(result.message);
+          playSound("error");
+          fixInput?.classList.add("is-wrong");
+          return;
+        }
+        fixInput?.classList.remove("is-wrong");
+        if (!state.debugSolved) {
+          state.semicolonTyped = true;
+          state.debugSolved = true;
+          state.activeStep = 3;
+          saveState();
+          render();
+          reward("任务 3 完成：你找到了缺失的分号。现在去做随机小测吧。");
+        }
+      });
+
+      document.querySelector("#fixHintButton")?.addEventListener("click", () => {
+        const text = normalizeSemicolonInput(state.semicolonDraft);
+        const hint = !text
+          ? "输出行末尾敲一个 ; 就好，分号在英文输入法的小指附近。"
+          : text.includes(";")
+            ? "已经有半角分号了？看看前后是不是多了别的东西，只留一个 ; 就好。"
+            : "这一空只要一个半角分号 ; ，如果敲出来是；，先把输入法切到英文。";
+        showFeedback(fixHint, hint);
+        announce(hint);
+        playSound("calm");
+      });
+
+      document.querySelector("#fixRefButton")?.addEventListener("click", () => {
+        if (fixRef) fixRef.hidden = !fixRef.hidden;
+        announce(fixRef && !fixRef.hidden ? "已展开参考代码，对照后自己再敲一遍。" : "已收起参考代码。");
+        playSound("calm");
+      });
+
+      document.querySelector("#fixResetButton")?.addEventListener("click", () => {
+        state.semicolonDraft = "";
+        state.semicolonTyped = false;
+        if (fixHint) fixHint.textContent = "";
+        if (fixRef) fixRef.hidden = true;
+        saveState();
+        render();
+        announce("已清空这一空，重新敲一次吧。");
+        playSound("calm");
       });
 
       quizForm.addEventListener("change", (event) => {
