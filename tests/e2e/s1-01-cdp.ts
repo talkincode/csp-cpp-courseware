@@ -37,6 +37,10 @@ const chromeCandidates = [
 type Check = { name: string; ok: boolean; detail: string };
 const checks: Check[] = [];
 
+// 七个场景固定 84 项；跑完拿这个数字自查，声明与实跑不符就直接失败；
+// 文档里的项数也绑在这里（见 tests/e2e-count-facts.test.ts）。
+const expectedChecks = 84;
+
 function check(name: string, ok: boolean, detail = "") {
   checks.push({ name, ok, detail });
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? `  -> ${detail}` : ""}`);
@@ -651,6 +655,13 @@ if (failure) {
 
 const failed = checks.filter((item) => !item.ok);
 console.log(`\n${checks.length - failed.length}/${checks.length} 项浏览器检查通过`);
+if (checks.length !== expectedChecks) {
+  console.error(
+    `检查项数与声明不符：脚本声明 ${expectedChecks} 项，实际跑了 ${checks.length} 项。` +
+      `\n请同步 tests/e2e/s1-01-cdp.ts、tests/e2e/manual-checklist.md、docs/roadmap.md 与 README.md 里的数字。`,
+  );
+  process.exit(3);
+}
 if (failed.length) {
   console.log(`失败项：${failed.map((item) => item.name).join(" | ")}`);
   process.exit(1);
