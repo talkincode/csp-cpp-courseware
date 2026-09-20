@@ -213,10 +213,10 @@ bun run e2e:s1-01
 
 ```bash
 bun run e2e:s1-typed   # S1-02 至 S1-08 七课，115 项检查
-bun run e2e:s2-typed   # S2-01 至 S2-08 八课，128 项检查
-bun run e2e:s3-typed   # S3-01 至 S3-08 八课，128 项检查
-bun run e2e:s4-typed   # S4-01 至 S4-08 八课，128 项检查
-bun run e2e:s5-typed   # S5-01 至 S5-08 八课，128 项检查
+bun run e2e:s2-typed   # S2-01 至 S2-08 八课，136 项检查
+bun run e2e:s3-typed   # S3-01 至 S3-08 八课，136 项检查
+bun run e2e:s4-typed   # S4-01 至 S4-08 八课，136 项检查
+bun run e2e:s5-typed   # S5-01 至 S5-08 八课，136 项检查
 bun run e2e:typed      # 一次跑完上面全部 39 课，659 项检查
 ```
 

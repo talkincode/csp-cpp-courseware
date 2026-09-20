@@ -57,6 +57,15 @@ if (unknownLessons.length > 0) {
 const selectedLessons =
   requestedLessons.length > 0 ? lessons.filter((lesson) => requestedLessons.includes(lesson.directory)) : lessons;
 
+// 每课固定检查数：所有课共 16 项；有揭晓步骤的课（默认三步演示，只有 S1-03 这类显式留空）
+// 再多一项「走完前 N 步时输入框仍隐藏」。脚本跑完拿这两个数字自查，声明与实跑不符就直接失败；
+// 文档里的项数也绑在这里（见 tests/e2e-count-facts.test.ts）。
+const checksPerLessonWithoutReveal = 16;
+const revealExtraChecks = 1;
+// 多数课是三步演示；S1-03 这类任务 1 选对就点亮的课 revealButtons 留空。
+const defaultRevealButtons = ["divideButton", "remainderButton", "evenButton"];
+const revealButtonsFor = (lesson: LessonConfig) => lesson.revealButtons ?? defaultRevealButtons;
+
 type Check = { name: string; ok: boolean; detail: string };
 const checks: Check[] = [];
 const servers: Bun.Subprocess[] = [];
@@ -364,9 +373,8 @@ try {
     );
 
     // 任务 2：按各课真实的点亮方式走到输入框出现。
-    // 多数课是三步演示；S1-03 这类任务 1 选对就点亮的课 revealButtons 留空；
     // S1-02 是“存文件 → 编译 → 运行”；S1-05 还得先答完任务 3 才会翻到有输入框的面板。
-    const revealButtons = lesson.revealButtons ?? ["divideButton", "remainderButton", "evenButton"];
+    const revealButtons = revealButtonsFor(lesson);
     // 点亮步骤的选择器写错会静默跳过，最后只说“输入框没出现”，所以把没找到的目标记下来一起报。
     const missedReveal: string[] = [];
     for (const button of revealButtons.slice(0, -1)) {
@@ -558,6 +566,21 @@ try {
 
 const failed = checks.filter((entry) => !entry.ok);
 console.log(`\n${checks.length - failed.length}/${checks.length} 项通过`);
+
+const expectedTotal = selectedLessons.reduce(
+  (sum, lesson) => sum + checksPerLessonWithoutReveal + (revealButtonsFor(lesson).length > 0 ? revealExtraChecks : 0),
+  0,
+);
+const countMismatch = checks.length !== expectedTotal;
+
 if (failure) console.error(`脚本失败：${failure instanceof Error ? failure.message : String(failure)}`);
+if (countMismatch) {
+  console.error(
+    `检查项数与声明不符：脚本声明每课 ${checksPerLessonWithoutReveal} 项（有揭晓步骤的课再加 ${revealExtraChecks} 项）、` +
+      `本次 ${selectedLessons.length} 课应跑 ${expectedTotal} 项，实际跑了 ${checks.length} 项。` +
+      `\n请同步 checksPerLessonWithoutReveal、tests/e2e/manual-checklist.md、docs/roadmap.md 与 README.md 里的数字。`,
+  );
+}
 if (failure || failed.length > 0) process.exit(1);
+if (countMismatch) process.exit(3);
 console.log("微编程浏览器复验全部通过。");
