@@ -325,6 +325,41 @@ test("S1-01 单课复验的项数与 s1-01-cdp.ts 的声明一致", () => {
   expect(row).toContain(`${actual} 项检查覆盖八个场景`);
 });
 
+/** 单课复验里「题库异常降级」那一段的检查项名单，逐项列在脚本里。 */
+function poolFaultCheckNames(): string[] {
+  const match = read(singleLessonScript).match(/const poolFaultCheckNames = \[([\s\S]*?)\];/);
+  if (!match) throw new Error(`${singleLessonScript} 里找不到 poolFaultCheckNames 名单`);
+  return [...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1]);
+}
+
+test("单课复验的跳过名单与该段的实际检查逐项对齐", () => {
+  const source = read(singleLessonScript);
+  // 从名单声明之后再找这一段：脚本开头的说明注释里也会提到段名。
+  const listAt = source.indexOf("const poolFaultCheckNames");
+  if (listAt < 0) throw new Error(`${singleLessonScript} 里找不到 poolFaultCheckNames 名单`);
+  const sectionAt = source.indexOf("E2E-S1-01-05", listAt);
+  if (sectionAt < 0) throw new Error(`${singleLessonScript} 里找不到 E2E-S1-01-05 段`);
+
+  // 这一段之后的 check(...) 就是题库异常降级段实际跑的检查。
+  const ran = [...source.slice(sectionAt).matchAll(/check\("([^"]+)"/g)].map((item) => item[1]);
+  const declared = poolFaultCheckNames();
+
+  expect(ran.length).toBeGreaterThan(0);
+  expect([...declared].sort()).toEqual([...ran].sort());
+});
+
+test("单课复验在只读来源下如实跳过题库异常降级段，而不是报失败", () => {
+  const source = read(singleLessonScript);
+
+  // 这一段要把坏题库写进 lessons/s1-01/index.html 再复验，只有被复验的页面就是本机
+  // checkout 时才成立；判定必须看来源地址，不能看「有没有设置 CSP_E2E_ORIGIN」——
+  // 指向自己的本地开发服务器时，注入仍然有效。
+  expect(source).toMatch(/servesLocalCheckout\(origin\)/);
+  // 跳过几项由名单推出来，不能再写死第二套数字，否则「88 项」和「跳过」会各说各话。
+  expect(source).toMatch(/expectedChecks\s*-\s*[^;\n]*poolFaultCheckNames\.length/);
+  expect(source).toContain("SKIP");
+});
+
 test("两个复验脚本都自带项数自查，声明与实跑不符会当场失败", () => {
   for (const document of [typedScript, singleLessonScript]) {
     expect({ document, selfCheck: read(document).includes("检查项数与声明不符") }).toEqual({
