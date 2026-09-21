@@ -114,3 +114,38 @@ bun run dev
 
 > S1-01 的这条场景已由 `bun run e2e:s1-01`（第七个场景）在真实浏览器中自动复验：脚本用 CDP 屏蔽 `/glossary/faq.json`，再取消屏蔽后点击重载。
 > 面板脚本本体被屏蔽的情况由同一脚本的第八个场景复验：屏蔽 `/glossary/faq-panel.js` 后断言说明可见、向辅助技术播报、重新载入入口存在，且课件其他互动照常。
+
+## E2E-08 本地开发服务器的内容边界
+
+适用 `bun run dev` 启动的本地预览。这条场景不需要浏览器，用 `curl` 就能复验；它守的是「本地看到的」和「线上发布的那一份」不能出现两套内容。
+
+1. 在仓库根目录执行 `bun run dev`，确认它打印的地址是 <http://127.0.0.1:4173/>。
+2. 换一台设备（例如手机连同一个 Wi-Fi）访问 `http://<本机局域网 IP>:4173/`。
+
+**预期：** 第 1 步打印的是 `127.0.0.1` 而不是 `0.0.0.0`；第 2 步连不上。默认只监听本机回环地址，仓库不会被同局域网的其他设备读走；确实需要给别的设备看时才显式写 `HOST=0.0.0.0 bun run dev`。
+
+3. 依次请求下面这些地址，记录状态码：
+
+```bash
+curl -s -o /dev/null -w '%{http_code} /\n'    http://localhost:4173/
+curl -s -o /dev/null -w '%{http_code} .git/config\n' http://localhost:4173/.git/config
+curl -s -o /dev/null -w '%{http_code} wrangler.jsonc\n' http://localhost:4173/wrangler.jsonc
+curl -s -o /dev/null -w '%{http_code} AGENTS.md\n'   http://localhost:4173/AGENTS.md
+curl -s -o /dev/null -w '%{http_code} package.json\n' http://localhost:4173/package.json
+curl -s -o /dev/null -w '%{http_code} 越界\n' http://localhost:4173/lessons/..%2F..%2Fpackage.json
+curl -s -o /dev/null -w '%{http_code} 缺课\n' http://localhost:4173/lessons/s9-99/
+curl -s -o /dev/null -w '%{http_code} s1-01/\n' http://localhost:4173/lessons/s1-01/
+curl -s -o /dev/null -w '%{http_code} faq-panel\n' http://localhost:4173/glossary/faq-panel.js
+```
+
+**预期：** `/`、`/lessons/s1-01/`、`/glossary/faq-panel.js` 是 `200`；`/.git/config`、`/wrangler.jsonc`、`/AGENTS.md`、`/package.json`、越界地址和缺课的 `/lessons/s9-99/` 全是 `404`，响应体是中文的 `页面未找到 (404 Not Found)`，与线上 Worker 说同一句话。本地不再是把整个仓库目录当网站，`.git/` 与仓库配置不会被读走。
+
+4. 请求少了末尾斜杠的课程地址：`curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' http://localhost:4173/lessons/s1-01`。
+
+**预期：** `307` 并跳到 `http://localhost:4173/lessons/s1-01/`，与线上（`html_handling: "auto-trailing-slash"`）表现一致；请求不存在课程的裸地址 `/lessons/s9-99` 则直接 `404`，不会先绕一次跳转。
+
+5. 用 `PORT=abc bun run dev`、`HOST= bun run dev` 各启动一次；再占住 4173 端口后重复 `bun run dev`。
+
+**预期：** 三种情况都当场失败并打印中文说明（`PORT` 必须是 0 到 65535 之间的整数、`HOST` 不能为空、`PORT 127.0.0.1:4173 无法监听：端口可能已被占用`并给出 `PORT=4199 bun run dev` 的写法），不会静默换一个端口假装启动成功。
+
+> 这条场景已由 `bun test` 里的 [`tests/dev-server.test.ts`](./dev-server.test.ts) 自动复验（8 条用例 40 余项断言：只监听 `127.0.0.1`、17 个仓库地址与 12 种越界/编码写法都拿到中文 404、站点内容与词条面板可打开且带 UTF-8 类型头、目录地址 307 跳转与缺课 404、内容清单与构建共用同一份定义、坏 `PORT`/`HOST`/端口占用当场失败）。手工步骤保留下来，用于换机器或换网络后复核这条边界仍然成立。

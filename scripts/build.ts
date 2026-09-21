@@ -1,5 +1,6 @@
 import { cp, mkdir, readdir, rm } from "node:fs/promises";
 import { resolve } from "node:path";
+import { SITE_SOURCES } from "../src/site";
 
 const projectRoot = resolve(import.meta.dir, "..");
 
@@ -7,7 +8,10 @@ const projectRoot = resolve(import.meta.dir, "..");
 // 这里曾经出过事——仓库已经补到 40 节课，cplus.talkincode.net 还停在 4 节课，
 // 因为构建与部署只在某台机器上手工跑过一次。产物一律从仓库内容生成，
 // 不允许手工拼装 dist/，否则「仓库有这节课、站点上还是 404」的漂移会再出现一次。
-export const siteSources = ["index.html", "glossary", "lessons"] as const;
+//
+// 清单本身放在 src/site.ts：本地开发服务器与线上 Worker 读的是同一条边界，
+// 各写一份就会重新长出「本地能打开、线上 404」这类不一致。
+export const siteSources = SITE_SOURCES;
 
 export async function buildStaticSite({
   root = projectRoot,

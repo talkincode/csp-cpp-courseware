@@ -1,3 +1,5 @@
+import { NOT_FOUND_BODY } from "./site";
+
 export interface Env {
   ASSETS: Fetcher;
 }
@@ -7,7 +9,8 @@ export interface Env {
 // 课程地址的末尾斜杠跳转（/lessons/s1-01 → /lessons/s1-01/）由 wrangler.jsonc 的
 // html_handling: "auto-trailing-slash" 在静态资源层完成，请求根本到不了这里；
 // 之前这里另写了一段跳转，线上从来没有生效过，只把缺课的地址多绕了一次 301。
-const notFoundBody = "页面未找到 (404 Not Found)";
+// 这句话本身与本地开发服务器共用同一份定义（见 src/site.ts），两处不再各写一遍。
+const notFoundBody = NOT_FOUND_BODY;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
