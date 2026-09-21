@@ -1,0 +1,117 @@
+name: 测试与发布
+
+# main 上的每次推送都先跑 bun test，通过后由 GitHub Actions 发布到 cplus.talkincode.net。
+# 这条链路存在的理由：站点曾经停在 4 节课，而仓库已经补到 40 节课——构建与部署只在某台
+# 机器上手工跑过一次，之后没人重跑。发布用仓库 secret CLOUDFLARE_API_TOKEN（Workers
+# Scripts: Edit 权限）；缺这个 secret 时 deploy 会明确失败，不会静默跳过、把「没发布」
+# 伪装成绿色。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: bun test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun test
+
+  deploy:
+    name: 发布到 cplus.talkincode.net
+    needs: test
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    # 同一时间只允许一次发布；进行中的发布不打断，后续排队
+    concurrency:
+      group: deploy-cplus-talkincode-net
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      # 账号 ID 不是凭据，写在这里让发布只需要配一个 secret
+      CLOUDFLARE_ACCOUNT_ID: 83b40c9065a6f4631f4ab6cda824a21a
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - name: 检查部署凭据
+        run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "::error::缺少仓库 secret CLOUDFLARE_API_TOKEN，本次没有发布。请在 Settings → Secrets and variables → Actions 里添加一个带 Workers Scripts: Edit 权限的 Cloudflare API token，然后重新运行本工作流。"
+            exit 1
+          fi
+      - name: 构建并发布
+        run: bun run deploy
+      - name: 线上抽检
+        run: |
+          set -u
+          set +e
+          origin=https://cplus.talkincode.net
+
+          smoke() {
+            local fail=0 code body first
+
+            # 每一节课都要能在线上打开：漏课正是这条链路要防的事故
+            for dir in lessons/*/; do
+              id=$(basename "${dir}")
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "${origin}/lessons/${id}/")
+              if [ "${code}" != "200" ]; then
+                echo "::error::${id} 在线上返回 ${code}"
+                fail=1
+              fi
+            done
+
+            # 不带末尾斜杠的课程地址由静态资源层跳到带斜杠的地址
+            first=$(ls -d lessons/*/ | head -1 | xargs basename)
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "${origin}/lessons/${first}")
+            if [ "${code}" != "307" ]; then
+              echo "::error::/lessons/${first} 期望 307 跳转，实际 ${code}"
+              fail=1
+            fi
+
+            # 词条面板是 40 节课共用的脚本，必须能取到
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "${origin}/glossary/faq-panel.js")
+            if [ "${code}" != "200" ]; then
+              echo "::error::/glossary/faq-panel.js 期望 200，实际 ${code}"
+              fail=1
+            fi
+
+            # 找不到的地址给中文 404，而不是托管商的英文默认页
+            body=$(curl -s -w "\n%{http_code}" --max-time 20 "${origin}/lessons/not-a-lesson/")
+            code=$(printf '%s' "${body}" | tail -1)
+            if [ "${code}" != "404" ] || ! printf '%s' "${body}" | grep -q "页面未找到"; then
+              echo "::error::不存在的地址期望中文 404，实际 ${code}"
+              fail=1
+            fi
+
+            return "${fail}"
+          }
+
+          # 刚发布的版本可能还有几秒传播延迟，抽检失败时重试，连续三次才判定发布失败
+          attempt=0
+          while true; do
+            attempt=$((attempt + 1))
+            if smoke; then
+              echo "线上抽检通过：每一节课、末尾斜杠跳转、词条面板、中文 404 都符合预期。"
+              exit 0
+            fi
+            if [ "${attempt}" -ge 3 ]; then
+              echo "::error::线上抽检连续 ${attempt} 次未通过，本次发布需要人工检查。"
+              exit 1
+            fi
+            echo "第 ${attempt} 次抽检未通过，10 秒后重试。"
+            sleep 10
+          done

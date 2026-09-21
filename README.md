@@ -190,7 +190,7 @@ bun run deploy   # 先构建，再用 bunx wrangler deploy 发布 dist/
 
 产物只能来自仓库内容：`bun run build` 每次都会清空并重建 `dist/`，`bun run deploy` 也会先跑一遍构建，所以线上不会出现「仓库里已经有这节课、站点上还是 404」的漂移。这个漂移真实发生过：站点一度停在 4 节课，而仓库已经补到 40 节课，原因是构建与部署只在某台机器上手工跑过一次、此后再没人重跑。
 
-发布前先跑 `bun test`。其中 [`tests/deploy-assets.test.ts`](./tests/deploy-assets.test.ts) 守住这条链路：构建产物覆盖 `courseData` 里的每一节课（缺课、`dist/` 里残留上一次的旧页面都会失败）、课程地址的末尾斜杠跳转（静态资源的 `html_handling`）与 Worker 的中文 404 仍然在，以及部署目标（Worker 名、`dist` 目录、自定义域名）与文档写的是同一个。部署需要本机有 Cloudflare 凭据（`bunx wrangler login`）；仓库目前没有 CI，发布是人工动作，出错可用 `bunx wrangler rollback` 退回上一个版本。
+发布前先跑 `bun test`。其中 [`tests/deploy-assets.test.ts`](./tests/deploy-assets.test.ts) 守住这条链路：构建产物覆盖 `courseData` 里的每一节课（缺课、`dist/` 里残留上一次的旧页面都会失败）、课程地址的末尾斜杠跳转（静态资源的 `html_handling`）与 Worker 的中文 404 仍然在，以及部署目标（Worker 名、`dist` 目录、自定义域名）与文档写的是同一个。发布默认是自动的：main 上的每次推送都由 [`.github/workflows/test-and-deploy.yml`](./.github/workflows/test-and-deploy.yml) 接手——先跑 `bun test`，通过后 `bun run deploy` 发布，最后抽检线上（每一节课、末尾斜杠跳转、词条面板、中文 404），任一步失败都会让这次运行变红。它需要仓库 secret `CLOUDFLARE_API_TOKEN`（权限 `Workers Scripts: Edit`；账号 ID 不是凭据，已经写在仓库里），缺这个 secret 时发布步骤会明确失败、不会静默跳过。手动发布仍然可用：在有 Cloudflare 凭据的机器上 `bunx wrangler login` 之后 `bun run deploy`，出错用 `bunx wrangler rollback` 退回上一个版本。
 
 发布后可以直接拿同一套浏览器复验打线上——`CSP_E2E_ORIGIN` 会复用已在运行的服务、不再自启开发服务器：
 
