@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>先写能验证的基线，再稳稳升级</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s4-08/index.html">S4-08 子任务与得分策略</a><span>在限时中优先获得稳定分数</span></li>
+              <li><a class="prereq-link" href="../s5-01/index.html">S5-01 限时解题流程</a><span>形成固定解题顺序</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s5-03/index.html">S5-03 C++ 常见陷阱复盘</a></p>
+          </aside>
           <p>
             这一课只练一件事：遇到一道暂时写不出满分算法的难题时，先写一份能验证的<button type="button" class="faq-term" data-faq="brute-force-baseline">暴力基线</button>，再逐步升级，而不是一步到位地追求最优解。做法是：先用最直接的写法覆盖小数据<button type="button" class="faq-term" data-faq="subtask">子任务</button>，标注它能处理的范围和会漏掉的<button type="button" class="faq-term" data-faq="special-case">特殊情况</button>，再动手做<button type="button" class="faq-term" data-faq="complexity-upgrade">复杂度升级</button>，同时用<button type="button" class="faq-term" data-faq="diff-check">差分检查</button>确认没有引入<button type="button" class="faq-term" data-faq="pseudo-optimization">伪优化</button>。必会：能先写小数据可过的基线；能标注它的适用范围和已知会出错的特殊情况；能避免把破坏正确性的“捷径”当成优化。最小示例：区间求和题，q 次查询每次给出 <span class="inline-code">l, r</span>，求 <span class="inline-code">a[l..r]</span> 的和。基线写法是每次查询都从 l 循环到 r 直接累加，复杂度 O(n·q)，在 n、q 都不大时能过。样例追踪：先写这份基线并用样例测试通过；标注 <span class="inline-code">l &gt; r</span> 是空区间应输出 0、<span class="inline-code">l == r</span> 是单点区间；再引入前缀和 <span class="inline-code">sum[i] = sum[i-1] + a[i]</span>，把每次查询变成 <span class="inline-code">sum[r] - sum[l-1]</span>，复杂度升级为 O(n+q)；升级后用基线在小数据上对拍，确认输出完全一致。边界是不能跳过基线直接想前缀和公式、也不能为了让代码“看起来更快”而删掉必要的下标或判断。建议掌握：升级前先标好基线的适用范围，升级后立刻用基线做一次对拍，而不是假设新写法一定正确。拓展：伪优化是指看起来精简了代码、实际上悄悄改变了结果的“假优化”，现在只需要能识别一个例子。这里不会在浏览器里运行 C++。
           </p>

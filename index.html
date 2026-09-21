@@ -61,7 +61,8 @@
 
       button:focus-visible,
       select:focus-visible,
-      input:focus-visible {
+      input:focus-visible,
+      a:focus-visible {
         outline: 3px solid var(--orange-soft);
         outline-offset: 3px;
       }
@@ -568,6 +569,7 @@
 
       .chip-list,
       .content-list,
+      .prereq-list,
       .checklist {
         display: grid;
         gap: 9px;
@@ -604,6 +606,36 @@
         content: "◆";
         font-size: 0.58rem;
         top: 0.39rem;
+      }
+
+      /* 先修：一眼看出「开始之前得先会什么」，每条都能直接点进那一课。 */
+      #prerequisiteList li {
+        position: relative;
+        padding-left: 18px;
+        color: #3e5049;
+        font-size: 0.86rem;
+        line-height: 1.65;
+      }
+
+      #prerequisiteList li::before {
+        position: absolute;
+        left: 0;
+        color: var(--orange);
+        content: "◆";
+        font-size: 0.58rem;
+        top: 0.39rem;
+      }
+
+      #prerequisiteList a {
+        color: var(--teal);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      #prerequisiteList a:hover {
+        color: var(--ink-deep);
       }
 
       .check-item {
@@ -980,23 +1012,28 @@
               <div id="lessonTiming" class="lesson-timing"></div>
             </header>
             <div class="detail-body">
+              <section class="detail-section" aria-labelledby="prerequisiteTitle">
+                <h3 id="prerequisiteTitle"><span class="section-number">01</span>先修</h3>
+                <ul id="prerequisiteList" class="prereq-list"></ul>
+              </section>
+
               <section class="detail-section" aria-labelledby="objectiveTitle">
-                <h3 id="objectiveTitle"><span class="section-number">01</span>学习目标</h3>
+                <h3 id="objectiveTitle"><span class="section-number">02</span>学习目标</h3>
                 <ul id="objectiveList" class="chip-list"></ul>
               </section>
 
               <section class="detail-section" aria-labelledby="contentTitle">
-                <h3 id="contentTitle"><span class="section-number">02</span>具体内容</h3>
+                <h3 id="contentTitle"><span class="section-number">03</span>具体内容</h3>
                 <ul id="contentList" class="content-list"></ul>
               </section>
 
               <section class="detail-section" aria-labelledby="checklistTitle">
-                <h3 id="checklistTitle"><span class="section-number">03</span>检验清单</h3>
+                <h3 id="checklistTitle"><span class="section-number">04</span>检验清单</h3>
                 <div id="checklist" class="checklist"></div>
               </section>
 
               <section class="detail-section" aria-labelledby="videoTitle">
-                <h3 id="videoTitle"><span class="section-number">04</span>外部视频制作建议</h3>
+                <h3 id="videoTitle"><span class="section-number">05</span>外部视频制作建议</h3>
                 <ul id="videoList" class="content-list"></ul>
               </section>
 
@@ -1058,6 +1095,7 @@
         {
           id: "S1-01",
           phase: 0,
+          prerequisites: [],
           title: "第一行程序与编译",
           duration: "45 分钟",
           objectives: ["说清源文件、编译与运行的关系", "独立写出并输出多行文字", "看懂最常见的编译报错位置"],
@@ -1069,6 +1107,7 @@
         {
           id: "S1-02",
           phase: 0,
+          prerequisites: ["S1-01"],
           title: "变量与数据类型",
           duration: "50 分钟",
           objectives: ["用变量记录题目中的量", "区分整数、实数与字符", "避免随手选择不合适的类型"],
@@ -1080,6 +1119,7 @@
         {
           id: "S1-03",
           phase: 0,
+          prerequisites: ["S1-02"],
           title: "表达式与运算顺序",
           duration: "50 分钟",
           objectives: ["把文字公式翻译成 C++ 表达式", "掌握整除与取模", "用括号消除优先级歧义"],
@@ -1091,6 +1131,7 @@
         {
           id: "S1-04",
           phase: 0,
+          prerequisites: ["S1-02", "S1-03"],
           title: "输入输出与格式",
           duration: "45 分钟",
           objectives: ["正确读取多个输入数据", "按题目要求输出格式", "排查格式导致的失分"],
@@ -1102,6 +1143,7 @@
         {
           id: "S1-05",
           phase: 0,
+          prerequisites: ["S1-03", "S1-04"],
           title: "条件判断",
           duration: "55 分钟",
           objectives: ["根据条件选择不同分支", "正确组合比较与逻辑条件", "覆盖等于边界的情况"],
@@ -1113,6 +1155,7 @@
         {
           id: "S1-06",
           phase: 0,
+          prerequisites: ["S1-02", "S1-04"],
           title: "重复执行与循环",
           duration: "55 分钟",
           objectives: ["用循环解决重复计算", "理解循环变量的变化", "主动检查死循环风险"],
@@ -1124,6 +1167,7 @@
         {
           id: "S1-07",
           phase: 0,
+          prerequisites: ["S1-06"],
           title: "嵌套循环与规律输出",
           duration: "55 分钟",
           objectives: ["看懂二维重复过程", "区分内外层循环职责", "处理简单提前结束"],
@@ -1135,6 +1179,7 @@
         {
           id: "S1-08",
           phase: 0,
+          prerequisites: ["S1-01", "S1-06"],
           title: "调试与书写习惯",
           duration: "50 分钟",
           objectives: ["区分三类常见错误", "养成可检查的代码书写习惯", "用小数据定位问题"],
@@ -1146,6 +1191,7 @@
         {
           id: "S2-01",
           phase: 1,
+          prerequisites: ["S1-02", "S1-06"],
           title: "数组与下标",
           duration: "55 分钟",
           objectives: ["存储一组同类数据", "安全遍历数组", "避免下标越界"],
@@ -1157,6 +1203,7 @@
         {
           id: "S2-02",
           phase: 1,
+          prerequisites: ["S1-02", "S2-01"],
           title: "字符、字符串与编码",
           duration: "55 分钟",
           objectives: ["正确处理字符序列", "区分字符与字符串", "逐个访问字符串内容"],
@@ -1168,6 +1215,7 @@
         {
           id: "S2-03",
           phase: 1,
+          prerequisites: ["S1-02", "S1-03"],
           title: "函数与分解",
           duration: "60 分钟",
           objectives: ["把独立逻辑拆成函数", "正确使用参数和返回值", "降低重复代码"],
@@ -1179,6 +1227,7 @@
         {
           id: "S2-04",
           phase: 1,
+          prerequisites: ["S1-02", "S2-03"],
           title: "作用域与参数",
           duration: "50 分钟",
           objectives: ["理解变量在何处可见", "避免同名变量混乱", "认识何时需要修改原变量"],
@@ -1190,6 +1239,7 @@
         {
           id: "S2-05",
           phase: 1,
+          prerequisites: ["S2-01", "S2-03"],
           title: "结构体与题目建模",
           duration: "60 分钟",
           objectives: ["把多项相关信息组合成记录", "读写结构体成员", "用记录数组表示多名对象"],
@@ -1201,6 +1251,7 @@
         {
           id: "S2-06",
           phase: 1,
+          prerequisites: ["S2-01", "S2-05"],
           title: "排序与比较规则",
           duration: "60 分钟",
           objectives: ["让数据按题意排序", "理解比较规则", "验证重复元素的处理"],
@@ -1212,6 +1263,7 @@
         {
           id: "S2-07",
           phase: 1,
+          prerequisites: ["S1-06", "S2-01"],
           title: "枚举与模拟",
           duration: "60 分钟",
           objectives: ["把有限可能逐一检查", "按题面顺序更新状态", "避免漏情况"],
@@ -1223,6 +1275,7 @@
         {
           id: "S2-08",
           phase: 1,
+          prerequisites: ["S1-07", "S2-07"],
           title: "复杂度与测试点",
           duration: "55 分钟",
           objectives: ["用规模判断程序能否通过", "建立 O(n) 与 O(n²) 的直觉", "主动设计边界测试"],
@@ -1234,6 +1287,7 @@
         {
           id: "S3-01",
           phase: 2,
+          prerequisites: ["S1-03", "S1-06"],
           title: "数学与数位处理",
           duration: "55 分钟",
           objectives: ["用整除和取模处理数字", "理解循环不变量", "掌握最大公约数的基础写法"],
@@ -1245,6 +1299,7 @@
         {
           id: "S3-02",
           phase: 2,
+          prerequisites: ["S2-03"],
           title: "递归与分治直觉",
           duration: "60 分钟",
           objectives: ["用更小的同类问题描述过程", "写清递归边界", "追踪有限层调用"],
@@ -1256,6 +1311,7 @@
         {
           id: "S3-03",
           phase: 2,
+          prerequisites: ["S2-01", "S2-06"],
           title: "二分查找",
           duration: "60 分钟",
           objectives: ["识别有序与单调前提", "维护左右边界", "处理首尾答案"],
@@ -1267,6 +1323,7 @@
         {
           id: "S3-04",
           phase: 2,
+          prerequisites: ["S1-06", "S2-01"],
           title: "前缀和与区间查询",
           duration: "60 分钟",
           objectives: ["预处理连续数据", "用公式快速查询区间和", "避免下标偏移错误"],
@@ -1278,6 +1335,7 @@
         {
           id: "S3-05",
           phase: 2,
+          prerequisites: ["S2-01", "S3-04"],
           title: "双指针与滑动窗口",
           duration: "60 分钟",
           objectives: ["用两个位置维护一个连续区间", "判断指针移动时机", "保持窗口条件"],
@@ -1289,6 +1347,7 @@
         {
           id: "S3-06",
           phase: 2,
+          prerequisites: ["S2-06", "S2-07"],
           title: "贪心选择",
           duration: "60 分钟",
           objectives: ["提出局部选择规则", "用反例检查规则", "理解贪心并非总是可用"],
@@ -1300,6 +1359,7 @@
         {
           id: "S3-07",
           phase: 2,
+          prerequisites: ["S1-06", "S2-01"],
           title: "栈、队列与过程顺序",
           duration: "55 分钟",
           objectives: ["区分后进先出和先进先出", "选择合适容器", "完成基础括号匹配"],
@@ -1311,6 +1371,7 @@
         {
           id: "S3-08",
           phase: 2,
+          prerequisites: ["S2-01", "S3-02"],
           title: "动态规划初步",
           duration: "60 分钟",
           objectives: ["定义状态含义", "写出小问题到大问题的转移", "重视初始化"],
@@ -1322,6 +1383,7 @@
         {
           id: "S4-01",
           phase: 3,
+          prerequisites: ["S1-01", "S1-04"],
           title: "CSP-J 题面与程序规范",
           duration: "45 分钟",
           objectives: ["按竞赛要求提交干净程序", "从题面圈出数据范围", "避免格式性失分"],
@@ -1333,6 +1395,7 @@
         {
           id: "S4-02",
           phase: 3,
+          prerequisites: ["S2-05", "S4-01"],
           title: "读题与建模卡",
           duration: "55 分钟",
           objectives: ["把题意拆成结构化信息", "识别已知、未知和约束", "在编码前列出边界"],
@@ -1344,6 +1407,7 @@
         {
           id: "S4-03",
           phase: 3,
+          prerequisites: ["S2-07", "S3-07"],
           title: "模拟题专项",
           duration: "60 分钟",
           objectives: ["正确还原多步骤规则", "按顺序更新状态", "用自造样例验证过程"],
@@ -1355,6 +1419,7 @@
         {
           id: "S4-04",
           phase: 3,
+          prerequisites: ["S3-02", "S3-07"],
           title: "搜索与剪枝",
           duration: "65 分钟",
           objectives: ["把选择过程画成搜索树", "实现回溯边界", "判断安全的剪枝条件"],
@@ -1366,6 +1431,7 @@
         {
           id: "S4-05",
           phase: 3,
+          prerequisites: ["S2-06", "S3-03"],
           title: "排序、查找与映射",
           duration: "60 分钟",
           objectives: ["根据数据范围选择工具", "处理重复数据", "在排序后继续扫描或查找"],
@@ -1377,6 +1443,7 @@
         {
           id: "S4-06",
           phase: 3,
+          prerequisites: ["S3-08"],
           title: "DP 经典模型",
           duration: "65 分钟",
           objectives: ["识别阶段性最优决策", "写出状态转移", "处理不可达或初始状态"],
@@ -1388,6 +1455,7 @@
         {
           id: "S4-07",
           phase: 3,
+          prerequisites: ["S3-07", "S4-04"],
           title: "图与遍历基础",
           duration: "60 分钟",
           objectives: ["用点和边表示关系", "完成基础 DFS/BFS", "防止重复访问"],
@@ -1399,6 +1467,7 @@
         {
           id: "S4-08",
           phase: 3,
+          prerequisites: ["S2-08", "S4-01"],
           title: "子任务与得分策略",
           duration: "50 分钟",
           objectives: ["在限时中优先获得稳定分数", "识别可做子任务", "安排检查时间"],
@@ -1410,6 +1479,7 @@
         {
           id: "S5-01",
           phase: 4,
+          prerequisites: ["S4-02", "S4-08"],
           title: "限时解题流程",
           duration: "55 分钟",
           objectives: ["形成固定解题顺序", "在编码前留下建模痕迹", "为检查预留时间"],
@@ -1421,6 +1491,7 @@
         {
           id: "S5-02",
           phase: 4,
+          prerequisites: ["S1-08", "S5-01"],
           title: "系统化调试",
           duration: "60 分钟",
           objectives: ["按证据缩小错误范围", "构造最小复现", "记录修复原因"],
@@ -1432,6 +1503,7 @@
         {
           id: "S5-03",
           phase: 4,
+          prerequisites: ["S1-02", "S2-08"],
           title: "C++ 常见陷阱复盘",
           duration: "60 分钟",
           objectives: ["识别语言层面的失分点", "根据范围选择 `long long`", "系统检查数组和表达式"],
@@ -1443,6 +1515,7 @@
         {
           id: "S5-04",
           phase: 4,
+          prerequisites: ["S4-08", "S5-01"],
           title: "80 分策略",
           duration: "55 分钟",
           objectives: ["先实现可验证的基线", "利用特殊情况和子任务", "避免伪优化"],
@@ -1454,6 +1527,7 @@
         {
           id: "S5-05",
           phase: 4,
+          prerequisites: ["S5-01", "S5-04"],
           title: "模拟赛一：实现与自测",
           duration: "60 分钟",
           objectives: ["在题组中执行固定流程", "保存自测数据", "记录时间和阻塞点"],
@@ -1465,6 +1539,7 @@
         {
           id: "S5-06",
           phase: 4,
+          prerequisites: ["S5-02", "S5-05"],
           title: "模拟赛复盘：错误分类",
           duration: "55 分钟",
           objectives: ["从失分中抽取可改规则", "区分不同错误类型", "重做关键题验证修复"],
@@ -1476,6 +1551,7 @@
         {
           id: "S5-07",
           phase: 4,
+          prerequisites: ["S5-05", "S5-06"],
           title: "模拟赛二：稳定性",
           duration: "60 分钟",
           objectives: ["用新题验证流程改进", "比较两次表现", "识别已经稳定的习惯"],
@@ -1487,6 +1563,7 @@
         {
           id: "S5-08",
           phase: 4,
+          prerequisites: ["S5-06", "S5-07"],
           title: "CSP-J 总复习与后续边界",
           duration: "50 分钟",
           objectives: ["整理个人知识地图", "完成赛前检查清单", "明确 CSP-J 后的学习边界"],
@@ -1667,6 +1744,17 @@
         document.querySelector("#detailTitle").textContent = lesson.title;
         document.querySelector("#detailSubtitle").textContent = `当前检验：${completed.length}/${lesson.checklist.length} 项 · 先完成本课清单，再进入下一课。`;
         document.querySelector("#lessonTiming").textContent = lesson.duration;
+        // 先修从 courseData 派生：只写真正会用到的更早的课，第一课明确没有先修。
+        document.querySelector("#prerequisiteList").innerHTML =
+          lesson.prerequisites.length > 0
+            ? lesson.prerequisites
+                .map((id) => courseData.find((item) => item.id === id))
+                .map(
+                  (item) =>
+                    `<li><a href="lessons/${item.id.toLowerCase()}/">${item.id} ${item.title}</a>：${item.objectives[0]}</li>`,
+                )
+                .join("")
+            : "<li>这是全课程第一课：不用先修，会用键盘和浏览器就能开始。</li>";
         document.querySelector("#objectiveList").innerHTML = lesson.objectives.map((item) => `<li>${item}</li>`).join("");
         document.querySelector("#contentList").innerHTML = lesson.contents.map((item) => `<li>${item}</li>`).join("");
         document.querySelector("#videoList").innerHTML = `<li>${lesson.video}</li>`;

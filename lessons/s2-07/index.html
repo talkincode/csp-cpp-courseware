@@ -994,6 +994,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1353,6 +1405,14 @@
       <section class="lesson-hero">
         <div>
           <h1>把过程一步步走出来</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s1-06/index.html">S1-06 重复执行与循环</a><span>用循环解决重复计算</span></li>
+              <li><a class="prereq-link" href="../s2-01/index.html">S2-01 数组与下标</a><span>存储一组同类数据</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s2-06/index.html">S2-06 排序与比较规则</a></p>
+          </aside>
           <p>
             这一课只练一件事：在有限的 <button type="button" class="faq-term" data-faq="enumeration-range">枚举范围</button> 里把每个可能都试一遍，并按题意做 <button type="button" class="faq-term" data-faq="state-update">状态更新</button>。这就是 <button type="button" class="faq-term" data-faq="enumeration">枚举</button> 和 <button type="button" class="faq-term" data-faq="simulation">模拟</button>。完成四个小任务：选出范围，走一遍 1 到 3 数偶数，再对照 <button type="button" class="faq-term" data-faq="missed-branch">漏分支</button>。这里不会在浏览器里运行 C++。
           </p>

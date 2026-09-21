@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>两次对照，才敢说习惯稳了</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s5-05/index.html">S5-05 模拟赛一：实现与自测</a><span>在题组中执行固定流程</span></li>
+              <li><a class="prereq-link" href="../s5-06/index.html">S5-06 模拟赛复盘：错误分类</a><span>从失分中抽取可改规则</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s5-06/index.html">S5-06 模拟赛复盘：错误分类</a></p>
+          </aside>
           <p>
             这一课只练一件事：用一组<button type="button" class="faq-term" data-faq="fresh-problem-set">新题组</button>独立完成第二次模拟赛，再把这次的记录和第一次（S5-05）的自测表、时间记录做<button type="button" class="faq-term" data-faq="cross-check">交叉检查</button>，<button type="button" class="faq-term" data-faq="baseline-comparison">对照上一次</button>看时间分配和错误有没有真的变化，最后判断哪些是已经验证过两次的<button type="button" class="faq-term" data-faq="stable-habit">稳定习惯</button>，哪些还不算。必会：能用新题组独立完成一次模拟；能把这次的记录和上一次交叉检查、对照。最小示例：上一次模拟赛（S5-05）记录里，T1 用了 25 分钟且写了自测表、T2 的边界数据没测完。这一次换了三道全新的题 T4（简单）、T5（中等）、T6（难题），总时长依旧 120 分钟。做完后对照发现：T4 依旧先排了提交顺序、也写了自测表（用时 22 分钟，比上次略快），这个习惯连续两次都做到了，可以记为稳定；但 T5 的边界数据又一次没顾上测，说明“测边界”这个习惯还没有稳定，需要再验证一次。边界是不能只看这次分数就下结论，也不能只做到一次就宣布习惯已经养成。建议掌握：把两次的时间分配并排列出来比较，具体看哪道题真的变快了。拓展：如果对照后发现某个习惯这次没有做到，要如实标注“还没稳定”，安排下次再验证，而不是凑合算作已经养成或者直接放弃练习。这里不会在浏览器里运行 C++。
           </p>

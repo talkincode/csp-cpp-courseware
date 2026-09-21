@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>排好提交顺序，测完再交</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s5-01/index.html">S5-01 限时解题流程</a><span>形成固定解题顺序</span></li>
+              <li><a class="prereq-link" href="../s5-04/index.html">S5-04 80 分策略</a><span>先实现可验证的基线</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s5-04/index.html">S5-04 80 分策略</a></p>
+          </aside>
           <p>
             这一课只练一件事：在一次限时的<button type="button" class="faq-term" data-faq="mock-exam">模拟赛</button>里，先把几道题的<button type="button" class="faq-term" data-faq="submission-order">提交顺序</button>排好，再在写完或放弃每一题之后，用<button type="button" class="faq-term" data-faq="self-test-table">自测表</button>如实记录测过的数据和结果，并靠<button type="button" class="faq-term" data-faq="time-log">时间记录</button>判断要不要换题或提前收尾。必会：能在模拟赛开始前用几分钟浏览全部题目并排出提交顺序（有把握的先做）；能在完成或放弃一题后，在自测表里如实记录测试数据、结果和花费时间。最小示例：本次模拟赛有 3 道题——T1（简单，全对预计 20 分）、T2（中等，部分测试点可拿分）、T3（难题，暂时只会写暴力），总时长 120 分钟。样例追踪：先用 5 分钟浏览三题，标出把握程度，排出顺序 T1 → T2 → T3；写完 T1 后在自测表记录“样例通过、n=0 边界也测过，用时 25 分钟”；转到 T2，写完后自测表记录“样例通过，n=0 尚未测”；剩余时间不够时不硬啃 T3，先回头补测 T2 的边界。边界是不能跳过浏览直接从第一题硬写到底、也不能为了赶时间就跳过自测表不记录。建议掌握：定期查看时间记录，判断是否该换题或提前收尾，先保住已经确定的分数。拓展：某组数据没时间测完时，要在自测表里如实写清没测的原因（例如“时间不够”），供考后复盘，而不是假装测过或直接删掉那一行。这里不会在浏览器里运行 C++。
           </p>

@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>先写流程卡，限时里不慌</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s4-02/index.html">S4-02 读题与建模卡</a><span>把题意拆成结构化信息</span></li>
+              <li><a class="prereq-link" href="../s4-08/index.html">S4-08 子任务与得分策略</a><span>在限时中优先获得稳定分数</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s4-08/index.html">S4-08 子任务与得分策略</a></p>
+          </aside>
           <p>
             这一课只练一件事：在比赛时间里，按固定的<button type="button" class="faq-term" data-faq="timed-solving-flow">限时解题流程</button>从读题走到提交。顺序是<button type="button" class="faq-term" data-faq="problem-timing">审题计时</button>、写<button type="button" class="faq-term" data-faq="modeling-draft">建模草稿</button>、编码、做<button type="button" class="faq-term" data-faq="sample-check">样例检查</button>，并<button type="button" class="faq-term" data-faq="reserve-check-time">预留检查时间</button>。必会：能在限时内写一张流程卡、能预留检查时间、不跳过样例。最小示例：一次 40 分钟训练只做一道题。样例追踪：第 1 到 5 分钟审题并记下时间预算；第 6 到 10 分钟写下已知、未知和打算；第 11 到 32 分钟编码；第 33 到 36 分钟对照样例；最后 4 分钟做提交前检查。边界是不能拿到题就直接敲代码，也不能样例还没对照就提交。建议掌握：编码前先留下建模草稿，哪怕只有三行。拓展：把 40 分钟再拆成更细的分钟级时间片只是拓展习惯，现在不当硬门槛。这里不会在浏览器里运行 C++。
           </p>

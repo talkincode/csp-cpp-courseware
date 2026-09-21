@@ -951,6 +951,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1349,6 +1401,14 @@
       <section class="lesson-hero">
         <div>
           <h1>把程序写成可检查的样子</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s1-01/index.html">S1-01 第一行程序与编译</a><span>说清源文件、编译与运行的关系</span></li>
+              <li><a class="prereq-link" href="../s1-06/index.html">S1-06 重复执行与循环</a><span>用循环解决重复计算</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s1-07/index.html">S1-07 嵌套循环与规律输出</a></p>
+          </aside>
           <p>
             这一课只练一件事：建立“先看报错、再改写法、再用小数据验证”的工作流。完成四个小任务：分清 <button type="button" class="faq-term" data-faq="compile-error">编译错误</button>、<button type="button" class="faq-term" data-faq="runtime-error">运行错误</button> 和 <button type="button" class="faq-term" data-faq="wrong-answer">答案错误</button>，定位一处语法错，再用小数据和 <button type="button" class="faq-term" data-faq="debug-print">分段输出</button> 检查。
           </p>

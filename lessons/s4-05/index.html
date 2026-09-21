@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>排好序，再选对工具去查找和计数</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s2-06/index.html">S2-06 排序与比较规则</a><span>让数据按题意排序</span></li>
+              <li><a class="prereq-link" href="../s3-03/index.html">S3-03 二分查找</a><span>识别有序与单调前提</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s4-04/index.html">S4-04 搜索与剪枝</a></p>
+          </aside>
           <p>
             这一课只练一件事：拿到一批数据后，先看清 <button type="button" class="faq-term" data-faq="data-range">数据范围</button>，再决定用<button type="button" class="faq-term" data-faq="counting-array">计数数组</button>、先<button type="button" class="faq-term" data-faq="sort">排序</button>后扫描，还是复用<button type="button" class="faq-term" data-faq="binary-search">二分查找</button>。必会：判断何时该用排序、处理好<button type="button" class="faq-term" data-faq="duplicate-value">重复元素</button>、按取值范围选出数组或映射方案。最小示例：6 名学生的成绩 <span class="inline-code">90 78 85 90 85 90</span>，分数范围 <span class="inline-code">0 &lt;= 分数 &lt;= 100</span>，<span class="inline-code">1 &lt;= n &lt;= 1000</span>，要求统计每个分数出现次数，并输出出现次数最多的分数。样例追踪：排序后是 <span class="inline-code">78 85 85 90 90 90</span>，扫描一遍数出 78 出现 1 次、85 出现 2 次、90 出现 3 次，最高频分数是 90。边界是 n=1（这唯一一个分数本身就是最高频，次数为 1），以及多个分数并列最高频时按“取数值更小的分数”统一规则。建议掌握：分数范围很小（0~100）时可以直接开计数数组，比排序更省事。范围变得很大（比如到 10 的 9 次方）时改用映射结构是拓展。这里不会在浏览器里运行 C++。
           </p>

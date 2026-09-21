@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>按题面交一份干净程序</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s1-01/index.html">S1-01 第一行程序与编译</a><span>说清源文件、编译与运行的关系</span></li>
+              <li><a class="prereq-link" href="../s1-04/index.html">S1-04 输入输出与格式</a><span>正确读取多个输入数据</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s3-08/index.html">S3-08 动态规划初步</a></p>
+          </aside>
           <p>
             这一课只练一件事：按竞赛题面交一份干净程序，这叫 <button type="button" class="faq-term" data-faq="contest-program">竞赛程序</button>。必会：圈出 <button type="button" class="faq-term" data-faq="data-range">数据范围</button>、删掉提示语、按 <button type="button" class="faq-term" data-faq="sample-io">样例</button> 独立核对。最小示例：读入整数 n，输出 n+1；范围 <span class="inline-code">1 &lt;= n &lt;= 1000</span>，也就是 <span class="inline-code">n &lt;= 1000</span>；样例输入 3，输出 4。边界是多写了“请输入”，以及忘了对照样例。建议掌握：<span class="inline-code">cin</span>/<span class="inline-code">cout</span> 接到 <button type="button" class="faq-term" data-faq="standard-io">标准输入输出</button>。评测机内部和 <span class="inline-code">freopen</span> 文件读写是拓展。这里不会在浏览器里运行 C++。
           </p>
