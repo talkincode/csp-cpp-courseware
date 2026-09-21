@@ -21,7 +21,7 @@
 bun run dev
 ```
 
-打开 <http://localhost:4173>。
+打开 <http://localhost:4173>。在线站点是 <https://cplus.talkincode.net>，构建与发布方式见下文「构建与发布」。
 
 ## 课件目录
 
@@ -179,6 +179,26 @@ lessons/s5-08/
 
 “随机”只指从经过验证的题库中进行可复现的抽取，不能用未校验的临时生成内容替代题目质量。具体边界见 [`AGENTS.md`](./AGENTS.md) 与路线图。
 
+## 构建与发布
+
+课程站点发布在 <https://cplus.talkincode.net>，由 Cloudflare Worker `csp-cpp-courseware` 托管静态资源：Worker 入口是 [`src/index.ts`](./src/index.ts)，站点与域名配置见 [`wrangler.jsonc`](./wrangler.jsonc)。
+
+```bash
+bun run build    # 把 index.html、glossary/、lessons/ 重新复制到 dist/
+bun run deploy   # 先构建，再用 bunx wrangler deploy 发布 dist/
+```
+
+产物只能来自仓库内容：`bun run build` 每次都会清空并重建 `dist/`，`bun run deploy` 也会先跑一遍构建，所以线上不会出现「仓库里已经有这节课、站点上还是 404」的漂移。这个漂移真实发生过：站点一度停在 4 节课，而仓库已经补到 40 节课，原因是构建与部署只在某台机器上手工跑过一次、此后再没人重跑。
+
+发布前先跑 `bun test`。其中 [`tests/deploy-assets.test.ts`](./tests/deploy-assets.test.ts) 守住这条链路：构建产物覆盖 `courseData` 里的每一节课（缺课、`dist/` 里残留上一次的旧页面都会失败）、课程地址的末尾斜杠跳转（静态资源的 `html_handling`）与 Worker 的中文 404 仍然在，以及部署目标（Worker 名、`dist` 目录、自定义域名）与文档写的是同一个。部署需要本机有 Cloudflare 凭据（`bunx wrangler login`）；仓库目前没有 CI，发布是人工动作，出错可用 `bunx wrangler rollback` 退回上一个版本。
+
+发布后可以直接拿同一套浏览器复验打线上——`CSP_E2E_ORIGIN` 会复用已在运行的服务、不再自启开发服务器：
+
+```bash
+CSP_E2E_ORIGIN=https://cplus.talkincode.net CSP_E2E_LESSONS=s5-08 bun run e2e:typed
+CSP_E2E_ORIGIN=https://cplus.talkincode.net CSP_E2E_LESSONS=s5-07,s5-08 bun run e2e:flow
+```
+
 ## 文档
 
 - [`docs/roadmap.md`](./docs/roadmap.md)：项目画像、边界、方向与业务能力验收矩阵
@@ -207,7 +227,7 @@ bun test
 bun run e2e:s1-01
 ```
 
-脚本会自行启动开发服务器与无头 Chrome，按 [`tests/e2e/s1-01-manual-checklist.md`](./tests/e2e/s1-01-manual-checklist.md) 的八个场景完成 88 项检查（含跳过步骤、错误选项、刷新恢复、存储不可用与会话中途保存失败后的重试、词条表载入失败与重新载入、词条面板脚本根本未载入时的说明，、小测检查目标绑定本课学习目标，以及题库异常两条失败路径），结束后清理自己启动的进程。它不属于 `bun test`：断言依赖真实浏览器渲染。
+脚本会自行启动开发服务器与无头 Chrome，按 [`tests/e2e/s1-01-manual-checklist.md`](./tests/e2e/s1-01-manual-checklist.md) 的八个场景完成 88 项检查（含跳过步骤、错误选项、刷新恢复、存储不可用与会话中途保存失败后的重试、词条表载入失败与重新载入、词条面板脚本根本未载入时的说明、小测检查目标绑定本课学习目标，以及题库异常两条失败路径），结束后清理自己启动的进程。它不属于 `bun test`：断言依赖真实浏览器渲染。
 
 手写填空微练习同样可以用真实浏览器自动重跑：
 
