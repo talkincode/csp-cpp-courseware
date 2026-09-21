@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "bun --watch scripts/dev.ts",
     "start": "bun scripts/dev.ts",
+    "build": "bun scripts/build.ts",
+    "deploy": "bun run build && bunx wrangler deploy",
     "test": "bun test",
     "validate": "bun test",
     "scaffold:lessons": "bun scripts/scaffold-lessons.ts",
