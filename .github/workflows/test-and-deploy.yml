@@ -50,7 +50,7 @@ jobs:
       - name: 检查部署凭据
         run: |
           if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
-            echo "::error::缺少仓库 secret CLOUDFLARE_API_TOKEN，本次没有发布。请在 Settings → Secrets and variables → Actions 里添加一个带 Workers Scripts: Edit 权限的 Cloudflare API token，然后重新运行本工作流。"
+            echo "::error::缺少 CLOUDFLARE_API_TOKEN，本次没有发布。请在仓库（或组织）的 Settings → Secrets and variables → Actions 里添加一个带 Workers Scripts: Edit 权限的 Cloudflare API token，然后重新运行本工作流。"
             exit 1
           fi
       - name: 构建并发布
