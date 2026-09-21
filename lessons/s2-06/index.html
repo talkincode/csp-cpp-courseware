@@ -1509,7 +1509,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1572,8 +1572,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "要把 5, 2, 4 排成从小到大。先比较相邻的 5 和 2，正确做法是？",
-          options: ["大的往后换，得到 2, 5, 4", "随便打乱一次就会变整齐", "必须先手写堆排序", "只看第一个数，后面不用管"],
-          answer: 0,
+          options: [
+            "只看第一个数，后面不用管",
+            "必须先手写堆排序",
+            "大的往后换，得到 2, 5, 4",
+            "随便打乱一次就会变整齐",
+          ],
+          answer: 2,
           explanation: "冒泡思想是相邻比较：5 比 2 大，就交换得到 2, 5, 4。快排、堆排是拓展。",
           source: "course-plan / 自编",
         },
@@ -1585,8 +1590,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "sort(a, a + n) 在本课里的意思是？",
-          options: ["按比较规则把 a[0] 到 a[n-1] 排好", "在浏览器里运行这段 C++", "必须自己写快排才算会", "只会打乱顺序"],
-          answer: 0,
+          options: [
+            "只会打乱顺序",
+            "按比较规则把 a[0] 到 a[n-1] 排好",
+            "在浏览器里运行这段 C++",
+            "必须自己写快排才算会",
+          ],
+          answer: 1,
           explanation: "sort(a, a + n) 默认把前 n 个数从小到大排好。本课不在浏览器里运行 C++，也不要求手写快排。",
           source: "course-plan / 自编",
         },
@@ -1598,8 +1608,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "比较规则是在规定什么？",
-          options: ["谁应该排在谁前面", "数组下标必须从 1 开始", "必须使用指针", "必须先学 lambda"],
-          answer: 0,
+          options: [
+            "数组下标必须从 1 开始",
+            "谁应该排在谁前面",
+            "必须使用指针",
+            "必须先学 lambda",
+          ],
+          answer: 1,
           explanation: "比较规则回答“谁该排前面”。默认更小的在前。lambda 比较器是拓展。",
           source: "course-plan / 自编",
         },
@@ -1611,8 +1626,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "小明和小红分数都是 90，原来小明在前。稳定排序后？",
-          options: ["小明仍然在小红前面", "必须对调他们", "稳定性是 NOI 必修，现在不会就不能排序", "相同分数必须删掉一个"],
-          answer: 0,
+          options: [
+            "稳定性是 NOI 必修，现在不会就不能排序",
+            "小明仍然在小红前面",
+            "相同分数必须删掉一个",
+            "必须对调他们",
+          ],
+          answer: 1,
           explanation: "稳定性问相同元素是否保持原来先后。稳定排序后，原来在前的小明还在前面。严格证明是拓展。",
           source: "course-plan / 自编",
         },
@@ -1624,7 +1644,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "为什么相邻交换在 n=1000 时通常能过，n=100000 时就不合适？",
-          options: ["大约要比较 n² 次：1000² 约一百万次还能接受，100000² 就太大了", "因为排序永远是 O(1)", "因为不需要比较", "因为必须用递归"],
+          options: [
+            "大约要比较 n² 次：1000² 约一百万次还能接受，100000² 就太大了",
+            "因为必须用递归",
+            "因为排序永远是 O(1)",
+            "因为不需要比较",
+          ],
           answer: 0,
           explanation: "冒泡大约比较 n² 次。n=1000 约一百万次，CSP-J 1 秒通常能过；n=1e5 就要换更快的 sort。",
           source: "course-plan / 自编",

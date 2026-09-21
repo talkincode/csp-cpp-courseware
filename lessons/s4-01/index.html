@@ -1514,7 +1514,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1577,7 +1577,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "竞赛程序在本课要做什么？",
-          options: ["从标准输入读入、向标准输出写出，不要额外提示语", "必须先打印请输入", "必须先写 freopen", "可以随便多输出说明文字"],
+          options: [
+            "从标准输入读入、向标准输出写出，不要额外提示语",
+            "可以随便多输出说明文字",
+            "必须先打印请输入",
+            "必须先写 freopen",
+          ],
           answer: 0,
           explanation: "竞赛程序按题面读入和输出，不要“请输入”。freopen 是拓展。本课不会在浏览器里运行 C++。",
           source: "course-plan / 自编",
@@ -1590,8 +1595,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "题面写 n <= 1000 表示什么？",
-          options: ["圈出范围，用它判断数组和循环够不够", "范围可以不看", "评测机内部细节才是现在必会", "n 只能等于 1000"],
-          answer: 0,
+          options: [
+            "评测机内部细节才是现在必会",
+            "范围可以不看",
+            "圈出范围，用它判断数组和循环够不够",
+            "n 只能等于 1000",
+          ],
+          answer: 2,
           explanation: "先圈出数据范围。n <= 1000 用来判断写法够不够。评测机内部是拓展。",
           source: "course-plan / 自编",
         },
@@ -1603,8 +1613,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "读入 n 输出 n+1，样例输入 3 时输出是什么？",
-          options: ["只输出 4，不要“请输入”", "先输出请输入再输出 4", "必须用 freopen 才能对样例", "输出 3 就行"],
-          answer: 0,
+          options: [
+            "先输出请输入再输出 4",
+            "必须用 freopen 才能对样例",
+            "只输出 4，不要“请输入”",
+            "输出 3 就行",
+          ],
+          answer: 2,
           explanation: "按样例独立核对：输入 3，输出只要 4。不要跳过删提示语。",
           source: "course-plan / 自编",
         },
@@ -1616,7 +1631,12 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "为什么必须删掉“请输入”？",
-          options: ["评测机会逐字比较输出，多一个字也会错", "提示语可以留着", "freopen 才会用到干净输出", "评测机会自动忽略提示语"],
+          options: [
+            "评测机会逐字比较输出，多一个字也会错",
+            "freopen 才会用到干净输出",
+            "提示语可以留着",
+            "评测机会自动忽略提示语",
+          ],
           answer: 0,
           explanation: "评测机会逐字比较输出。留下“请输入”就会错。freopen 是拓展。",
           source: "course-plan / 自编",
@@ -1629,8 +1649,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "n=1 时输入 1 输出什么？freopen 现在是必会吗？",
-          options: ["输出 2；freopen 现在不是硬门槛", "n=1 不能交竞赛程序", "评测机内部会自动删掉提示语", "必须先写文件输入输出"],
-          answer: 0,
+          options: [
+            "评测机内部会自动删掉提示语",
+            "输出 2；freopen 现在不是硬门槛",
+            "n=1 不能交竞赛程序",
+            "必须先写文件输入输出",
+          ],
+          answer: 1,
           explanation: "n=1 时输入 1、输出 2。freopen 文件读写是拓展，不是现在的硬门槛。",
           source: "course-plan / 自编",
         },

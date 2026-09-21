@@ -1497,7 +1497,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1561,12 +1561,12 @@
           type: "choice",
           prompt: "输出 n 行 n 列星星，必会的写法是？",
           options: [
-            "for (int r = 1; r <= n; r++) 里再套 for (int c = 1; c <= n; c++)",
-            "只用一层 for 就能分清行和列",
             "必须用递归",
+            "for (int r = 1; r <= n; r++) 里再套 for (int c = 1; c <= n; c++)",
             "必须用 continue",
+            "只用一层 for 就能分清行和列",
           ],
-          answer: 0,
+          answer: 1,
           explanation: "外层换行，内层印这一行的每一列。continue 是拓展，不是现在的硬门槛。",
           source: "course-plan / 自编",
         },
@@ -1578,8 +1578,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "画图案时，外层循环通常表示什么？",
-          options: ["当前是第几行", "当前是第几列", "程序要不要退出", "星星的颜色"],
-          answer: 0,
+          options: [
+            "当前是第几列",
+            "当前是第几行",
+            "程序要不要退出",
+            "星星的颜色",
+          ],
+          answer: 1,
           explanation: "外层管行，内层管列。外层 r 变了，就换一行；内层把这一行印完。",
           source: "course-plan / 自编",
         },
@@ -1591,8 +1596,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "n = 3 时，内层 for (int c = 1; c <= n; c++) 每一行会做几次？",
-          options: ["3 次", "1 次", "9 次", "0 次"],
-          answer: 0,
+          options: [
+            "0 次",
+            "3 次",
+            "9 次",
+            "1 次",
+          ],
+          answer: 1,
           explanation: "每一行里，c 取 1、2、3，共 3 次。9 次是两层合在一起的总格数，不是内层单独一轮。",
           source: "course-plan / 自编",
         },
@@ -1604,8 +1614,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "n = 0 时，两层 for (int r = 1; r <= n; r++) 会怎样？",
-          options: ["一次都不跑，没有星星", "至少印一行", "程序报错", "内层会自己跑 3 次"],
-          answer: 0,
+          options: [
+            "内层会自己跑 3 次",
+            "至少印一行",
+            "程序报错",
+            "一次都不跑，没有星星",
+          ],
+          answer: 3,
           explanation: "一开始 1 <= 0 就不成立，外层不进，内层也不会跑。空图案是合法边界。",
           source: "course-plan / 自编",
         },
@@ -1617,8 +1632,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "在内层找到目标后，建议掌握的停法是？",
-          options: ["写 break，结束当前这一层", "写 continue 结束整个循环", "必须退出 main", "必须改成递归"],
-          answer: 0,
+          options: [
+            "写 continue 结束整个循环",
+            "必须退出 main",
+            "写 break，结束当前这一层",
+            "必须改成递归",
+          ],
+          answer: 2,
           explanation: "break 停的是当前这一层。continue 只跳过本轮，是拓展，不能当成“结束整个循环”。",
           source: "course-plan / 自编",
         },

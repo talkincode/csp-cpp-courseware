@@ -1509,7 +1509,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1572,8 +1572,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "要存放一个字母，最合适的写法是？",
-          options: ["char c = 'A'", "string s = \"Ada\"", "必须先学 Unicode", "char c = Ada"],
-          answer: 0,
+          options: [
+            "string s = \"Ada\"",
+            "必须先学 Unicode",
+            "char c = Ada",
+            "char c = 'A'",
+          ],
+          answer: 3,
           explanation: "一个字符用 char，常量写成单引号 'A'。完整 Unicode 是拓展。",
           source: "course-plan / 自编",
         },
@@ -1585,8 +1590,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "要存放不含空格的单词 Ada，最合适的写法是？",
-          options: ["string s = \"Ada\"", "char c = 'Ada'", "必须先学 wchar", "char c = 'A' 就够了"],
-          answer: 0,
+          options: [
+            "必须先学 wchar",
+            "string s = \"Ada\"",
+            "char c = 'Ada'",
+            "char c = 'A' 就够了",
+          ],
+          answer: 1,
           explanation: "一串文字用 string。char 一次只装一个字符，wchar 是拓展。",
           source: "course-plan / 自编",
         },
@@ -1598,7 +1608,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "string s = \"Ada\" 时，第一个字符是？",
-          options: ["s[0]", "s[1]", "s[n]", "s[n - 1]"],
+          options: [
+            "s[0]",
+            "s[n]",
+            "s[1]",
+            "s[n - 1]",
+          ],
           answer: 0,
           explanation: "下标从 0 开始：第 1 个是 s[0]，也就是 'A'。s[n] 越界。",
           source: "course-plan / 自编",
@@ -1611,8 +1626,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "n = s.size() 时，最后一个字符是？",
-          options: ["s[n - 1]", "s[n]", "s[n + 1]", "s[1]"],
-          answer: 0,
+          options: [
+            "s[1]",
+            "s[n - 1]",
+            "s[n]",
+            "s[n + 1]",
+          ],
+          answer: 1,
           explanation: "长度是字符个数。最后一个下标比长度小 1，所以是 s[n - 1]。写 s[n] 会越界。",
           source: "course-plan / 自编",
         },
@@ -1624,8 +1644,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "统计字符串里数字字符时，建议掌握的写法是？",
-          options: ["用 s.size() 当 n，判断 c >= '0' && c <= '9'", "直接读 s[n]", "必须背完整 ASCII 表", "必须先学 wchar"],
-          answer: 0,
+          options: [
+            "直接读 s[n]",
+            "必须背完整 ASCII 表",
+            "用 s.size() 当 n，判断 c >= '0' && c <= '9'",
+            "必须先学 wchar",
+          ],
+          answer: 2,
           explanation: "遍历条件写成 i < n，再用 ASCII 连续区间判断数字。wchar 和完整编码表是拓展。",
           source: "course-plan / 自编",
         },

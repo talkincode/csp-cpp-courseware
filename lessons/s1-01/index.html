@@ -1334,7 +1334,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；如果有一题不确定，回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；如果有一题不确定，回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1386,8 +1386,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "C++ 程序通常从哪一个函数开始执行？",
-          options: ["main", "cout", "include", "return"],
-          answer: 0,
+          options: [
+            "include",
+            "main",
+            "return",
+            "cout",
+          ],
+          answer: 1,
           explanation: "main 是程序入口。cout 用来输出，include 引入工具，return 用来结束函数并返回结果。",
           source: "course-plan / 自编",
         },
@@ -1399,8 +1404,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "下面哪一个最像刚写好的 C++ 源文件名？",
-          options: ["hello.cpp", "hello.exe", "hello.output", "hello.score"],
-          answer: 0,
+          options: [
+            "hello.exe",
+            "hello.cpp",
+            "hello.score",
+            "hello.output",
+          ],
+          answer: 1,
           explanation: ".cpp 是 C++ 源文件的常见扩展名；它还需要经过编译，才能变成可运行程序。",
           source: "course-plan / 自编",
         },
@@ -1412,8 +1422,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "把 C++ 程序显示到屏幕的正确顺序是？",
-          options: ["写源文件 → 编译 → 运行", "运行 → 编译 → 写源文件", "编译 → 写源文件 → 运行", "写源文件 → 运行 → 编译"],
-          answer: 0,
+          options: [
+            "写源文件 → 运行 → 编译",
+            "运行 → 编译 → 写源文件",
+            "写源文件 → 编译 → 运行",
+            "编译 → 写源文件 → 运行",
+          ],
+          answer: 2,
           explanation: "先有源文件，再由编译器翻译，最后才运行翻译后的程序。",
           source: "course-plan / 自编",
         },
@@ -1425,8 +1440,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "想把“Hello”显示到屏幕，下面哪个工具最接近正确选择？",
-          options: ["std::cout", "std::cin", "int", "main"],
-          answer: 0,
+          options: [
+            "main",
+            "int",
+            "std::cin",
+            "std::cout",
+          ],
+          answer: 3,
           explanation: "std::cout 负责输出；std::cin 负责读入；int 和 main 分别承担类型与入口的角色。",
           source: "course-plan / 自编",
         },
@@ -1438,8 +1458,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "下面的输出语句少了什么最容易导致编译报错？",
-          options: ["行末的分号 ;", "文件名中的 .cpp", "main 前面的 int", "双引号里的文字"],
-          answer: 0,
+          options: [
+            "main 前面的 int",
+            "双引号里的文字",
+            "文件名中的 .cpp",
+            "行末的分号 ;",
+          ],
+          answer: 3,
           explanation: "这类语句通常要用分号结束。少了分号时，编译器会指出附近的语法问题。",
           source: "course-plan / 自编",
         },

@@ -1509,7 +1509,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1572,8 +1572,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "函数 addOne 里写了 int t = x + 1; 在 main 里能不能使用 t？",
-          options: ["不能，t 是局部变量，出了函数就看不见", "能用，因为都叫变量", "必须先写成全局变量才能做加法", "只要同名就能用"],
-          answer: 0,
+          options: [
+            "只要同名就能用",
+            "能用，因为都叫变量",
+            "不能，t 是局部变量，出了函数就看不见",
+            "必须先写成全局变量才能做加法",
+          ],
+          answer: 2,
           explanation: "局部变量写在函数花括号里。函数结束，t 就消失，main 不能用。",
           source: "course-plan / 自编",
         },
@@ -1585,8 +1590,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "void addOne(int x) { x = x + 1; } 调用 addOne(n) 后，外面的 n 会怎样？",
-          options: ["n 不变，函数改的是副本", "n 一定变成 n + 1", "必须用指针才能传入 n", "n 会变成全局变量"],
-          answer: 0,
+          options: [
+            "必须用指针才能传入 n",
+            "n 会变成全局变量",
+            "n 不变，函数改的是副本",
+            "n 一定变成 n + 1",
+          ],
+          answer: 2,
           explanation: "默认是值传递：x 是 n 的副本。改 x 不会改 n。看起来改了、其实没改。",
           source: "course-plan / 自编",
         },
@@ -1598,7 +1608,12 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "外面有 int n = 5; 函数里又写 int n = 0; 这两个 n 是？",
-          options: ["不是同一个变量，函数里的 n 挡住外面的 n", "一定是同一个变量", "必须先删掉局部的 n", "编译器会自动改成全局变量"],
+          options: [
+            "不是同一个变量，函数里的 n 挡住外面的 n",
+            "编译器会自动改成全局变量",
+            "必须先删掉局部的 n",
+            "一定是同一个变量",
+          ],
           answer: 0,
           explanation: "同名不是同一个。函数里的 n 是新的局部变量，挡住外面那个 n。",
           source: "course-plan / 自编",
@@ -1611,7 +1626,12 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "什么时候才需要把参数写成 int &x？",
-          options: ["确实要改外面的原变量时", "每次传整数都必须写成引用", "指针是现在必会，引用可以以后再说", "只有全局变量才能改原变量"],
+          options: [
+            "确实要改外面的原变量时",
+            "只有全局变量才能改原变量",
+            "指针是现在必会，引用可以以后再说",
+            "每次传整数都必须写成引用",
+          ],
           answer: 0,
           explanation: "引用是原变量的另一个名字。要改原变量才用 int &x；只算结果就用值传递。",
           source: "course-plan / 自编",
@@ -1624,8 +1644,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "关于全局变量，本课的态度是？",
-          options: ["能用参数和局部变量就先不用全局变量", "所有变量都应该写成全局", "没有全局变量就无法调用函数", "全局变量是 CSP-J 硬门槛"],
-          answer: 0,
+          options: [
+            "全局变量是 CSP-J 硬门槛",
+            "没有全局变量就无法调用函数",
+            "所有变量都应该写成全局",
+            "能用参数和局部变量就先不用全局变量",
+          ],
+          answer: 3,
           explanation: "全局变量到处都能改，容易互相踩脚。能用参数和局部变量就先不用它。",
           source: "course-plan / 自编",
         },

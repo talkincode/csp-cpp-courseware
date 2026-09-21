@@ -1510,7 +1510,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1573,8 +1573,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "本课说的操作次数，最接近哪一句？",
-          options: ["程序大概要做多少步活", "代码有多少行", "必须先写严格大 O 证明", "在浏览器里运行 C++"],
-          answer: 0,
+          options: [
+            "必须先写严格大 O 证明",
+            "代码有多少行",
+            "在浏览器里运行 C++",
+            "程序大概要做多少步活",
+          ],
+          answer: 3,
           explanation: "操作次数是程序大概要做多少步。代码行数不能代替它。严格证明是拓展，本课不会在浏览器里运行 C++。",
           source: "course-plan / 自编",
         },
@@ -1586,8 +1591,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "O(n) 和 O(n²) 在本课里该怎么记？",
-          options: ["大约做 n 次，和大约做 n×n 次", "代码短就是 O(n)", "两个记号意思完全一样", "现在必须会证明主定理"],
-          answer: 0,
+          options: [
+            "代码短就是 O(n)",
+            "现在必须会证明主定理",
+            "大约做 n 次，和大约做 n×n 次",
+            "两个记号意思完全一样",
+          ],
+          answer: 2,
           explanation: "O(n) 先记成大约 n 次，O(n²) 先记成大约 n×n 次。主定理是拓展。本课不在浏览器里运行 C++。",
           source: "course-plan / 自编",
         },
@@ -1599,7 +1609,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "n=3 时，两层循环大约做几次？",
-          options: ["大约 9 次，因为 3×3", "仍然大约 3 次", "大约 6 次", "次数没法估"],
+          options: [
+            "大约 9 次，因为 3×3",
+            "仍然大约 3 次",
+            "大约 6 次",
+            "次数没法估",
+          ],
           answer: 0,
           explanation: "外层 3 次，内层每次再 3 次，大约 3×3=9 次。for (int i = 0; i < n; i++) 是单层；再套一层就是 n * n。",
           source: "course-plan / 自编",
@@ -1612,8 +1627,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "n=100000 时，两层循环大约 n×n 次，通常该怎么选？",
-          options: ["改用单层循环更稳妥", "继续用双层，1 秒一定够", "复杂度是 NOI 才要管", "在浏览器里编译比一比"],
-          answer: 0,
+          options: [
+            "复杂度是 NOI 才要管",
+            "在浏览器里编译比一比",
+            "改用单层循环更稳妥",
+            "继续用双层，1 秒一定够",
+          ],
+          answer: 2,
           explanation: "n=100000 时 n×n 大约 10^10 次，通常超过 1 秒。应改用接近 O(n) 的单层。NOI 证明是拓展。",
           source: "course-plan / 自编",
         },
@@ -1625,7 +1645,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "自己检查程序时，测试点至少该有哪些？",
-          options: ["普通数据、最小数据和最大数据", "只测题目样例就够", "测试点只能等评测机给", "随机敲一组数就代表全部"],
+          options: [
+            "普通数据、最小数据和最大数据",
+            "只测题目样例就够",
+            "随机敲一组数就代表全部",
+            "测试点只能等评测机给",
+          ],
           answer: 0,
           explanation: "除了样例，至少再测最小和最大。评测机会用很多组，但你要先自己造三类测试点。",
           source: "course-plan / 自编",

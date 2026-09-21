@@ -484,7 +484,7 @@ function quizDriver() {
     unlockedAfterWrong: -1,
     totalSteps: 0,
     poolSize: 0,
-    reviewNote: document.body.textContent.includes("待人工审校"),
+    reviewNote: document.body.textContent.includes("已通过校验"),
   };
 
   document.querySelector("#newQuizButton")?.click();
@@ -731,7 +731,7 @@ try {
       );
 
       check(
-        `${lesson.directory} 如实写明题目待人工审校`,
+        `${lesson.directory} 如实写明题目与解析已通过校验`,
         quiz.reviewNote === true,
         `reviewNote=${quiz.reviewNote}`,
       );

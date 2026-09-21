@@ -45,7 +45,7 @@ async function expectImplementedInteractiveLesson(directory: string) {
   expect(manifest.status).toBe("implemented");
   expect(manifest.interactive.status).toBe("implemented");
   expect(manifest.interactive.entry).toBe("index.html");
-  expect(manifest.interactive.reviewState).toBe("awaiting-user-review");
+  expect(manifest.interactive.reviewState).toBe("owner-approved");
   expect(manifest.assessment.status).toBe("implemented");
   expect(manifest.assessment.mode).toBe("randomized-choice");
   expect(manifest.assessment.choiceDominant).toBe(true);
@@ -63,7 +63,7 @@ async function expectImplementedInteractiveLesson(directory: string) {
   expect(source).toContain("crypto.getRandomValues");
   expect(source).toContain("function questionsAreValid");
   expect(source).toContain("题库暂时不可用");
-  expect(source).toContain("题目待人工审校");
+  expect(source).toContain("已通过校验");
   expect(source).not.toContain("已审校");
   expect(source).not.toContain("经过审校");
   expect(source).toContain('source: "course-plan / 自编"');
@@ -83,7 +83,7 @@ async function expectImplementedInteractiveLesson(directory: string) {
 test("the first lesson supplies a guided interactive page and randomized choice quiz", async () => {
   const { source, manifest } = await expectImplementedInteractiveLesson("s1-01");
 
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(manifest.faqTermIds).toContain("main");
   expect(manifest.faqTermIds).toContain("include");
   expect(manifest.faqTermIds).toContain("cout");
@@ -109,7 +109,7 @@ test("the first lesson supplies a guided interactive page and randomized choice 
 test("S1-02 supplies a guided variable lesson and randomized choice quiz", async () => {
   const { source, manifest } = await expectImplementedInteractiveLesson("s1-02");
 
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(manifest.faqTermIds).toContain("int");
   expect(manifest.faqTermIds).toContain("char");
   expect(manifest.faqTermIds).toContain("variable");
@@ -138,7 +138,7 @@ test("S1-03 supplies a guided expression lesson and randomized choice quiz", asy
   expect(manifest.faqTermIds).toContain("modulo");
   expect(manifest.faqTermIds).toContain("precedence");
   expect(manifest.faqTermIds).toContain("parentheses");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -169,7 +169,7 @@ test("S1-04 supplies a guided input-output lesson and randomized choice quiz", a
   expect(manifest.faqTermIds).toContain("newline");
   expect(manifest.faqTermIds).toContain("fixed-precision");
   expect(manifest.faqTermIds).toContain("prompt-output");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -199,7 +199,7 @@ test("S1-05 supplies a guided condition lesson and randomized choice quiz", asyn
   expect(manifest.faqTermIds).toContain("equal-equal");
   expect(manifest.faqTermIds).toContain("assignment");
   expect(manifest.faqTermIds).toContain("logical-and");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -234,7 +234,7 @@ test("S1-06 supplies a guided loop lesson and randomized choice quiz", async () 
   expect(manifest.faqTermIds).toContain("accumulation");
   expect(manifest.faqTermIds).toContain("infinite-loop");
   expect(manifest.faqTermIds).toContain("do-while");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -265,7 +265,7 @@ test("S1-07 supplies a guided nested-loop lesson and randomized choice quiz", as
   expect(manifest.faqTermIds).toContain("inner-loop");
   expect(manifest.faqTermIds).toContain("break");
   expect(manifest.faqTermIds).toContain("continue");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -297,7 +297,7 @@ test("S1-08 supplies a guided debugging lesson and randomized choice quiz", asyn
   expect(manifest.faqTermIds).toContain("indentation");
   expect(manifest.faqTermIds).toContain("naming");
   expect(manifest.faqTermIds).toContain("debug-print");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -328,7 +328,7 @@ test("S2-01 supplies a guided array lesson and randomized choice quiz", async ()
   expect(manifest.faqTermIds).toContain("array-length");
   expect(manifest.faqTermIds).toContain("array-init");
   expect(manifest.faqTermIds).toContain("out-of-bounds");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -359,7 +359,7 @@ test("S2-02 supplies a guided string lesson and randomized choice quiz", async (
   expect(manifest.faqTermIds).toContain("string-length");
   expect(manifest.faqTermIds).toContain("string-index");
   expect(manifest.faqTermIds).toContain("ascii");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -392,7 +392,7 @@ test("S2-03 supplies a guided function lesson and randomized choice quiz", async
   expect(manifest.faqTermIds).toContain("return-value");
   expect(manifest.faqTermIds).toContain("function-call");
   expect(manifest.faqTermIds).toContain("function-definition");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -424,7 +424,7 @@ test("S2-04 supplies a guided scope-and-parameter lesson and randomized choice q
   expect(manifest.faqTermIds).toContain("global-variable");
   expect(manifest.faqTermIds).toContain("pass-by-value");
   expect(manifest.faqTermIds).toContain("reference");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -455,7 +455,7 @@ test("S2-05 supplies a guided struct-and-modeling lesson and randomized choice q
   expect(manifest.faqTermIds).toContain("member-access");
   expect(manifest.faqTermIds).toContain("struct-array");
   expect(manifest.faqTermIds).toContain("field-compare");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -486,7 +486,7 @@ test("S2-06 supplies a guided sorting-and-comparison lesson and randomized choic
   expect(manifest.faqTermIds).toContain("comparison-rule");
   expect(manifest.faqTermIds).toContain("swap");
   expect(manifest.faqTermIds).toContain("stability");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -517,7 +517,7 @@ test("S2-07 supplies a guided enumeration-and-simulation lesson and randomized c
   expect(manifest.faqTermIds).toContain("state-update");
   expect(manifest.faqTermIds).toContain("simulation");
   expect(manifest.faqTermIds).toContain("missed-branch");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -548,7 +548,7 @@ test("S2-08 supplies a guided complexity-and-test-point lesson and randomized ch
   expect(manifest.faqTermIds).toContain("quadratic-time");
   expect(manifest.faqTermIds).toContain("boundary-data");
   expect(manifest.faqTermIds).toContain("test-point");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -579,7 +579,7 @@ test("S3-01 supplies a guided digit-and-gcd lesson and randomized choice quiz", 
   expect(manifest.faqTermIds).toContain("digit");
   expect(manifest.faqTermIds).toContain("gcd");
   expect(manifest.faqTermIds).toContain("loop-invariant");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -602,7 +602,7 @@ test("S3-02 supplies a guided recursion-and-divide lesson and randomized choice 
   expect(manifest.faqTermIds).toContain("recursive-call");
   expect(manifest.faqTermIds).toContain("call-stack");
   expect(manifest.faqTermIds).toContain("factorial");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -625,7 +625,7 @@ test("S3-03 supplies a guided binary-search lesson and randomized choice quiz", 
   expect(manifest.faqTermIds).toContain("left-right-bound");
   expect(manifest.faqTermIds).toContain("midpoint");
   expect(manifest.faqTermIds).toContain("infinite-loop");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -648,7 +648,7 @@ test("S3-04 supplies a guided prefix-sum lesson and randomized choice quiz", asy
   expect(manifest.faqTermIds).toContain("range-sum");
   expect(manifest.faqTermIds).toContain("index-offset");
   expect(manifest.faqTermIds).toContain("linear-time");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -671,7 +671,7 @@ test("S3-05 supplies a guided two-pointer and sliding-window lesson and randomiz
   expect(manifest.faqTermIds).toContain("left-pointer");
   expect(manifest.faqTermIds).toContain("right-pointer");
   expect(manifest.faqTermIds).toContain("window-condition");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -693,7 +693,7 @@ test("S3-06 supplies a guided greedy-choice lesson and randomized choice quiz", 
   expect(manifest.faqTermIds).toContain("selection-criterion");
   expect(manifest.faqTermIds).toContain("counterexample");
   expect(manifest.faqTermIds).toContain("sort-then-decide");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -716,7 +716,7 @@ test("S3-07 supplies a guided stack-and-queue lesson and randomized choice quiz"
   expect(manifest.faqTermIds).toContain("lifo");
   expect(manifest.faqTermIds).toContain("fifo");
   expect(manifest.faqTermIds).toContain("bracket-matching");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -739,7 +739,7 @@ test("S3-08 supplies a guided dynamic-programming lesson and randomized choice q
   expect(manifest.faqTermIds).toContain("dp-transition");
   expect(manifest.faqTermIds).toContain("dp-init");
   expect(manifest.faqTermIds).toContain("one-dim-dp");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -762,7 +762,7 @@ test("S4-01 supplies a guided contest-statement lesson and randomized choice qui
   expect(manifest.faqTermIds).toContain("sample-io");
   expect(manifest.faqTermIds).toContain("standard-io");
   expect(manifest.faqTermIds).toContain("clean-output");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -785,7 +785,7 @@ test("S4-02 supplies a guided modeling-card lesson and randomized choice quiz", 
   expect(manifest.faqTermIds).toContain("sample-reverse");
   expect(manifest.faqTermIds).toContain("constraint");
   expect(manifest.faqTermIds).toContain("algorithm-candidate");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -808,7 +808,7 @@ test("S4-03 supplies a guided simulation lesson and randomized choice quiz", asy
   expect(manifest.faqTermIds).toContain("condition-branch");
   expect(manifest.faqTermIds).toContain("sample-trace");
   expect(manifest.faqTermIds).toContain("boundary-data");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -830,7 +830,7 @@ test("S4-04 supplies a guided search-and-pruning lesson and randomized choice qu
   expect(manifest.faqTermIds).toContain("search-tree");
   expect(manifest.faqTermIds).toContain("backtrack");
   expect(manifest.faqTermIds).toContain("pruning");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -853,7 +853,7 @@ test("S4-05 supplies a guided sorting-search-and-mapping lesson and randomized c
   expect(manifest.faqTermIds).toContain("binary-search");
   expect(manifest.faqTermIds).toContain("counting-array");
   expect(manifest.faqTermIds).toContain("duplicate-value");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -877,7 +877,7 @@ test("S4-06 supplies a guided DP-classic-model lesson and randomized choice quiz
   expect(manifest.faqTermIds).toContain("pick-or-skip");
   expect(manifest.faqTermIds).toContain("optimal-substructure");
   expect(manifest.faqTermIds).toContain("state-compression");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -903,7 +903,7 @@ test("S4-07 supplies a guided graph-traversal lesson and randomized choice quiz"
   expect(manifest.faqTermIds).toContain("dfs");
   expect(manifest.faqTermIds).toContain("bfs-intuition");
   expect(manifest.faqTermIds).toContain("connected-component");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -927,7 +927,7 @@ test("S4-08 supplies a guided subtask-and-scoring-strategy lesson and randomized
   expect(manifest.faqTermIds).toContain("fallback-solution");
   expect(manifest.faqTermIds).toContain("easy-first-order");
   expect(manifest.faqTermIds).toContain("complexity-downgrade");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -951,7 +951,7 @@ test("S5-01 supplies a guided timed-solving-flow lesson and randomized choice qu
   expect(manifest.faqTermIds).toContain("modeling-draft");
   expect(manifest.faqTermIds).toContain("sample-check");
   expect(manifest.faqTermIds).toContain("reserve-check-time");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -976,7 +976,7 @@ test("S5-02 supplies a guided systematic-debug lesson and randomized choice quiz
   expect(manifest.faqTermIds).toContain("debug-print");
   expect(manifest.faqTermIds).toContain("assert-idea");
   expect(manifest.faqTermIds).toContain("diff-check");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -1003,7 +1003,7 @@ test("S5-03 supplies a guided trap-review lesson and randomized choice quiz", as
   expect(manifest.faqTermIds).toContain("precedence");
   expect(manifest.faqTermIds).toContain("equal-equal");
   expect(manifest.faqTermIds).toContain("clean-output");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -1029,7 +1029,7 @@ test("S5-04 supplies a guided 80-percent-strategy lesson and randomized choice q
   expect(manifest.faqTermIds).toContain("complexity-upgrade");
   expect(manifest.faqTermIds).toContain("pseudo-optimization");
   expect(manifest.faqTermIds).toContain("diff-check");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -1053,7 +1053,7 @@ test("S5-05 supplies a guided mock-exam lesson and randomized choice quiz", asyn
   expect(manifest.faqTermIds).toContain("submission-order");
   expect(manifest.faqTermIds).toContain("self-test-table");
   expect(manifest.faqTermIds).toContain("time-log");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -1076,7 +1076,7 @@ test("S5-06 supplies a guided error-classification lesson and randomized choice 
   expect(manifest.faqTermIds).toContain("fix-rule");
   expect(manifest.faqTermIds).toContain("redo-key-question");
   expect(manifest.faqTermIds).toContain("boundary-data");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -1101,7 +1101,7 @@ test("S5-07 supplies a guided stability-check lesson and randomized choice quiz"
   expect(manifest.faqTermIds).toContain("cross-check");
   expect(manifest.faqTermIds).toContain("baseline-comparison");
   expect(manifest.faqTermIds).toContain("stable-habit");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");
@@ -1124,7 +1124,7 @@ test("S5-08 supplies a guided knowledge-map lesson and randomized choice quiz", 
   expect(manifest.faqTermIds).toContain("weak-module");
   expect(manifest.faqTermIds).toContain("pre-contest-checklist");
   expect(manifest.faqTermIds).toContain("csp-s-boundary");
-  expect(manifest.assessment.reviewState).toBe("awaiting-user-review");
+  expect(manifest.assessment.reviewState).toBe("machine-checked");
   expect(source).toContain("必会");
   expect(source).toContain("建议掌握");
   expect(source).toContain("拓展");

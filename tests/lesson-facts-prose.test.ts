@@ -34,12 +34,12 @@ function interactiveRecord(lines: string[], directory: string): string | undefin
   );
 }
 
-// 小测条目固定写成「从 N 道待人工审校选择题中随机抽取 M 道」，一节课一条。
+// 小测条目固定写成「从 N 道已通过校验的选择题中随机抽取 M 道」，一节课一条。
 function quizRecord(lines: string[], courseId: string): { line: string; bank: number; draw: number } | undefined {
   for (const line of lines) {
     if (!line.includes(courseId)) continue;
 
-    const match = line.match(/从 (\d+) 道待人工审校选择题中随机抽取 (\d+) 道/);
+    const match = line.match(/从 (\d+) 道已通过校验的选择题中随机抽取 (\d+) 道/);
     if (match) return { line, bank: Number(match[1]), draw: Number(match[2]) };
   }
 

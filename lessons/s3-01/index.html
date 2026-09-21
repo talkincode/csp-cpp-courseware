@@ -1510,7 +1510,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1573,7 +1573,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "要从正整数 n 里取出个位，本课该用哪一句？",
-          options: ["n % 10", "n / 10", "n - 10", "必须先转成字符串"],
+          options: [
+            "n % 10",
+            "n / 10",
+            "n - 10",
+            "必须先转成字符串",
+          ],
           answer: 0,
           explanation: "个位是 n % 10。n / 10 是去掉个位。转成字符串能看，但不是本课必会。本课不会在浏览器里运行 C++。",
           source: "course-plan / 自编",
@@ -1586,8 +1591,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "125 去掉个位后还剩多少？该用哪一步？",
-          options: ["125 / 10 得到 12", "125 - 10 得到 115", "125 % 10 得到 12", "数字会立刻变成 0"],
-          answer: 0,
+          options: [
+            "125 - 10 得到 115",
+            "125 % 10 得到 12",
+            "数字会立刻变成 0",
+            "125 / 10 得到 12",
+          ],
+          answer: 3,
           explanation: "整数除法 125 / 10 得到 12。x % 10 取出的是 5，不是剩下的数。本课不在浏览器里运行 C++。",
           source: "course-plan / 自编",
         },
@@ -1599,8 +1609,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "按 x % 10 和 x / 10 拆 125，各位依次是？",
-          options: ["5、2、1", "1、2、5", "12、5", "125、0"],
-          answer: 0,
+          options: [
+            "12、5",
+            "125、0",
+            "1、2、5",
+            "5、2、1",
+          ],
+          answer: 3,
           explanation: "先 125 % 10 = 5 还剩 12，再 12 % 10 = 2 还剩 1，最后 1 % 10 = 1。从右边往左剥。",
           source: "course-plan / 自编",
         },
@@ -1612,7 +1627,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "拆数位的循环何时应该停止？",
-          options: ["n 变成 0", "取出三位以后必须停", "永远不停", "等到扩展欧几里得算完"],
+          options: [
+            "n 变成 0",
+            "等到扩展欧几里得算完",
+            "永远不停",
+            "取出三位以后必须停",
+          ],
           answer: 0,
           explanation: "每次 n = n / 10，n 变成 0 就没有数位了，循环结束。位数不是永远三位。扩展欧几里得是拓展。",
           source: "course-plan / 自编",
@@ -1625,8 +1645,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "用辗转相除求 12 和 8 的 GCD，结果是？",
-          options: ["4，因为 12 % 8 = 4，再 8 % 4 = 0", "2，因为都是偶数就除以 2", "96，把两数相乘", "必须先分解质因数"],
-          answer: 0,
+          options: [
+            "必须先分解质因数",
+            "4，因为 12 % 8 = 4，再 8 % 4 = 0",
+            "2，因为都是偶数就除以 2",
+            "96，把两数相乘",
+          ],
+          answer: 1,
           explanation: "12 % 8 = 4，8 % 4 = 0，余数为 0 时另一个数 4 就是 GCD。不必先分解质因数。扩展欧几里得是拓展。",
           source: "course-plan / 自编",
         },

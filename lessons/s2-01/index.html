@@ -1509,7 +1509,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1572,8 +1572,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "八次训练成绩都是整数，最合适的存法是？",
-          options: ["一个数组 int a[n]", "开 8 个变量 a1 到 a8", "必须先学 vector", "不用变量，每次口算"],
-          answer: 0,
+          options: [
+            "不用变量，每次口算",
+            "一个数组 int a[n]",
+            "必须先学 vector",
+            "开 8 个变量 a1 到 a8",
+          ],
+          answer: 1,
           explanation: "一组同类数据用数组装。vector 是拓展，现在先会 int a[n]。",
           source: "course-plan / 自编",
         },
@@ -1585,8 +1590,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "数组里第一个元素的下标是？",
-          options: ["a[0]", "a[1]", "a[n]", "a[n - 1]"],
-          answer: 0,
+          options: [
+            "a[1]",
+            "a[0]",
+            "a[n]",
+            "a[n - 1]",
+          ],
+          answer: 1,
           explanation: "下标从 0 开始：第 1 个是 a[0]，第 2 个是 a[1]。a[n] 越界。",
           source: "course-plan / 自编",
         },
@@ -1598,8 +1608,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "长度为 n 的数组，最后一个元素是？",
-          options: ["a[n - 1]", "a[n]", "a[n + 1]", "a[1]"],
-          answer: 0,
+          options: [
+            "a[n]",
+            "a[n + 1]",
+            "a[n - 1]",
+            "a[1]",
+          ],
+          answer: 2,
           explanation: "长度是格子个数。最后一个下标比长度小 1，所以是 a[n - 1]。写 a[n] 会越界。",
           source: "course-plan / 自编",
         },
@@ -1611,7 +1626,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "n = 4 时，哪一次访问是越界？",
-          options: ["a[4]", "a[0]", "a[3]", "a[n - 1]"],
+          options: [
+            "a[4]",
+            "a[n - 1]",
+            "a[0]",
+            "a[3]",
+          ],
           answer: 0,
           explanation: "合法下标是 0 到 3。a[4] 也就是 a[n]，格子不存在。",
           source: "course-plan / 自编",
@@ -1624,8 +1644,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "求数组最大值时，建议掌握的写法是？",
-          options: ["先记下 a[0]，再用 for (int i = 0; i < n; i++) 比较", "直接读 a[n]", "必须用 vector", "下标从 1 写到 n，访问 a[n]"],
-          answer: 0,
+          options: [
+            "直接读 a[n]",
+            "下标从 1 写到 n，访问 a[n]",
+            "必须用 vector",
+            "先记下 a[0]，再用 for (int i = 0; i < n; i++) 比较",
+          ],
+          answer: 3,
           explanation: "先用 a[0] 当起点，循环条件写成 i < n，才不会碰到 a[n]。vector 是拓展。",
           source: "course-plan / 自编",
         },

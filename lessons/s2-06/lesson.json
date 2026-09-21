@@ -5,7 +5,7 @@
   "interactive": {
     "status": "implemented",
     "entry": "index.html",
-    "reviewState": "awaiting-user-review"
+    "reviewState": "owner-approved"
   },
   "assessment": {
     "status": "implemented",
@@ -15,7 +15,8 @@
     "choiceDominant": true,
     "objectiveCoverage": { "assessed": 3, "total": 3 },
     "uncoveredObjectives": [],
-    "reviewState": "awaiting-user-review"
+    "reviewState": "machine-checked",
+    "verification": "docs/review/question-verification.json"
   },
   "video": {
     "owner": "external",

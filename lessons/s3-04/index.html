@@ -1512,7 +1512,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1575,7 +1575,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "前缀和 sum[i] 表示什么？",
-          options: ["从第 1 个到第 i 个数的累计和", "只表示第 i 个数本身", "必须先写树状数组", "编译器会自动累计"],
+          options: [
+            "从第 1 个到第 i 个数的累计和",
+            "只表示第 i 个数本身",
+            "必须先写树状数组",
+            "编译器会自动累计",
+          ],
           answer: 0,
           explanation: "sum[i] 是前 i 个数加起来的结果，并且 sum[0]=0。树状数组是拓展。本课不会在浏览器里运行 C++。",
           source: "course-plan / 自编",
@@ -1588,8 +1593,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "查询连续区间 [l, r] 的和，该用哪条公式？",
-          options: ["sum[r] - sum[l - 1]", "sum[r] - sum[l]", "每次必须重新从 l 加到 r", "只能查整段数组"],
-          answer: 0,
+          options: [
+            "sum[r] - sum[l]",
+            "只能查整段数组",
+            "sum[r] - sum[l - 1]",
+            "每次必须重新从 l 加到 r",
+          ],
+          answer: 2,
           explanation: "减掉 l 前面那一段，剩下的就是 [l, r]。写成 sum[r]-sum[l] 会漏掉 a[l]。",
           source: "course-plan / 自编",
         },
@@ -1601,8 +1611,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "数组 a=[2, 5, 1, 4]（下标从 1 开始）填完后，sum[2] 是多少？",
-          options: ["sum[2] = 7", "sum[2] = 5", "sum[2] = 2", "三格同时填完，没有中间值"],
-          answer: 0,
+          options: [
+            "sum[2] = 2",
+            "sum[2] = 5",
+            "三格同时填完，没有中间值",
+            "sum[2] = 7",
+          ],
+          answer: 3,
           explanation: "sum[1]=2，再加 a[2]=5，得到 sum[2]=7。不要跳过第一格。",
           source: "course-plan / 自编",
         },
@@ -1614,8 +1629,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "sum = [0, 2, 7, 8, 12] 时，区间 [2, 4] 的和怎么算？",
-          options: ["sum[4] - sum[1] = 10", "sum[4] - sum[2] = 5", "二维前缀和才算查过", "不能查中间一段"],
-          answer: 0,
+          options: [
+            "sum[4] - sum[2] = 5",
+            "sum[4] - sum[1] = 10",
+            "二维前缀和才算查过",
+            "不能查中间一段",
+          ],
+          answer: 1,
           explanation: "5+1+4=10，对应 sum[4]-sum[1]=12-2。建议掌握是会查任意一段。二维前缀和是拓展。",
           source: "course-plan / 自编",
         },
@@ -1627,8 +1647,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "查询从第一个元素开始的区间 [1, r] 时，该减哪一项？",
-          options: ["减 sum[0]，它等于 0", "从第一个开始就不能用前缀和", "树状数组会自动处理", "改成 sum[r] - sum[1]"],
-          answer: 0,
+          options: [
+            "从第一个开始就不能用前缀和",
+            "减 sum[0]，它等于 0",
+            "树状数组会自动处理",
+            "改成 sum[r] - sum[1]",
+          ],
+          answer: 1,
           explanation: "l=1 时公式仍是 sum[r]-sum[l-1]，也就是减 sum[0]=0。树状数组是拓展，不是现在的硬门槛。",
           source: "course-plan / 自编",
         },

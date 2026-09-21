@@ -1496,7 +1496,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1559,7 +1559,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "在 C++ 里，两个 int 计算 7 / 2 的结果是？",
-          options: ["3", "3.5", "1", "7"],
+          options: [
+            "3",
+            "3.5",
+            "1",
+            "7",
+          ],
           answer: 0,
           explanation: "两个整数相除会丢掉小数。7 分成 3 个 2，结果是 3 不是 3.5。",
           source: "course-plan / 自编",
@@ -1572,8 +1577,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "7 % 2 的结果是？",
-          options: ["1", "3", "0", "2"],
-          answer: 0,
+          options: [
+            "2",
+            "3",
+            "1",
+            "0",
+          ],
+          answer: 2,
           explanation: "% 得到余数。7 = 2 × 3 + 1，所以余数是 1。",
           source: "course-plan / 自编",
         },
@@ -1585,8 +1595,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "判断整数 n 是偶数，必会的写法是？",
-          options: ["n % 2 == 0", "n / 2 == 0", "n + 2 == 0", "n % 2 == 2"],
-          answer: 0,
+          options: [
+            "n / 2 == 0",
+            "n % 2 == 0",
+            "n % 2 == 2",
+            "n + 2 == 0",
+          ],
+          answer: 1,
           explanation: "偶数能被 2 整除，余数是 0。所以 n % 2 == 0 就是偶数。",
           source: "course-plan / 自编",
         },
@@ -1598,8 +1613,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "求两个 int 变量 a 和 b 的整数平均数，哪一项最合适？",
-          options: ["(a + b) / 2", "a + b / 2", "a / b + 2", "a + b % 2"],
-          answer: 0,
+          options: [
+            "a / b + 2",
+            "(a + b) / 2",
+            "a + b / 2",
+            "a + b % 2",
+          ],
+          answer: 1,
           explanation: "没有括号时先算除法，a + b / 2 会变成 a 加上 b 的一半。平均数要先加再除，必须写 (a + b) / 2。",
           source: "course-plan / 自编",
         },
@@ -1611,7 +1631,12 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "表达式 1 / 2 在两个 int 之间计算时，结果是？",
-          options: ["0", "0.5", "1", "2"],
+          options: [
+            "0",
+            "0.5",
+            "2",
+            "1",
+          ],
           answer: 0,
           explanation: "这是建议掌握：1 和 2 都是整数，1 / 2 会丢掉小数，结果是 0。需要 0.5 时至少一边写成小数，例如 1.0 / 2。这不是现在的硬门槛。",
           source: "course-plan / 自编",
@@ -1624,8 +1649,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "文字写着「周长 = 两边之和再乘 2」。翻译成 C++ 表达式，哪一项对？",
-          options: ["2 * (length + width)", "length * width", "length + width + 2", "length * 2 + width"],
-          answer: 0,
+          options: [
+            "length + width + 2",
+            "2 * (length + width)",
+            "length * width",
+            "length * 2 + width",
+          ],
+          answer: 1,
           explanation: "「两边之和再乘 2」要先把 length 和 width 加起来，再把整个和乘 2，所以写成 2 * (length + width)。length * width 是面积；length + width + 2 把「乘 2」听成了「加 2」；length * 2 + width 只把长乘了 2，宽没有乘。",
           source: "course-plan / 自编",
         },

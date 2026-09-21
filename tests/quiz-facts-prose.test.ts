@@ -129,7 +129,7 @@ test("feature-checklist 写的每课题库题数与现场题库一致", async ()
   const problems: string[] = [];
 
   const rows = [
-    ...checklist.matchAll(/^\| (S\d+-\d+) 随机选择题小测 \|[^\n]*?每套从 (\d+) 道待人工审校选择题中随机抽取 (\d+) 道/gm),
+    ...checklist.matchAll(/^\| (S\d+-\d+) 随机选择题小测 \|[^\n]*?每套从 (\d+) 道已通过校验的选择题中随机抽取 (\d+) 道/gm),
   ].map((match) => ({ courseId: match[1], bankSize: Number(match[2]), drawCount: Number(match[3]) }));
 
   // 抽取本身要能被验证：正则写法一变、行格式一改，下面的断言会在空数组上无声通过。
