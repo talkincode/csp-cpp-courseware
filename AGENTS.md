@@ -17,7 +17,7 @@
 ## 交互与可维护性
 
 - 开发服务器、测试、校验与脚手架一律使用 Bun；不得新增 `node`、`npm`、`npx`、`yarn` 或 Node 运行脚本。常用命令为 `bun run dev`、`bun test`、`bun run scaffold:lessons` 和 `bun run build`。
-- 静态站点只允许用 `bun run deploy` 发布（它内部先跑 `bun run build` 生成 `dist/`）；不得手工拼装 `dist/` 或发布未提交的内容，线上内容必须等于仓库的构建结果，发布前先跑 `bun test`。
+- 静态站点只允许用 `bun run deploy` 发布（它内部先跑 `bun run build` 生成 `dist/`）；main 上的推送由 `.github/workflows/test-and-deploy.yml` 自动跑「`bun test` → 发布 → 线上抽检」，人工发布只是兜底。不得手工拼装 `dist/` 或发布未提交的内容，线上内容必须等于仓库的构建结果。
 - 浏览器中的课件可以保持无框架静态页面，但所有本仓库的开发工具必须能由 Bun 直接运行。
 - 每节课必须位于 `lessons/<小写课程-id>/` 目录，例如 `lessons/s1-01/`；目录中的 `lesson.json` 是该课的交付状态与边界记录。
 - 课程数据以 `courseData` 为单一内容源。每节课必须有唯一 `id`、有效 `phase`、至少三项目标、三项内容和三项检验项。
