@@ -13,6 +13,9 @@
  *   CSP_E2E_CDP_PORT  无头 Chrome 的调试端口（默认 9333）
  *   CSP_E2E_CHROME    Chrome 可执行文件路径
  *   CSP_E2E_ORIGIN    复用已在运行的服务地址（设置后不自行启动服务器）
+ *
+ * 指向线上站点时，「题库异常降级」那段（要把坏题库写进 lessons/s1-01/index.html）无从验证：
+ * 会逐项打印 SKIP 并说明原因，期望项数相应减到 88 减去跳过名单的长度，而不是报失败。
  */
 
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -41,9 +44,48 @@ const checks: Check[] = [];
 // 文档里的项数也绑在这里（见 tests/e2e-count-facts.test.ts）。
 const expectedChecks = 88;
 
+// E2E-S1-01-05 要把坏题库写进 lessons/s1-01/index.html 再复验，只有被复验的页面就是本机
+// checkout 时才成立。指向线上站点时页面是只读的：注入改不动线上内容，这一段既不能算通过
+// （线上只是碰巧满足），也不能算失败（不是页面坏了），只能如实跳过。
+// 跳过几项由这张名单推出来，改一段忘了改名单会由跑完后的自查当场抓住。
+const poolFaultCheckNames = [
+  "空题库时小测面板仍可见",
+  "空题库不渲染题目",
+  "空题库说明题库不可用",
+  "空题库提示无法组卷并保留进度",
+  "空题库时提交按钮不可点击",
+  "空题库不显示伪造的分数",
+  "空题库时页面其余部分仍可用",
+  "越界答案临时改动已生效",
+  "答案越界时不渲染无法判分的试卷",
+  "答案越界时说明题目无效",
+  "答案越界时提示无法组卷",
+  "答案越界时提交按钮不可点击",
+  "临时改动已还原",
+];
+const skipped: string[] = [];
+
+/** 被复验的页面是不是本机 checkout：只有本机来源才能改文件再复验。 */
+function servesLocalCheckout(value: string): boolean {
+  try {
+    const host = new URL(value).hostname;
+    return host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "[::1]";
+  } catch {
+    return false;
+  }
+}
+
+const poolFaultApplicable = servesLocalCheckout(origin);
+
 function check(name: string, ok: boolean, detail = "") {
   checks.push({ name, ok, detail });
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? `  -> ${detail}` : ""}`);
+}
+
+/** 如实记账：这一段没跑就是没跑，既不写成通过也不写成失败。 */
+function skip(name: string, reason: string) {
+  skipped.push(name);
+  console.log(`SKIP  ${name}  -> ${reason}`);
 }
 
 function section(title: string) {
@@ -222,6 +264,8 @@ const poolPattern = /const questionPool = (\[[\s\S]*?\n {6}\]);/;
 
 let client: Cdp | null = null;
 let failure: unknown = null;
+/** 题库异常降级段在 checks 里的起点，供跑完后的名单自查使用。 */
+let poolFaultStart = 0;
 
 try {
   await ensureDevServer();
@@ -682,7 +726,8 @@ try {
   check("重试把待写答案补写落盘", midSession.answerCountAfterRetry === 1, `已保存答案 ${midSession.answerCountAfterRetry} 条`);
   check("恢复后不再显示重试入口", midSession.retryAfterRecovery === false, "");
 
-  section("E2E-S1-01-05 题库异常降级");
+  section(`E2E-S1-01-05 题库异常降级${poolFaultApplicable ? "" : "（当前来源不是本机 checkout，这一段跳过）"}`);
+  poolFaultStart = checks.length;
   async function probeBrokenPool() {
     await visit(client!, 3);
     return client!.evaluateJson<any>(`(() => {
@@ -697,29 +742,35 @@ try {
     })()`);
   }
 
-  try {
-    writeFileSync(lessonFile, originalLessonHtml.replace(poolPattern, "const questionPool = [];"));
-    const empty = await probeBrokenPool();
-    check("空题库时小测面板仍可见", empty.panelVisible === true, "");
-    check("空题库不渲染题目", empty.questions === 0, `题目 ${empty.questions} 道`);
-    check("空题库说明题库不可用", empty.formText.includes("题库暂时不可用或题目无效"), empty.formText.slice(0, 40));
-    check("空题库提示无法组卷并保留进度", empty.resultText.includes("无法组卷") && empty.resultText.includes("进度没有丢失"), empty.resultText);
-    check("空题库时提交按钮不可点击", empty.submitDisabled === true, "");
-    check("空题库不显示伪造的分数", !/\d+\s*\/\s*3/.test(`${empty.formText}${empty.resultText}`), "");
-    check("空题库时页面其余部分仍可用", empty.pageUsable === true, "");
+  if (!poolFaultApplicable) {
+    for (const name of poolFaultCheckNames) {
+      skip(name, `${origin} 不是本机 checkout，坏题库注入改不动被复验的页面`);
+    }
+  } else {
+    try {
+      writeFileSync(lessonFile, originalLessonHtml.replace(poolPattern, "const questionPool = [];"));
+      const empty = await probeBrokenPool();
+      check("空题库时小测面板仍可见", empty.panelVisible === true, "");
+      check("空题库不渲染题目", empty.questions === 0, `题目 ${empty.questions} 道`);
+      check("空题库说明题库不可用", empty.formText.includes("题库暂时不可用或题目无效"), empty.formText.slice(0, 40));
+      check("空题库提示无法组卷并保留进度", empty.resultText.includes("无法组卷") && empty.resultText.includes("进度没有丢失"), empty.resultText);
+      check("空题库时提交按钮不可点击", empty.submitDisabled === true, "");
+      check("空题库不显示伪造的分数", !/\d+\s*\/\s*3/.test(`${empty.formText}${empty.resultText}`), "");
+      check("空题库时页面其余部分仍可用", empty.pageUsable === true, "");
 
-    const poolLiteral = originalLessonHtml.match(poolPattern)![1];
-    const brokenPool = poolLiteral.replace(/answer: \d+/g, "answer: 99");
-    check("越界答案临时改动已生效", brokenPool !== poolLiteral, "");
-    writeFileSync(lessonFile, originalLessonHtml.replace(poolPattern, `const questionPool = ${brokenPool};`));
-    const outOfRange = await probeBrokenPool();
-    check("答案越界时不渲染无法判分的试卷", outOfRange.questions === 0, `题目 ${outOfRange.questions} 道`);
-    check("答案越界时说明题目无效", outOfRange.formText.includes("题库暂时不可用或题目无效"), outOfRange.formText.slice(0, 40));
-    check("答案越界时提示无法组卷", outOfRange.resultText.includes("无法组卷"), outOfRange.resultText);
-    check("答案越界时提交按钮不可点击", outOfRange.submitDisabled === true, "");
-  } finally {
-    writeFileSync(lessonFile, originalLessonHtml);
-    check("临时改动已还原", readFileSync(lessonFile, "utf8") === originalLessonHtml, "");
+      const poolLiteral = originalLessonHtml.match(poolPattern)![1];
+      const brokenPool = poolLiteral.replace(/answer: \d+/g, "answer: 99");
+      check("越界答案临时改动已生效", brokenPool !== poolLiteral, "");
+      writeFileSync(lessonFile, originalLessonHtml.replace(poolPattern, `const questionPool = ${brokenPool};`));
+      const outOfRange = await probeBrokenPool();
+      check("答案越界时不渲染无法判分的试卷", outOfRange.questions === 0, `题目 ${outOfRange.questions} 道`);
+      check("答案越界时说明题目无效", outOfRange.formText.includes("题库暂时不可用或题目无效"), outOfRange.formText.slice(0, 40));
+      check("答案越界时提示无法组卷", outOfRange.resultText.includes("无法组卷"), outOfRange.resultText);
+      check("答案越界时提交按钮不可点击", outOfRange.submitDisabled === true, "");
+    } finally {
+      writeFileSync(lessonFile, originalLessonHtml);
+      check("临时改动已还原", readFileSync(lessonFile, "utf8") === originalLessonHtml, "");
+    }
   }
 } catch (error) {
   failure = error;
@@ -749,10 +800,34 @@ if (failure) {
 }
 
 const failed = checks.filter((item) => !item.ok);
+// 本机复验时题库异常降级段整段都会跑；来源只读时那几项如实跳过，期望项数随之减去跳过名单。
+const expectedRunCount = expectedChecks - (poolFaultApplicable ? 0 : poolFaultCheckNames.length);
+
+if (poolFaultApplicable) {
+  // 名单与实跑必须逐项对齐：改一段忘了改名单，跳过几项就会算错，进而把项数自查骗过去。
+  const ran = checks.slice(poolFaultStart).map((item) => item.name);
+  const missing = poolFaultCheckNames.filter((name) => !ran.includes(name));
+  const extra = ran.filter((name) => !poolFaultCheckNames.includes(name));
+  if (missing.length > 0 || extra.length > 0) {
+    console.error(
+      `题库异常降级段的检查项与 poolFaultCheckNames 名单不符：` +
+        `名单里有而没跑 ${missing.join(" | ") || "无"}；跑了而名单里没有 ${extra.join(" | ") || "无"}。`,
+    );
+    process.exit(4);
+  }
+}
+
 console.log(`\n${checks.length - failed.length}/${checks.length} 项浏览器检查通过`);
-if (checks.length !== expectedChecks) {
+if (skipped.length > 0) {
+  console.log(
+    `${skipped.length} 项跳过：题库异常降级段需要把坏题库写进本机 checkout，` +
+      `当前来源 ${origin} 是只读的线上内容，注入改不动被复验的页面。`,
+  );
+}
+if (checks.length !== expectedRunCount) {
   console.error(
-    `检查项数与声明不符：脚本声明 ${expectedChecks} 项，实际跑了 ${checks.length} 项。` +
+    `检查项数与声明不符：脚本声明 ${expectedChecks} 项、跳过 ${expectedChecks - expectedRunCount} 项，` +
+      `实际跑了 ${checks.length} 项。` +
       `\n请同步 tests/e2e/s1-01-cdp.ts、tests/e2e/manual-checklist.md、docs/roadmap.md 与 README.md 里的数字。`,
   );
   process.exit(3);
