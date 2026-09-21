@@ -18,10 +18,14 @@
 本地预览使用 Bun：
 
 ```bash
-bun run dev
+bun run dev          # 默认 http://127.0.0.1:4173
+PORT=4199 bun run dev  # 换端口
+HOST=0.0.0.0 bun run dev  # 想让同局域网的其它设备也能打开时才用
 ```
 
 打开 <http://localhost:4173>。在线站点是 <https://cplus.talkincode.net>，构建与发布方式见下文「构建与发布」。
+
+开发服务器只监听 `127.0.0.1`，并且只服务线上真正会有的那三份内容（`index.html`、`glossary/`、`lessons/`）——这份清单与构建、线上 Worker 共用 [`src/site.ts`](./src/site.ts) 里的同一份定义。仓库里的 `.git/`、`package.json`、`wrangler.jsonc`、`AGENTS.md`、`docs/` 等在本地也是中文 404，和线上一致；少了末尾斜杠的目录地址（`/lessons/s1-01`）会像线上那样跳到带斜杠的地址。想把这些内容也给同一局域网的其他设备看，必须自己显式写 `HOST=0.0.0.0`，默认不会。
 
 ## 课件目录
 
