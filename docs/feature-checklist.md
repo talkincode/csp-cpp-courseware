@@ -114,7 +114,7 @@
 | 键盘可达与焦点可见 | 已完成 | 全部 40 课都由 `bun run e2e:keyboard` 在无头 Chrome 里发真实按键事件复验（328 项检查：结构检查每课 8 项 + S1-02 与 S3-01 的键盘深路径每课 4 项），覆盖 Tab 绕圈全程可见焦点环、无正数 tabindex 打乱顺序、音效开关 Space 可切换、词条 Enter/Escape 与焦点归还、步进门闩挡得住、提交后焦点交给结果区；`tests/keyboard-access-contract.test.ts` 在 `bun test` 里逐课锁住两处焦点恢复动作（作答重画题面、提交成功），焦点环观感与读屏语气仍待人工确认 |
 | 可复制的代码模板与错误对照 | 下一步 | 帮助初学者辨识常见 C++ 错误；不在浏览器端执行不受控代码 |
 | 教师备课打印版 | 下一步 | 便于课堂使用；默认不包含学生账号或行为追踪 |
-| 可选的公开静态发布 | 已完成 | 课程站点发布在 <https://cplus.talkincode.net>，由 Cloudflare Worker `csp-cpp-courseware` 托管静态资源；`bun run build` 从仓库内容重建 `dist/`，`bun run deploy` 先构建再发布，线上内容就是仓库的构建结果；课程地址的末尾斜杠跳转由静态资源的 `html_handling` 负责（Worker 看不到这类请求），Worker 只把 404 换成中文说明。main 上的推送由 `.github/workflows/test-and-deploy.yml` 自动发布（先 `bun test`，再 `bun run deploy`，最后抽检线上每一节课、末尾斜杠跳转、词条面板与中文 404），需要仓库 secret `CLOUDFLARE_API_TOKEN`。零账号、零排行榜、零在线判题、零个人画像的边界不变 |
+| 可选的公开静态发布 | 已完成 | 课程站点发布在 <https://cplus.talkincode.net>，由 Cloudflare Worker `csp-cpp-courseware` 托管静态资源；`bun run build` 从仓库内容重建 `dist/`，`bun run deploy` 先构建再发布，线上内容就是仓库的构建结果；课程地址的末尾斜杠跳转由静态资源的 `html_handling` 负责（Worker 看不到这类请求），Worker 只把 404 换成中文说明。main 上的推送由 `.github/workflows/test-and-deploy.yml` 自动发布（先 `bun test`，再 `bun run deploy`，最后抽检线上每一节课、末尾斜杠跳转、词条面板与中文 404），需要 `CLOUDFLARE_API_TOKEN`（仓库级或组织级共享 secret 均可）。零账号、零排行榜、零在线判题、零个人画像的边界不变 |
 
 ## 不做
 
