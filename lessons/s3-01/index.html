@@ -839,6 +839,57 @@
         color: #91501a;
       }
 
+      .quiz-review-exit {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 9px;
+        margin: 16px 0 0;
+        padding: 12px 14px;
+        background: rgba(215, 230, 205, 0.5);
+        border-left: 4px solid var(--forest-fog);
+        border-radius: 12px;
+      }
+
+      .quiz-review-exit[hidden] {
+        display: none;
+      }
+
+      .quiz-review-exit p {
+        margin: 0;
+        color: var(--ink);
+        font-size: 0.79rem;
+        font-weight: 700;
+      }
+
+      .review-link {
+        padding: 7px 12px;
+        color: var(--forest);
+        background: var(--paper-bright);
+        border: 2px solid var(--forest-fog);
+        border-radius: 999px;
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .review-link:hover {
+        background: var(--mint);
+      }
+
+      .review-link:focus-visible {
+        outline: 3px solid var(--orange);
+        outline-offset: 3px;
+      }
+
+      /* 复习出口是程序化聚焦到任务标题上的：:focus-visible 在脚本聚焦时不一定命中，
+         用 :focus 保证这一下也有看得见的落点。 */
+      .step-panel h2:focus {
+        outline: 3px solid var(--orange-soft);
+        outline-offset: 4px;
+      }
+
       .external-boundary {
         max-width: 790px;
         margin: 34px 0 0;
@@ -1455,7 +1506,7 @@
 
         <div class="workbench">
           <section class="step-panel" data-panel="0">
-            <h2>任务 1：先选出怎么拆数位</h2>
+            <h2 tabindex="-1">任务 1：先选出怎么拆数位</h2>
             <p class="step-lead">
               取出个位看 <button type="button" class="faq-term" data-faq="modulo">取模 %</button>，去掉个位看 <button type="button" class="faq-term" data-faq="integer-division">整除 /</button>。一个整数的 <button type="button" class="faq-term" data-faq="digit">数位</button> 从右边开始剥。点不认识的词可看基础解释。
             </p>
@@ -1478,7 +1529,7 @@
           </section>
 
           <section class="step-panel" data-panel="1" hidden>
-            <h2>任务 2：按顺序拆开 125</h2>
+            <h2 tabindex="-1">任务 2：按顺序拆开 125</h2>
             <p class="step-lead">
               最小示例：<span class="inline-code">x % 10</span> 取出个位，<span class="inline-code">x / 10</span> 去掉个位。按顺序点三步，把 125 拆成 5、2、1。这里不会在浏览器里运行 C++。
             </p>
@@ -1539,7 +1590,7 @@
           </section>
 
           <section class="step-panel" data-panel="2" hidden>
-            <h2>任务 3：用余数求 GCD，并看循环何时停</h2>
+            <h2 tabindex="-1">任务 3：用余数求 GCD，并看循环何时停</h2>
             <p class="step-lead">
               建议掌握：求 <button type="button" class="faq-term" data-faq="gcd">最大公约数</button> 用辗转相除，和拆数位一样靠余数。必会还包括解释循环何时结束：余数变成 0。<button type="button" class="faq-term" data-faq="loop-invariant">循环不变量</button> 是每一轮都成立的关系。
             </p>
@@ -1568,7 +1619,7 @@
           </section>
 
           <section class="step-panel" data-panel="3" hidden>
-            <h2>任务 4：随机小测，看看你是否真的懂了</h2>
+            <h2 tabindex="-1">任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
               每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
@@ -1581,6 +1632,7 @@
               <button id="submitQuizButton" class="primary-action" type="button">提交并查看解析</button>
               <p id="quizResult" class="quiz-result" role="status" aria-live="polite" tabindex="-1"></p>
             </div>
+            <nav id="quizReviewExit" class="quiz-review-exit" aria-label="复习出口：回到讲这条目标的那个任务" hidden></nav>
           </section>
 
           <aside class="external-boundary">
@@ -1622,6 +1674,12 @@
         "用整除和取模处理数字",
         "理解循环不变量",
         "掌握最大公约数的基础写法",
+      ];
+      // 复习出口用：第几条学习目标由第几个任务讲（0 起算，最后一个任务是小测自己）。
+      const objectiveReviewStep = [
+        0,
+        2,
+        2,
       ];
 
       const questionPool = [
@@ -1755,6 +1813,7 @@
       const digitRef = document.querySelector("#digitRef");
       const quizForm = document.querySelector("#quizForm");
       const quizResult = document.querySelector("#quizResult");
+      const quizReviewExit = document.querySelector("#quizReviewExit");
       const completionRibbon = document.querySelector("#completionRibbon");
       const storageNotice = document.querySelector("#storageNotice");
       const confettiLayer = document.querySelector("#confettiLayer");
@@ -2167,13 +2226,8 @@
         if (state.quizSubmitted) {
           const score = quizScore(questions);
           const passed = score >= 2;
-          const missedGoals = [
-            ...new Set(
-              questions
-                .filter((question) => Number(state.answers[question.id]) !== question.answer)
-                .map((question) => courseObjectives[question.objectiveIndex]),
-            ),
-          ];
+          const missedQuestions = questions.filter((question) => Number(state.answers[question.id]) !== question.answer);
+          const missedGoals = [...new Set(missedQuestions.map((question) => courseObjectives[question.objectiveIndex]))];
           const reviewHint =
             missedGoals.length > 0
               ? `错题集中在：${missedGoals.join("；")}。回看这一节对应的讲解再换一套题。`
@@ -2182,9 +2236,11 @@
           quizResult.textContent = passed
             ? `本次答对 ${score}/3。很好，已经能拆数位，并解释 GCD 循环何时结束。${reviewHint}`
             : `本次答对 ${score}/3。没关系，回看解析后换一套题再试。${reviewHint}`;
+          renderQuizReviewExit(missedQuestions.map((question) => question.objectiveIndex));
         } else {
           quizResult.textContent = "";
           quizResult.dataset.tone = "";
+          renderQuizReviewExit([]);
         }
       }
 
@@ -2470,6 +2526,58 @@
 
         return false;
       }
+
+      // 错题不只要点名落在哪条学习目标上，还要能一步回到讲这条目标的任务：
+      // 学习者知道“错了”却不知道三条任务里翻哪一条时，这句提示等于没说。
+      function stepLabel(step) {
+        return document.querySelector('[data-step="' + step + '"] strong')?.textContent?.trim() ?? "任务 " + (step + 1);
+      }
+
+      function renderQuizReviewExit(missedObjectiveIndexes) {
+        quizReviewExit.textContent = "";
+        const steps = [];
+        for (const objectiveIndex of missedObjectiveIndexes) {
+          const step = objectiveReviewStep[objectiveIndex];
+          if (!Number.isInteger(step) || steps.includes(step)) continue;
+          steps.push(step);
+        }
+
+        quizReviewExit.hidden = steps.length === 0;
+        if (steps.length === 0) return;
+
+        const label = document.createElement("p");
+        label.textContent = "错题对应的任务，点回去看这一步：";
+        quizReviewExit.append(label);
+
+        for (const step of steps) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "review-link";
+          button.dataset.reviewStep = String(step);
+          button.textContent = "回任务 " + (step + 1) + "：" + stepLabel(step);
+          quizReviewExit.append(button);
+        }
+      }
+
+      quizReviewExit.addEventListener("click", (event) => {
+        // 事件对象可能来自只带最小 DOM 的测试替身（它点击时不传 event），所以逐层判空；
+        // 真浏览器里的点击必定带 target，判空不会漏掉任何真实点击。
+        const trigger = event?.target?.closest?.("[data-review-step]");
+        if (!trigger) return;
+
+        const step = Number(trigger.dataset.reviewStep);
+        if (!isStepUnlocked(step)) {
+          announce("这一步还没解锁，先完成它前面的任务。");
+          playSound("error");
+          return;
+        }
+
+        // 切过去以后这个按钮自己也进了被隐藏的面板，焦点必须交给目标任务的标题，
+        // 否则键盘学习者的焦点当场掉回文档主体。
+        selectStep(step);
+        document.querySelector('[data-panel="' + step + '"] h2')?.focus({ preventScroll: true });
+        announce("已回到任务 " + (step + 1) + "：" + stepLabel(step) + "。看完再回来换一套题。");
+      });
 
       // 提交成功后按钮会变成 disabled，浏览器随即把焦点丢回文档主体——正好是得分和逐题解析出现的那一刻。
       // 把焦点交给结果区（role="status"，自带朗读），键盘学习者才不用从页首重新 Tab 十几个停靠点。

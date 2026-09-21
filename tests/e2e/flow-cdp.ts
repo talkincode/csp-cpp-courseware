@@ -10,9 +10,10 @@
  * 与 `s2-typed-cdp.ts` 的分工：那个脚本验「这一个空位本身」（出现时机、全角符号、语义写错、
  * 兜底按钮、草稿恢复）；这个脚本验「整节课能不能从头走到尾」——把 0 / N 推到 N / N、
  * 每一步都要经过真实浏览器点击、跳步会被拦住、刷新后进度还在、清掉本地存储就回到起点，
- * 再趁小测面板可见时把卷子量一遍（目标绑定、未答完不可提交、提交后得分与解析、没考住的复习出口），
+ * 再趁小测面板可见时把卷子量一遍（目标绑定、未答完不可提交、提交后得分与解析、没考住的复习出口
+ * 能点回讲这条目标的任务），
  * 最后量完成态自己揭开的「继续学习」入口（下一课路径、文案与可达性，最后一课换成课程收尾出口）。
- * 每课 19 项，39 课共 741 项。两个脚本共用 `lesson-flows.ts` 里的答案，改一处两边同时生效。
+ * 每课 20 项，39 课共 780 项。两个脚本共用 `lesson-flows.ts` 里的答案，改一处两边同时生效。
  *
  * S1-01 不在这张表里：它的八个场景由 `s1-01-cdp.ts` 单独复验，粒度更细。
  *
@@ -80,7 +81,7 @@ const chromeLog: string[] = [];
  * 加了一条检查却忘了改这里，本轮跑完就会当场失败；改了这里但没同步文档与清单，
  * `tests/e2e-count-facts.test.ts` 会失败。
  */
-const checksPerLesson = 19;
+const checksPerLesson = 20;
 
 function check(name: string, ok: boolean, detail = "") {
   checks.push({ name, ok, detail });
@@ -484,6 +485,17 @@ function quizDriver() {
     unlockedAfterWrong: -1,
     totalSteps: 0,
     poolSize: 0,
+    reviewExitHidden: null,
+    reviewExitNative: false,
+    reviewExitSteps: [],
+    reviewExitExpectedSteps: [],
+    reviewExitTargetsTeachingPanel: false,
+    reviewExitLandedStep: -1,
+    reviewExitLandedPanel: -1,
+    reviewExitFocusTag: "",
+    reviewExitFocusText: "",
+    reviewExitRibbon: "",
+    reviewExitBackToQuiz: false,
     reviewNote: document.body.textContent.includes("已通过校验"),
   };
 
@@ -563,6 +575,41 @@ function quizDriver() {
   out.unlockedAfterWrong = typeof unlockedStepCount === "function" ? unlockedStepCount() : -1;
   out.totalSteps = document.querySelectorAll("[data-step]").length;
   out.wrongExplanations = form.querySelectorAll(".explanation").length;
+
+  // 复习出口：错题汇总里的「回看这一节」必须能落到真正讲这条目标的那一个任务，
+  // 而不是只留一句口号。这里按错题的「检查目标」原文反查 objectiveReviewStep，
+  // 再真点一次，量面板有没有切过去、焦点有没有落到目标任务标题上。
+  const exit = document.querySelector("#quizReviewExit");
+  out.reviewExitHidden = exit ? exit.hidden : null;
+  const reviewButtons = exit ? [...exit.querySelectorAll("[data-review-step]")] : [];
+  out.reviewExitNative = reviewButtons.length > 0 && reviewButtons.every((button) => button.tagName === "BUTTON" && button.type === "button");
+  const expectedReviewSteps = [];
+  for (const section of form.querySelectorAll(".question")) {
+    const objective = (section.querySelector(".question-objective")?.textContent ?? "").replace("检查目标：", "").trim();
+    const objectiveIndex = objectives.indexOf(objective);
+    const step = objectiveIndex >= 0 && typeof objectiveReviewStep !== "undefined" ? objectiveReviewStep[objectiveIndex] : undefined;
+    if (typeof step === "number" && !expectedReviewSteps.includes(step)) expectedReviewSteps.push(step);
+  }
+  out.reviewExitSteps = reviewButtons.map((button) => Number(button.dataset.reviewStep));
+  out.reviewExitExpectedSteps = expectedReviewSteps;
+  out.reviewExitTargetsTeachingPanel = out.reviewExitSteps.every((step) => step >= 0 && step < document.querySelectorAll(".step-panel").length - 1);
+  if (reviewButtons.length > 0) {
+    const targetStep = Number(reviewButtons[0].dataset.reviewStep);
+    reviewButtons[0].click();
+    await tick();
+    await tick();
+    const panels = [...document.querySelectorAll(".step-panel")].map((panel) => !panel.hidden);
+    out.reviewExitLandedPanel = panels.findIndex(Boolean);
+    out.reviewExitFocusTag = document.activeElement.tagName;
+    out.reviewExitFocusText = (document.activeElement.textContent ?? "").trim().slice(0, 24);
+    out.reviewExitRibbon = (document.querySelector("#completionRibbon")?.textContent ?? "").trim();
+    // 看完讲解会回到小测：也让后面的刷新断言有确定的落点。
+    const quizPanel = [...document.querySelectorAll(".step-panel")].findIndex((panel) => panel.querySelector("#quizForm"));
+    document.querySelector('.step-button[data-step="' + quizPanel + '"]')?.click();
+    await tick();
+    out.reviewExitBackToQuiz = [...document.querySelectorAll(".step-panel")].map((panel) => !panel.hidden)[quizPanel] === true;
+    out.reviewExitLandedStep = targetStep;
+  }
 
   return JSON.stringify(out);
 })()`;
@@ -728,6 +775,21 @@ try {
           quiz.wrongExplanations === 3 &&
           quiz.unlockedAfterWrong === quiz.totalSteps,
         `result="${quiz.wrongResultText.slice(0, 60)}" tone=${quiz.wrongTone} explanations=${quiz.wrongExplanations} unlocked=${quiz.unlockedAfterWrong}/${quiz.totalSteps}`,
+      );
+
+      check(
+        `${lesson.directory} 复习出口把每条错题目标点回讲它的任务，并在页面上真的切过去`,
+        quiz.reviewExitHidden === false &&
+          quiz.reviewExitNative === true &&
+          quiz.reviewExitSteps.length > 0 &&
+          JSON.stringify(quiz.reviewExitSteps) === JSON.stringify(quiz.reviewExitExpectedSteps) &&
+          quiz.reviewExitTargetsTeachingPanel === true &&
+          quiz.reviewExitLandedPanel === quiz.reviewExitLandedStep &&
+          quiz.reviewExitFocusTag === "H2" &&
+          quiz.reviewExitFocusText.startsWith(`任务 ${quiz.reviewExitLandedStep + 1}`) &&
+          quiz.reviewExitRibbon.includes(`已回到任务 ${quiz.reviewExitLandedStep + 1}`) &&
+          quiz.reviewExitBackToQuiz === true,
+        `hidden=${quiz.reviewExitHidden} native=${quiz.reviewExitNative} steps=${JSON.stringify(quiz.reviewExitSteps)} expected=${JSON.stringify(quiz.reviewExitExpectedSteps)} landed=${quiz.reviewExitLandedPanel} focus=${quiz.reviewExitFocusTag}「${quiz.reviewExitFocusText}」ribbon=「${quiz.reviewExitRibbon}」back=${quiz.reviewExitBackToQuiz}`,
       );
 
       check(

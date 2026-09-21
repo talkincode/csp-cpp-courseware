@@ -139,6 +139,144 @@ test("未通过的试卷会把错题指回具体学习目标", () => {
   expect(problems).toEqual([]);
 });
 
+/** 按大括号配平取出一段以 `header` 开头的代码块。 */
+function sourceBlock(source: string, header: string): string {
+  const start = source.indexOf(header);
+  if (start === -1) return "";
+  const bodyStart = source.indexOf("{", start);
+  if (bodyStart === -1) return "";
+
+  let depth = 0;
+  for (let index = bodyStart; index < source.length; index += 1) {
+    const char = source[index];
+    if (char === "{") depth += 1;
+    else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) return source.slice(bodyStart, index + 1);
+    }
+  }
+
+  return "";
+}
+
+/** 取页面里的 `objectiveReviewStep` 映射：第几条学习目标由第几个任务讲。 */
+function extractReviewSteps(source: string, directory: string): number[] | null {
+  const match = source.match(/const objectiveReviewStep = (\[[\s\S]*?\n\s*\]);/);
+  if (!match) return null;
+
+  const steps = Function(`"use strict"; return (${match[1]});`)() as unknown;
+  if (!Array.isArray(steps)) throw new Error(`${directory}: objectiveReviewStep 不是数组`);
+
+  return steps as number[];
+}
+
+/** 面板序号里最大的那个就是小测自己的面板；复习出口只能指向它前面的讲解任务。 */
+function extractQuizStep(source: string, directory: string): number {
+  const panels = [...source.matchAll(/<section class="step-panel" data-panel="(\d+)"/g)].map((match) => Number(match[1]));
+  if (panels.length < 2) throw new Error(`${directory}: 找不到任务面板`);
+
+  return Math.max(...panels);
+}
+
+test("复习出口把每条学习目标指回讲它的那个任务，且落在小测面板内", () => {
+  const problems: string[] = [];
+
+  for (const page of pages) {
+    const quizStep = extractQuizStep(page.source, page.directory);
+
+    // 结果区旁边那句“回看这一节对应的讲解”必须真能点回去：只有文字时，
+    // 学习者知道错在哪条目标，却不知道三条任务里该翻哪一条。
+    const exits = [...page.source.matchAll(/<nav\b[^>]*\bid="quizReviewExit"[^>]*>/g)].map((match) => match[0]);
+    if (exits.length !== 1) {
+      problems.push(`${page.courseId}: 找不到唯一的复习出口 #quizReviewExit（${exits.length} 个）`);
+      continue;
+    }
+
+    const exitTag = exits[0]!;
+    if (!/\bhidden\b/.test(exitTag)) problems.push(`${page.courseId}: 复习出口默认没有 hidden，没做错题时也会露出空壳`);
+    if (!/aria-label="[^"]+"/.test(exitTag)) problems.push(`${page.courseId}: 复习出口缺少 aria-label`);
+
+    const exitIndex = page.source.indexOf(exitTag);
+    if (exitIndex < page.source.indexOf('id="quizResult"')) {
+      problems.push(`${page.courseId}: 复习出口排在结果区之前，得分还没出现它就露出来了`);
+    }
+    if (exitIndex > page.source.indexOf('<aside class="external-boundary">')) {
+      problems.push(`${page.courseId}: 复习出口落在小测面板之外，看到得分时它已经滚出视野`);
+    }
+
+    const steps = extractReviewSteps(page.source, page.directory);
+    if (!steps) {
+      problems.push(`${page.courseId}: 没有 objectiveReviewStep 映射`);
+      continue;
+    }
+
+    if (steps.length !== page.objectives.length) {
+      problems.push(`${page.courseId}: 映射有 ${steps.length} 条，本课有 ${page.objectives.length} 条学习目标`);
+    }
+
+    // 指向小测自己（或越界）都是死路：那一步只会把学习者带回刚做完的卷子。
+    steps.forEach((step, objectiveIndex) => {
+      if (!Number.isInteger(step) || step < 0 || step >= quizStep) {
+        problems.push(
+          `${page.courseId}: 第 ${objectiveIndex + 1} 条目标指向任务 ${step + 1}，本课的讲解任务只有 1 至 ${quizStep} 个`,
+        );
+      }
+    });
+
+    for (const fragment of ["objectiveReviewStep[", "data-review-step", 'createElement("button")']) {
+      if (!page.source.includes(fragment)) problems.push(`${page.courseId}: 复习出口没有用上 ${fragment}`);
+    }
+
+    // 没有错题时出口必须收起来，否则会把“没有薄弱项”也说成要找地方复习。
+    if (!/quizReviewExit\.hidden = /.test(page.source)) problems.push(`${page.courseId}: 复习出口没有按错题情况收起`);
+  }
+
+  expect(problems).toEqual([]);
+});
+
+test("复习出口点下去要真的切到那个任务，并把焦点交给它的标题", () => {
+  const problems: string[] = [];
+
+  for (const page of pages) {
+    const helper = sourceBlock(page.source, 'quizReviewExit.addEventListener("click"');
+    if (!helper) {
+      problems.push(`${page.courseId}: 复习出口没有点击处理器`);
+      continue;
+    }
+
+    // 切面板本身要复用步进的门闩逻辑（未解锁的任务不能被出口绕过去）。
+    if (!helper.includes("selectStep(")) problems.push(`${page.courseId}: 复习出口没有走 selectStep 切换任务`);
+
+    // 点下去以后这个按钮自己会在被隐藏的面板里，焦点必须交给目标面板的标题，
+    // 否则键盘学习者的焦点当场掉回文档主体。
+    if (!/\.focus\(/.test(helper)) problems.push(`${page.courseId}: 复习出口没有把焦点交给目标面板标题`);
+    if (!helper.includes("h2")) problems.push(`${page.courseId}: 复习出口没有把焦点落在目标任务的标题上`);
+  }
+
+  expect(problems).toEqual([]);
+});
+
+test("每个任务面板的标题都能接收程序化焦点", () => {
+  const problems: string[] = [];
+
+  for (const page of pages) {
+    const headings = [...page.source.matchAll(/<section class="step-panel" data-panel="(\d+)"[^>]*>\s*<h2([^>]*)>/g)];
+
+    if (headings.length !== extractQuizStep(page.source, page.directory) + 1) {
+      problems.push(`${page.courseId}: 只认到 ${headings.length} 个任务标题，面板结构可能变了`);
+      continue;
+    }
+
+    for (const heading of headings) {
+      if (!/tabindex="-1"/.test(heading[2]!)) {
+        problems.push(`${page.courseId}: 任务 ${Number(heading[1]) + 1} 的标题不能接收焦点，复习出口没法把焦点交还给它`);
+      }
+    }
+  }
+
+  expect(problems).toEqual([]);
+});
+
 test("lesson.json 如实登记还未被题库覆盖的学习目标", () => {
   const problems: string[] = [];
 
