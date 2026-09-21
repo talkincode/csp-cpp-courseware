@@ -1420,13 +1420,13 @@
           <section class="step-panel" data-panel="1" hidden>
             <h2>任务 2：按定位、改型、回归三步走完改型卡</h2>
             <p class="step-lead">
-              最小示例：一段程序用 `int sum` 累加 1 到 100000 再乘系数 100000，理论答案是正数，实际输出却是负数。按顺序点三步：先<button type="button" class="faq-term" data-faq="overflow">定位溢出点</button>，再改成<button type="button" class="faq-term" data-faq="long-long">long long</button>，最后回归验证。这里不会在浏览器里运行 C++。
+              最小示例：一段程序用 `int sum` 累加 100000 项、每项 80000，手算总和 8000000000（正数，80 亿），程序却输出 -589934592。按顺序点三步：先<button type="button" class="faq-term" data-faq="overflow">定位溢出点</button>，再改成<button type="button" class="faq-term" data-faq="long-long">long long</button>，最后回归验证。这里不会在浏览器里运行 C++。
             </p>
             <p class="guided-note"><strong>必会：</strong>能解释每一步为什么这样做。边界：不要只改一处就当作修完；不要改完不回归。</p>
             <div class="code-sheet" aria-label="定位、改型、回归三步对照">
               <ol>
-                <li>// 现象：sum 理论上是正数，实际输出变成负数</li>
-                <li class="highlight">// 定位：sum 和累加中间量都声明成了 int，乘系数后超过 int 上限</li>
+                <li>// 现象：手算总和 8000000000（正数 80 亿），程序却输出 -589934592</li>
+                <li class="highlight">// 定位：sum 和累加中间量都声明成了 int，加起来超过 int 上限</li>
                 <li class="focus-line">// 改型：把 sum 和中间量都换成 long long</li>
                 <li>// 回归：用最大数据和最小数据各跑一遍，确认不再溢出</li>
               </ol>
@@ -1456,17 +1456,17 @@
             <p id="flowFeedback" class="inline-feedback" role="status" aria-live="polite"></p>
             <div id="sumTypeMicro" hidden>
               <p class="step-lead">
-                三步走完了，现在把“改型”落成一行代码：给累加变量选一个装得下 10^10 的类型，并让它从 0 开始。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
+                三步走完了，现在把“改型”落成一行代码：给累加变量选一个装得下 80 亿的类型，并让它从 0 开始。下面是只读脚手架，只留一空给你敲键盘；这里不会在浏览器里运行 C++。
               </p>
               <div class="code-sheet" aria-label="累加求和的脚手架，只留一空">
                 <ol>
-                  <li>// 现象：n=100000，每项约 10^5，手算总和约 10^10，程序却输出负数</li>
+                  <li>// 现象：n=100000，每项 80000，手算总和 8000000000（正数），程序却输出 -589934592</li>
                   <li>int a[100005];</li>
                   <li>int main() {</li>
                   <li>    int n;</li>
                   <li>    cin &gt;&gt; n;</li>
                   <li>    for (int i = 0; i &lt; n; i += 1) cin &gt;&gt; a[i];</li>
-                  <li class="focus-line">    <input id="sumTypeInput" class="micro-input" type="text" value="" placeholder="____ 累加变量从 0 开始" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="80" aria-label="写出累加变量的那一行声明" />   // 改型：让 sum 装得下 10^10</li>
+                  <li class="focus-line">    <input id="sumTypeInput" class="micro-input" type="text" value="" placeholder="____ 累加变量从 0 开始" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" inputmode="latin" maxlength="80" aria-label="写出累加变量的那一行声明" />   // 改型：让 sum 装得下 80 亿</li>
                   <li>    for (int i = 0; i &lt; n; i += 1) {</li>
                   <li>        sum += a[i];</li>
                   <li>    }</li>
@@ -1861,9 +1861,9 @@
         if (/^double/.test(body))
           return { ok: false, message: "double 是给小数用的：整数求和坚持用整数类型，不然大数会变成不精确的近似值。" };
         if (/^unsignedint/.test(body))
-          return { ok: false, message: "unsigned int 只是把上限抬高一点，还是装不下 10^10 量级的和：要写 long long 。" };
+          return { ok: false, message: "unsigned int 只是把上限抬高一点（上限约 42.9 亿），还是装不下 80 亿量级的和：要写 long long 。" };
         if (/^int/.test(body))
-          return { ok: false, message: "int 还是装不下：int 大约到 2×10^9 ，这题的和约 10^10 ，早就越过去了。" };
+          return { ok: false, message: "int 还是装不下：int 大约到 21 亿，这题的和是 80 亿，早就越过去了。" };
         if (/^long(?!long)/.test(body))
           return { ok: false, message: "只写一个 long 不保险：它在不同平台上宽度不一样；累加和要写明确的 long long 。" };
         if (/^longlong/.test(body)) {
@@ -2047,7 +2047,7 @@
           variableMeta.textContent = "类型已经改好。下一步点“回归：用最大和最小数据各验证一次”。";
           showFeedback(flowFeedback, "第二步走完。下一步点“回归：用最大和最小数据各验证一次”，不要跳过。");
         } else if (state.stateDefined) {
-          variableValue.textContent = "已定位：sum 用 int 存下 100000 项乘系数的和";
+          variableValue.textContent = "已定位：sum 用 int 存下 100000 项、每项 80000 的和";
           variableMeta.textContent = "溢出点找到了。不要跳到最后一步。";
           showFeedback(flowFeedback, "第一步走完。下一步点“改型：把 sum 和中间量都换成 long long”，不要跳到结束。");
         } else {
@@ -2332,7 +2332,7 @@
         renderFlowTask();
         showFeedback(
           flowFeedback,
-          "三步走完了：定位、改型、回归都对上了，问题就是 sum 用 int 存不下 10^10 量级的和。现在在下面的空里亲手写出改型后的那一行声明。",
+          "三步走完了：定位、改型、回归都对上了，问题就是 sum 用 int 存不下 80 亿量级的和。现在在下面的空里亲手写出改型后的那一行声明。",
         );
         announce("三步已经走完。现在亲手写出累加变量的那一行声明：类型、名字、初值、分号，四样都要对上。");
         playSound("calm");
@@ -2372,7 +2372,7 @@
           ? "要写的是 long long sum = 0; ：先写类型 long long ，再写名字 sum ，最后给初值 0 。"
           : text.includes("longlong")
             ? "类型对了。再检查三样：名字是小写 sum ；等号后面是 0 ；末尾有半角分号。"
-            : "回想“定位”那一步：int 大约到 2×10^9 ，这题的和约 10^10 。类型要换成能装下它的那个。";
+            : "回想“定位”那一步：int 大约到 21 亿，这题的和是 80 亿。类型要换成能装下它的那个。";
         showFeedback(sumTypeHint, hint);
         announce(hint);
         playSound("calm");
