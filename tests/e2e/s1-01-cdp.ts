@@ -317,6 +317,7 @@ try {
     out.submitLabelBefore = submit().textContent.trim();
     out.submitDisabledBefore = submit().disabled;
     out.explanationsBefore = document.querySelectorAll("#quizForm .explanation").length;
+    out.reviewExitHiddenBefore = document.querySelector("#quizReviewExit").hidden;
     // 题库的正确答案位置是打乱过的，不能假设「第 2 个选项一定错」：按页面自己的
     // questionPool 算出每题的错误下标再点。
     const answerWrong = (index) => {
@@ -338,7 +339,41 @@ try {
     out.correctMarks = document.querySelectorAll("#quizForm .is-correct").length;
     out.incorrectMarks = document.querySelectorAll("#quizForm .is-incorrect").length;
     out.lockedInputs = [...document.querySelectorAll("#quizForm input[type=radio]")].filter((input) => input.disabled).length;
-    out.reviewExit = !!document.querySelector("#newQuizButton");
+    // 复习出口：错题不能只回一句“回看这一节对应的讲解”，必须能一步点回讲这条目标的任务。
+    const exit = document.querySelector("#quizReviewExit");
+    out.reviewExitHiddenAfter = exit.hidden;
+    out.reviewExitLabel = (exit.querySelector("p") || {}).textContent || "";
+    const exitButtons = [...exit.querySelectorAll("[data-review-step]")];
+    out.reviewExitSteps = exitButtons.map((button) => Number(button.dataset.reviewStep));
+    out.reviewExitTexts = exitButtons.map((button) => button.textContent.trim());
+    out.reviewExitNative = exitButtons.every((button) => button.tagName === "BUTTON" && button.type === "button");
+    // 错题对应的任务由页面自己的 objectiveReviewStep 决定：这里按每题显示的“检查目标”
+    // 原文反查它在 courseObjectives 里的下标，再查表去重，核对出口用的就是这张表。
+    const goals = typeof courseObjectives === "undefined" ? [] : courseObjectives;
+    const missedSteps = [];
+    for (const question of questions()) {
+      const label = (question.querySelector(".question-objective") || {}).textContent || "";
+      const objectiveIndex = goals.indexOf(label.replace("检查目标：", ""));
+      const step = objectiveReviewStep[objectiveIndex];
+      if (!missedSteps.includes(step)) missedSteps.push(step);
+    }
+    out.reviewExitExpectedSteps = missedSteps;
+    // 点第一个出口：必须真的切到那个任务面板，并把焦点交给它的标题。
+    const before = [...document.querySelectorAll(".step-panel")].map((panel) => !panel.hidden);
+    exitButtons[0].click();
+    const after = [...document.querySelectorAll(".step-panel")].map((panel) => !panel.hidden);
+    const targetStep = Number(exitButtons[0].dataset.reviewStep);
+    out.reviewExitPanelsBefore = before;
+    out.reviewExitPanelsAfter = after;
+    out.reviewExitTargetStep = targetStep;
+    out.reviewExitFocusTag = document.activeElement.tagName;
+    out.reviewExitFocusText = (document.activeElement.textContent || "").trim().slice(0, 30);
+    out.reviewExitTargetHeading = (document.querySelector('[data-panel="' + targetStep + '"] h2') || {}).textContent || "";
+    out.reviewExitRibbon = document.querySelector("#completionRibbon").textContent.trim();
+    out.quizSubmittedStillLocked = document.querySelectorAll("#quizForm input[type=radio]:disabled").length;
+    // 学习者看完讲解会回到小测；这一步也让后面的刷新恢复有确定的落点。
+    document.querySelector('.step-button[data-step="3"]').click();
+    out.reviewExitBackToQuiz = [...document.querySelectorAll(".step-panel")].map((panel) => !panel.hidden)[3] === true;
     out.reading = document.body.textContent.includes("每次从本课题库抽出三道不同的选择题");
     out.reviewNote = document.body.textContent.includes("已通过校验");
     document.querySelector("#newQuizButton").click();
@@ -391,7 +426,29 @@ try {
   check("提交后逐题解析", quiz.explanationsAfter === 3, `解析 ${quiz.explanationsAfter} 条`);
   check("提交后标注正确与错误选项", quiz.correctMarks === 3 && quiz.incorrectMarks >= 1, `正确 ${quiz.correctMarks} 错误 ${quiz.incorrectMarks}`);
   check("提交后锁定作答不可改动", quiz.lockedInputs === 12, `锁定 ${quiz.lockedInputs} 个选项`);
-  check("提供复习出口并可换一套题", quiz.reviewExit === true, "");
+  // 矩阵里写的复习出口是「把错题指回本节讲解」：只丢一句“回看这一节对应的讲解”时，
+  // 学习者知道错在哪条目标，却不知道三条任务里该翻哪一条。这里真点一次，量到底有没有切过去。
+  const exitTargetText = String(quiz.reviewExitTargetHeading).trim();
+  check(
+    "复习出口指回讲这条目标的任务，并在页面上真的切过去",
+    quiz.reviewExitHiddenBefore === true &&
+      quiz.reviewExitHiddenAfter === false &&
+      typeof quiz.reviewExitLabel === "string" &&
+      quiz.reviewExitLabel.length > 0 &&
+      quiz.reviewExitNative === true &&
+      JSON.stringify(quiz.reviewExitSteps) === JSON.stringify(quiz.reviewExitExpectedSteps) &&
+      quiz.reviewExitSteps.length > 0 &&
+      quiz.reviewExitTexts.every((text: string, index: number) => text.includes(`回任务 ${quiz.reviewExitSteps[index] + 1}`)) &&
+      quiz.reviewExitPanelsAfter[quiz.reviewExitTargetStep] === true &&
+      quiz.reviewExitPanelsAfter.filter(Boolean).length === 1 &&
+      exitTargetText.startsWith(`任务 ${quiz.reviewExitTargetStep + 1}`) &&
+      quiz.reviewExitFocusTag === "H2" &&
+      String(quiz.reviewExitFocusText).startsWith(`任务 ${quiz.reviewExitTargetStep + 1}`) &&
+      quiz.reviewExitRibbon.includes(`已回到任务 ${quiz.reviewExitTargetStep + 1}`) &&
+      quiz.quizSubmittedStillLocked === 12 &&
+      quiz.reviewExitBackToQuiz === true,
+    `出口步骤=${JSON.stringify(quiz.reviewExitSteps)} 期望=${JSON.stringify(quiz.reviewExitExpectedSteps)} 按钮=${JSON.stringify(quiz.reviewExitTexts)}；面板 ${JSON.stringify(quiz.reviewExitPanelsAfter)}；焦点 ${quiz.reviewExitFocusTag}「${quiz.reviewExitFocusText}」；播报「${quiz.reviewExitRibbon}」`,
+  );
   check("页面说明抽题方式并标明题目与解析已通过校验", quiz.reading === true && quiz.reviewNote === true, "");
   check("换一套题后试卷标识变化", quiz.seed2 !== quiz.seed1 && /本次试卷标识：\d+/.test(quiz.seed2), `${quiz.seed1} -> ${quiz.seed2}`);
   check("换一套题重置作答与结果", quiz.answersAfterNewPaper === 0 && quiz.resultAfterNewPaper === "" && quiz.submitLabelAfterNewPaper.includes("还差"), `已选 ${quiz.answersAfterNewPaper} 题`);

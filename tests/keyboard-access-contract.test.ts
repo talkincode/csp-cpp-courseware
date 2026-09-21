@@ -269,6 +269,44 @@ test("音效开关是原生按钮并有 aria-pressed，声音只由学习者主�
   expect(offenders).toEqual([]);
 });
 
+test("复习出口用原生按钮，并把焦点交给要回看的那一面板", () => {
+  const offenders: string[] = [];
+
+  for (const page of pages) {
+    const exitTag = findTags(page.source, "nav").find((tag) => /\bid="quizReviewExit"/.test(tag));
+    if (!exitTag) {
+      offenders.push(`${page.directory}：找不到复习出口 #quizReviewExit`);
+      continue;
+    }
+
+    // 容器自己只是分组，不该被拽进 Tab 顺序占用一个停靠点。
+    if (/tabindex=/.test(exitTag)) offenders.push(`${page.directory}：复习出口容器带 tabindex，会多出无意义的停靠点`);
+
+    // 出口项必须是原生按钮：键盘够得到、回车/空格按得动，读屏也说得清。
+    const renderer = extractBlock(page.source, "function renderQuizReviewExit(");
+    if (!renderer) {
+      offenders.push(`${page.directory}：没有 renderQuizReviewExit 的实现`);
+      continue;
+    }
+
+    if (!renderer.includes('createElement("button")')) {
+      offenders.push(`${page.directory}：复习出口不是原生 button，键盘可能根本够不到`);
+    }
+    if (renderer.includes("tabindex")) {
+      offenders.push(`${page.directory}：复习出口给按钮写了 tabindex，会把它们拽出自然 Tab 顺序`);
+    }
+    if (!renderer.includes('button.type = "button"')) {
+      offenders.push(`${page.directory}：复习出口的按钮没有显式 type="button"`);
+    }
+
+    if (!/\.review-link\s*:focus-visible/.test(page.source)) {
+      offenders.push(`${page.directory}：复习出口链接没有自己的 :focus-visible 焦点环`);
+    }
+  }
+
+  expect(offenders).toEqual([]);
+});
+
 test("课程目录页同样不给正数 tabindex，并保留读屏状态区", async () => {
   const source = await Bun.file(`${projectRoot}/index.html`).text();
 

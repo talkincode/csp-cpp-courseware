@@ -13,8 +13,8 @@
 
 上面每条命令的覆盖范围随课节迁移推进而变化，各课 `*-manual-checklist.md` 末尾的“自动化复验记录”表记录的是**该次复验当天**的脚本覆盖范围与结果，不是当前范围。
 
-整课推进（`0 / N` 走到 `N / N`，外加小测本身）另有一份清单：[`flow-manual-checklist.md`](./flow-manual-checklist.md)。
-`bun run e2e:flow` 一次覆盖 S1-02 至 S5-08 全部 39 节已迁移课（741 项，每课 19 项），`bun run e2e:flow:s3`
+整课推进（`0 / N` 走到 `N / N`，外加小测本身与错题复习出口）另有一份清单：[`flow-manual-checklist.md`](./flow-manual-checklist.md)。
+`bun run e2e:flow` 一次覆盖 S1-02 至 S5-08 全部 39 节已迁移课（780 项，每课 20 项），`bun run e2e:flow:s3`
 这样的分段命令按阶段跑；`CSP_E2E_LESSONS=s3-07 bun tests/e2e/flow-cdp.ts` 只跑一课。
 
 键盘可达与焦点可见（`Tab` 顺序、焦点环、弹层焦点归还、小测作答与提交后的焦点）另有清单：
