@@ -633,22 +633,20 @@ async function deepChecks(cdp: Cdp, directory: string, config: LessonConfig) {
   );
 
   for (const question of questions) {
-    if (question.answer < 0) {
-      everyFocusKept = false;
-      answerTrace.push(`${question.name}：题库里找不到正确选项`);
-      continue;
-    }
-
+    // 浏览器只把单选组里「已选中的那一项」（都没选时是第一个）放进 Tab 顺序，
+    // 所以不能去 Tab 一个指定的选项下标——那只有在「正确答案永远排第一个」时才成立
+    // （题库打乱选项位置后，这条假设被这条用例当场抓住）。这里 Tab 到该组可达的
+    // 那一项并作答，验的是「键盘答得完、焦点不跑」，不要求答对。
     await cdp.evaluate(CLEAR_MARKS);
     const marked = await cdp.evaluate<boolean>(
       markOne(
         "radio",
-        `[...document.querySelectorAll("#quizForm input[type=radio]")].find((radio) => radio.name === ${quote(question.name)} && radio.value === ${quote(String(question.answer))})`,
+        `[...document.querySelectorAll("#quizForm input[type=radio]")].find((radio) => radio.name === ${quote(question.name)})`,
       ),
     );
     if (!marked) {
       everyFocusKept = false;
-      answerTrace.push(`${question.name}：找不到那一项`);
+      answerTrace.push(`${question.name}：这一组没有可聚焦的选项`);
       continue;
     }
 

@@ -82,14 +82,14 @@ test("every planned course ships the shared online-learning page and manifest co
 
     if (manifest.interactive.status !== "implemented") report("interactive is not implemented");
     if (manifest.interactive.entry !== "index.html") report("interactive entry is not index.html");
-    if (manifest.interactive.reviewState !== "awaiting-user-review")
+    if (manifest.interactive.reviewState !== "owner-approved")
       report(`interactive reviewState is ${manifest.interactive.reviewState}`);
 
     if (manifest.assessment.status !== "implemented") report("assessment is not implemented");
     if (manifest.assessment.mode !== "randomized-choice")
       report(`assessment mode is ${manifest.assessment.mode}`);
     if (manifest.assessment.choiceDominant !== true) report("choiceDominant is not true");
-    if (manifest.assessment.reviewState !== "awaiting-user-review")
+    if (manifest.assessment.reviewState !== "machine-checked")
       report(`assessment reviewState is ${manifest.assessment.reviewState}`);
     if (manifest.assessment.questionCount !== 3)
       report(`questionCount is ${manifest.assessment.questionCount}`);
@@ -110,7 +110,7 @@ test("every planned course ships the shared online-learning page and manifest co
       ["crypto.getRandomValues", "no random paper seed"],
       ["function questionsAreValid", "no question validation"],
       ["题库暂时不可用", "no empty-bank failure notice"],
-      ["题目待人工审校", "no awaiting-review notice"],
+      ["已通过校验", "no machine-check notice"],
       ['source: "course-plan / 自编"', "no question source"],
       ["AudioContext", "no opt-in audio"],
       ["音效", "no sound toggle"],
@@ -139,10 +139,9 @@ test("every planned course ships the shared online-learning page and manifest co
     }
 
     if (source.includes("<video")) report("must not embed a video element");
-    if (source.includes("经过审校")) report("must not claim editorial review");
-    if (source.includes('source: "original"')) report("questions must name a traceable source");
-    if (source.replaceAll("题目待人工审校", "").includes("已审校"))
-      report("must not claim editorial review");
+    if (source.includes("经过审校") || source.includes("已审校"))
+      report("must not claim human editorial review");
+    if (source.includes(`source: "original"`)) report("questions must name a traceable source");
 
     if (source.split("questionsAreValid").length - 1 < 3)
       report("question validation is used fewer than three times");

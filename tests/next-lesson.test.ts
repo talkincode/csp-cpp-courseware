@@ -93,7 +93,7 @@ test("最后一课给出课程收尾出口，不指向不存在的下一课", as
 
   // 收尾要说清“接下来做什么”，而不是停在“你完成了”。
   expect(nav.content).toContain("复盘");
-  expect(nav.content).toContain("待人工审校");
+  expect(nav.content).toContain("已通过校验");
 });
 
 test("下一课入口排在视频交付边界之后，不在任务面板中间打断学习", async () => {

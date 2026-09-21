@@ -1,0 +1,1757 @@
+{
+ "generatedAt": "2026-09-21",
+ "scope": "215 道选择题（40 课）",
+ "methods": [
+  "独立盲解：每题只给题干与选项，交给独立上下文的阅卷会话作答（不读仓库、不联网搜答案），与课件记录的答案逐题比对；打乱选项顺序后又整批重解一遍。",
+  "可执行核对：涉及算术与语言行为的判断用本机 g++ 实测（例如 int 溢出边界：50000 * 50000 实测为 -1794967296，30000 * 30000 实测为 900000000）。",
+  "规则校验：bun test 里的题库契约——答案索引落在选项内、单选、选项不重复、难度档位合法、检查目标绑定本课学习目标、组卷可复现、答案位置不集中。"
+ ],
+ "limitations": [
+  "盲解由独立上下文的新会话完成，不是人工逐题审校；措辞是否适龄、讲解与学习目标的匹配感没有逐条人工阅读。",
+  "证据与题目内容（题干、选项顺序、答案）哈希绑定：改动其中任何一项，tests/question-verification.test.ts 会当场失败，必须重新校验并更新本文件。"
+ ],
+ "findings": [
+  {
+   "id": "s5-03/why-overflow",
+   "issue": "示例 `30000 * 30000` 实测是 900000000，并没有溢出，题目却断言结果是负数；同一处错误还出现在讲义与任务题干里。",
+   "fix": "示例改为 `50000 * 50000`（实测 -1794967296，真的溢出），解析改为写明 int 上限 2 147 483 647 与 25 亿的实际量级。"
+  },
+  {
+   "id": "s5-04/special-case-meaning",
+   "issue": "题干默认读者知道 l>r 代表空区间，独立盲解把它判为歧义（也可能是非法输入）。",
+   "fix": "题干改为「按本节约定」，与本课讲义中「l > r 是空区间应输出 0」的约定对齐。"
+  },
+  {
+   "id": "s5-04/pseudo-optimization-detect",
+   "issue": "把 `sum[r] - sum[l-1]` 写成 `sum[r] - sum[l]` 会多减 a[l]，结果应比正确答案偏小，题目与讲义却写成偏大。",
+   "fix": "题干选项、解析与讲义里的后果说明统一改为「多减掉 a[l]，结果偏小」。"
+  },
+  {
+   "id": "全部 215 道题",
+   "issue": "正确答案**全部**在第 1 个选项：学习者只要发现这一点就能不看题拿满分。",
+   "fix": "按题目种子打乱选项顺序并同步 answer 下标；选项内容、正确答案内容、题干与解析逐题核对未变。"
+  }
+ ],
+ "questions": [
+  {
+   "id": "s1-01/entry",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "2ef8f53d8d6f9864",
+   "verdict": "agrees",
+   "note": "C++ 程序通常从 main 函数开始执行"
+  },
+  {
+   "id": "s1-01/source-file",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "1f3105290cfcabb7",
+   "verdict": "agrees",
+   "note": "C++ 源文件通常使用 .cpp 扩展名"
+  },
+  {
+   "id": "s1-01/workflow",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "6c30b9577a6811f9",
+   "verdict": "agrees",
+   "note": "应先写源文件，再编译生成可运行程序，最后运行"
+  },
+  {
+   "id": "s1-01/cout",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "14d1dd801ca14ec7",
+   "verdict": "agrees",
+   "note": "std::cout 用于向屏幕输出内容"
+  },
+  {
+   "id": "s1-01/semicolon",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "c92ddd621dad6cb9",
+   "verdict": "agrees",
+   "note": "C++ 输出语句末尾通常需要分号"
+  },
+  {
+   "id": "s1-02/people-type",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "2f2b26467feb4740",
+   "verdict": "agrees",
+   "note": "班级人数是整数，适合用 int 保存"
+  },
+  {
+   "id": "s1-02/average-type",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "62ed6f93018328df",
+   "verdict": "agrees",
+   "note": "平均分可能包含小数，适合用 double 保存"
+  },
+  {
+   "id": "s1-02/char-vs-name",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "fded253b718f87b8",
+   "verdict": "agrees",
+   "note": "char 适合保存一个字符，例如等级字母 A"
+  },
+  {
+   "id": "s1-02/assignment-update",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "ba9430b50bcf1b51",
+   "verdict": "agrees",
+   "note": "赋值语句先计算 80 加 15，再把结果 95 存回 score"
+  },
+  {
+   "id": "s1-02/long-long-range",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "ec0039464ad28930",
+   "verdict": "agrees",
+   "note": "数据范围很大时 long long 比普通 int 能表示更大的整数"
+  },
+  {
+   "id": "s1-03/int-div-seven",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "aff855e76f96dcf8",
+   "verdict": "agrees",
+   "note": "两个 int 相除进行整数除法，7 除以 2 的结果是 3"
+  },
+  {
+   "id": "s1-03/modulo-seven",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "6da013590eabb2c2",
+   "verdict": "agrees",
+   "note": "% 求余数，7 除以 2 的余数是 1"
+  },
+  {
+   "id": "s1-03/even-check",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "52dab8af8fabd018",
+   "verdict": "agrees",
+   "note": "整数除以 2 的余数为 0 就是偶数"
+  },
+  {
+   "id": "s1-03/average-parens",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "703e977689232b96",
+   "verdict": "agrees",
+   "note": "括号保证先把 a 和 b 相加，再除以 2"
+  },
+  {
+   "id": "s1-03/int-half",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "7724ccf26c7701ce",
+   "verdict": "agrees",
+   "note": "两个 int 计算 1 除以 2 时进行整数除法，结果为 0"
+  },
+  {
+   "id": "s1-03/perimeter-translate",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "2d0b54a51157496e",
+   "verdict": "agrees",
+   "note": "两边之和再乘 2 应写成 2 * (length + width)"
+  },
+  {
+   "id": "s1-04/cin-two-ints",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "8e38779d435f11e9",
+   "verdict": "agrees",
+   "note": "连续输入两个整数应使用 cin >> a >> b"
+  },
+  {
+   "id": "s1-04/extra-prompt",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "da4687a832e78877",
+   "verdict": "agrees",
+   "note": "竞赛评测通常严格比较输出，额外提示语会造成输出不匹配"
+  },
+  {
+   "id": "s1-04/space-between",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "f99e191409725e04",
+   "verdict": "agrees",
+   "note": "在两个输出值之间显式输出空格才能得到 8 5"
+  },
+  {
+   "id": "s1-04/newline-needed",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "234e68601a198fe2",
+   "verdict": "agrees",
+   "note": "缺少换行会使输出格式与要求的两行不一致，可能判错"
+  },
+  {
+   "id": "s1-04/fixed-two",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "bfc98cae0fc1c428",
+   "verdict": "agrees",
+   "note": "fixed 配合 setprecision(2) 可固定输出两位小数"
+  },
+  {
+   "id": "s1-05/three-way",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "38b7d248594a6d19",
+   "verdict": "agrees",
+   "note": "三个互斥等级通常用 if、else if、else 三路判断"
+  },
+  {
+   "id": "s1-05/assignment-trap",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "68b83b5fd02487d6",
+   "verdict": "agrees",
+   "note": "单等号是赋值，会把 score 改为 60，赋值表达式的值为真"
+  },
+  {
+   "id": "s1-05/boundary-60",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "246e509f57c8c736",
+   "verdict": "agrees",
+   "note": ">= 包含等号，所以 score 等于 60 时进入 if"
+  },
+  {
+   "id": "s1-05/else-if-order",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "35c694c1ec3bc627",
+   "verdict": "agrees",
+   "note": "score=95 先满足 score >= 90，因此输出优秀"
+  },
+  {
+   "id": "s1-05/logical-and",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "ba44ed800a178a57",
+   "verdict": "agrees",
+   "note": "&& 要求两个条件同时成立，正好表示含两端的 7 到 12 岁"
+  },
+  {
+   "id": "s1-06/for-sum",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "fc231ff73c11a484",
+   "verdict": "agrees",
+   "note": "for 循环从 1 遍历到 n，并在每次循环中把 i 加入 sum"
+  },
+  {
+   "id": "s1-06/loop-count",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "39473a4430688b84",
+   "verdict": "agrees",
+   "note": "i 从 1 到 3（含 3）依次取值，共执行 3 次。"
+  },
+  {
+   "id": "s1-06/infinite",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "8d5161e93f0d0121",
+   "verdict": "agrees",
+   "note": "循环体没有更新 i，满足条件时可能一直重复。"
+  },
+  {
+   "id": "s1-06/zero-n",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "27a849d695c025af",
+   "verdict": "agrees",
+   "note": "i 初值 1 已不满足 i <= 0，所以循环一次也不执行。"
+  },
+  {
+   "id": "s1-06/while-unknown",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "3e9ef2b18477e084",
+   "verdict": "agrees",
+   "note": "while (cin >> x) 可在每次成功读入时处理，适合数量未知的输入。"
+  },
+  {
+   "id": "s1-07/nested-stars",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "0dae0d2079c9b2db",
+   "verdict": "agrees",
+   "note": "外层控制 n 行，内层控制每行的 n 列。"
+  },
+  {
+   "id": "s1-07/outer-inner",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "0238e329cf4ace94",
+   "verdict": "agrees",
+   "note": "图案输出中外层循环通常逐行推进。"
+  },
+  {
+   "id": "s1-07/inner-count",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "79a15d9c21c699e0",
+   "verdict": "agrees",
+   "note": "c 从 1 到 3（含 3），所以每行执行 3 次。"
+  },
+  {
+   "id": "s1-07/zero-n",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "37d8044a0d8a4ce5",
+   "verdict": "agrees",
+   "note": "r 初值 1 不满足 r <= 0，外层循环不执行，因而没有星星。"
+  },
+  {
+   "id": "s1-07/break-stop",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "efd47003a6d0c4f8",
+   "verdict": "agrees",
+   "note": "break 会结束所在的当前循环层。"
+  },
+  {
+   "id": "s1-08/compile-semicolon",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "1702e66f981afe2d",
+   "verdict": "agrees",
+   "note": "缺少语法必需的分号会导致编译阶段报错。"
+  },
+  {
+   "id": "s1-08/runtime-zero",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "a6e51bbc83aadfeb",
+   "verdict": "agrees",
+   "note": "编译成功后执行除以零属于运行时发生的问题。"
+  },
+  {
+   "id": "s1-08/wrong-answer",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "880ec158058aa4d1",
+   "verdict": "agrees",
+   "note": "程序正常结束但输出与正确结果不符，是答案错误。"
+  },
+  {
+   "id": "s1-08/find-semicolon",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "8272f0387925dde9",
+   "verdict": "agrees",
+   "note": "expected ';' 提示附近的语句通常缺少分号，题中对应 cout << n 行。"
+  },
+  {
+   "id": "s1-08/small-data",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "1a18d7daf24e2e3e",
+   "verdict": "agrees",
+   "note": "用最小数据并打印中间值能缩小范围、观察计算过程。"
+  },
+  {
+   "id": "s1-08/checkable-habits",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "c8478d419860eb79",
+   "verdict": "agrees",
+   "note": "缩进和命名主要帮助人检查代码，不是编译器判定语法和逻辑的依据。"
+  },
+  {
+   "id": "s2-01/store-array",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "a40ff08464c44e7d",
+   "verdict": "agrees",
+   "note": "同类的八个整数适合用整数数组集中存放。"
+  },
+  {
+   "id": "s2-01/first-index",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "71dd2470446d7934",
+   "verdict": "agrees",
+   "note": "C++ 数组下标从 0 开始，第一个元素是 a[0]。"
+  },
+  {
+   "id": "s2-01/last-index",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "3f40491e49ac177b",
+   "verdict": "agrees",
+   "note": "长度为 n 的数组下标范围是 0 到 n - 1。"
+  },
+  {
+   "id": "s2-01/out-of-bounds",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "12d15a2d40582a86",
+   "verdict": "agrees",
+   "note": "n = 4 时合法下标是 0 到 3，a[4] 越界。"
+  },
+  {
+   "id": "s2-01/max-scan",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "be59818af31938dd",
+   "verdict": "agrees",
+   "note": "先以 a[0] 初始化最大值，再遍历 0 到 n - 1 比较是标准扫描方法。"
+  },
+  {
+   "id": "s2-02/store-char",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "fb0c8509d71f6bbb",
+   "verdict": "agrees",
+   "note": "单个字母用 char，并用单引号写成 'A'。"
+  },
+  {
+   "id": "s2-02/store-string",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "75860302317c9994",
+   "verdict": "agrees",
+   "note": "不含空格的单词可用 string 保存，字符串字面量用双引号。"
+  },
+  {
+   "id": "s2-02/first-char",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "f197e634f69f866b",
+   "verdict": "agrees",
+   "note": "字符串下标从 0 开始，因此第一个字符是 s[0]。"
+  },
+  {
+   "id": "s2-02/last-char",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "ed0e69ccba8d70fe",
+   "verdict": "agrees",
+   "note": "n 是字符串长度，最后一个有效下标是 n - 1。"
+  },
+  {
+   "id": "s2-02/count-digit",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "1f0f296b84fbd73d",
+   "verdict": "agrees",
+   "note": "遍历字符串并判断字符是否位于 '0' 到 '9' 可统计数字字符。"
+  },
+  {
+   "id": "s2-03/extract-even",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "27016026d392a38a",
+   "verdict": "agrees",
+   "note": "用 bool isEven(int x) 封装判断，主程序可重复调用。"
+  },
+  {
+   "id": "s2-03/return-even",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "e872cf32d4279916",
+   "verdict": "agrees",
+   "note": "return x % 2 == 0; 会把布尔判断结果返回给调用处。"
+  },
+  {
+   "id": "s2-03/call-even",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "e0d15be91671efa0",
+   "verdict": "agrees",
+   "note": "写出 isEven(4) 才是在调用函数判断 4。"
+  },
+  {
+   "id": "s2-03/parameter-x",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "6ce031b258434dd7",
+   "verdict": "agrees",
+   "note": "调用 isEven(4) 时，形参 x 接收到实参值 4。"
+  },
+  {
+   "id": "s2-03/extract-leap",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "9b576cd9f9f82ac9",
+   "verdict": "agrees",
+   "note": "用带年份参数的函数可以分别复用同一套闰年判断逻辑。"
+  },
+  {
+   "id": "s2-04/local-t",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "bc4100d71e550190",
+   "verdict": "agrees",
+   "note": "t 只在定义它的函数局部可见，离开函数后不能在 main 中使用。"
+  },
+  {
+   "id": "s2-04/value-copy",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "61ecb72d49ef2199",
+   "verdict": "agrees",
+   "note": "按值传参会修改形参副本，因此外面的 n 不变。"
+  },
+  {
+   "id": "s2-04/same-name",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "247208d60f46bfc0",
+   "verdict": "agrees",
+   "note": "函数内的局部 n 与外面的 n 不是同一变量，并会遮挡外部名称。"
+  },
+  {
+   "id": "s2-04/need-ref",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "18e36888a22d72f1",
+   "verdict": "agrees",
+   "note": "需要让函数直接修改调用者的原变量时才使用 int &x。"
+  },
+  {
+   "id": "s2-04/avoid-global",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "ce45d4ba9e882222",
+   "verdict": "agrees",
+   "note": "能通过参数和局部变量表达时，优先避免全局变量。"
+  },
+  {
+   "id": "s2-05/why-struct",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "ac9ffea2655bdd78",
+   "verdict": "agrees",
+   "note": "struct Student 能把同一名学生的姓名和分数组织成一张记录卡。"
+  },
+  {
+   "id": "s2-05/dot-score",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "d303b20e8aba97ec",
+   "verdict": "agrees",
+   "note": "stu 是结构体对象，使用点运算符访问成员并赋值为 stu.score = 95。"
+  },
+  {
+   "id": "s2-05/same-card",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "581817a2ba43b87d",
+   "verdict": "agrees",
+   "note": "name 和 score 都是同一个 Student 对象 stu 的成员。"
+  },
+  {
+   "id": "s2-05/array-slot",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "2a8d08afbc40aff0",
+   "verdict": "agrees",
+   "note": "先用 a[0] 取第一个结构体元素，再用 .score 访问分数。"
+  },
+  {
+   "id": "s2-05/max-field",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "83c745f947407693",
+   "verdict": "agrees",
+   "note": "找最高分应逐个比较结构体元素的 score 成员。"
+  },
+  {
+   "id": "s2-06/adjacent-swap",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "fb0728826ced6206",
+   "verdict": "agrees",
+   "note": "5 大于相邻的 2，应交换使较大的数向后，得到 2, 5, 4。"
+  },
+  {
+   "id": "s2-06/sort-call",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "5cccde58ff126138",
+   "verdict": "agrees",
+   "note": "sort(a, a + n) 默认按升序排列从 a[0] 到 a[n-1] 的范围。"
+  },
+  {
+   "id": "s2-06/who-first",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "cea0e630b4303221",
+   "verdict": "agrees",
+   "note": "比较规则用于定义两个元素中谁应该排在前面。"
+  },
+  {
+   "id": "s2-06/same-score",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "2a7666ee80a7c74e",
+   "verdict": "agrees",
+   "note": "稳定排序会保留相等关键字元素的原相对顺序。"
+  },
+  {
+   "id": "s2-06/n-squared",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "d15d37a441e4f14a",
+   "verdict": "agrees",
+   "note": "相邻交换通常需要约 n² 次比较，1000² 尚可而 100000² 规模过大。"
+  },
+  {
+   "id": "s2-07/what-is-enum",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "fce2ededdc888c1f",
+   "verdict": "agrees",
+   "note": "枚举就是在有限范围内把每个可能情况依次尝试。"
+  },
+  {
+   "id": "s2-07/range-for",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "9d2b25e1160b2c92",
+   "verdict": "agrees",
+   "note": "for (int i = 1; i <= n; i++) 会依次访问 1 到 n。"
+  },
+  {
+   "id": "s2-07/state-even",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "3e9f2cb00f68260d",
+   "verdict": "agrees",
+   "note": "i=2 是偶数，计数器应从 0 增加到 1。"
+  },
+  {
+   "id": "s2-07/missed-two",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "0c284c74a18f3129",
+   "verdict": "agrees",
+   "note": "漏掉唯一的偶数 2 会使偶数计数少 1。"
+  },
+  {
+   "id": "s2-07/simulation-steps",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "498d129fcda0590b",
+   "verdict": "agrees",
+   "note": "模拟是按照题目描述逐步更新程序中的状态。"
+  },
+  {
+   "id": "s2-08/what-is-ops",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "eb3d7b355a41b1b8",
+   "verdict": "agrees",
+   "note": "操作次数描述程序大概要执行多少步有意义的工作。"
+  },
+  {
+   "id": "s2-08/on-vs-on2",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "b6f2aa112d99ef39",
+   "verdict": "agrees",
+   "note": "O(n) 可粗略理解为约 n 次操作，O(n²) 为约 n×n 次操作。"
+  },
+  {
+   "id": "s2-08/n3-nested",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "d71ae3d3a7c468b1",
+   "verdict": "agrees",
+   "note": "两层各执行约 3 次的循环组合起来约执行 3×3=9 次。"
+  },
+  {
+   "id": "s2-08/large-n",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "5d834a918d85c50c",
+   "verdict": "agrees",
+   "note": "n=100000 时双层循环约 10^10 次，通常应改用单层循环或更低复杂度方法。"
+  },
+  {
+   "id": "s2-08/test-points",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "83cd8355341f05e6",
+   "verdict": "agrees",
+   "note": "自测应覆盖普通数据、最小数据和最大数据等边界情况。"
+  },
+  {
+   "id": "s3-01/ones-digit",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "63a979b058f400ce",
+   "verdict": "agrees",
+   "note": "整数除以 10 的余数就是个位数字。"
+  },
+  {
+   "id": "s3-01/drop-ones",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "53c8c06a7eaba1db",
+   "verdict": "agrees",
+   "note": "整数除法 125 / 10 会去掉个位，结果为 12。"
+  },
+  {
+   "id": "s3-01/split-125",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "561977f5efb950e0",
+   "verdict": "agrees",
+   "note": "反复取余并整除时，个位提取顺序是 5、2、1。"
+  },
+  {
+   "id": "s3-01/loop-stop",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "5d4cdcd4573de16c",
+   "verdict": "agrees",
+   "note": "不断整除后 n 变成 0，说明所有数位都已处理。"
+  },
+  {
+   "id": "s3-01/gcd-12-8",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "3d03ce88f769a325",
+   "verdict": "agrees",
+   "note": "12 % 8 = 4 且 8 % 4 = 0，所以最大公约数是 4。"
+  },
+  {
+   "id": "s3-02/smaller-same",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "211f2c99094510fb",
+   "verdict": "agrees",
+   "note": "递归先处理当前 n，再把同类问题缩小为 n-1。"
+  },
+  {
+   "id": "s3-02/base-when",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "aed05d1ab378c096",
+   "verdict": "agrees",
+   "note": "n == 1 时直接返回是递归的终止条件。"
+  },
+  {
+   "id": "s3-02/trace-three",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "76b03178f50e40c6",
+   "verdict": "agrees",
+   "note": "从 countdown(3) 进入后依次调用 countdown(2) 和 countdown(1)。"
+  },
+  {
+   "id": "s3-02/factorial-3",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "1693ad0708a243d4",
+   "verdict": "agrees",
+   "note": "阶乘递推为 3! = 3 * 2!，并以 1! = 1 作为边界。"
+  },
+  {
+   "id": "s3-02/infinite",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "9c148a43dd070089",
+   "verdict": "agrees",
+   "note": "没有终止条件会持续调用更小的问题，形成无限递归。"
+  },
+  {
+   "id": "s3-03/when-binary",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "be11514aa32d0d27",
+   "verdict": "agrees",
+   "note": "二分依赖有序数组或其他单调性来排除一半范围。"
+  },
+  {
+   "id": "s3-03/bounds-mean",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "ced9663d450f3cd0",
+   "verdict": "agrees",
+   "note": "left 和 right 是仍可能包含答案的区间两端。"
+  },
+  {
+   "id": "s3-03/trace-seven",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "c58af36e026316cb",
+   "verdict": "agrees",
+   "note": "初始中点是 a[2] = 5，因 5 < 7 应将 left 移到 3。"
+  },
+  {
+   "id": "s3-03/end-points",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "5d21c9e7f39bf1a1",
+   "verdict": "agrees",
+   "note": "端点是常见边界，首元素 1 和尾元素 9 都应测试。"
+  },
+  {
+   "id": "s3-03/no-shrink",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "0c20a6cbdbdd5d50",
+   "verdict": "agrees",
+   "note": "边界不更新会让搜索区间不缩小，可能造成死循环。"
+  },
+  {
+   "id": "s3-04/what-prefix",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "6c7b6b0e0b2b9381",
+   "verdict": "agrees",
+   "note": "sum[i] 表示从第 1 个到第 i 个元素的累计和。"
+  },
+  {
+   "id": "s3-04/range-formula",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "36e470162108101c",
+   "verdict": "agrees",
+   "note": "前缀和查询 [l,r] 应计算 sum[r] - sum[l - 1]。"
+  },
+  {
+   "id": "s3-04/trace-prefix",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "f59ec509899add06",
+   "verdict": "agrees",
+   "note": "sum[2] = a[1] + a[2] = 2 + 5 = 7。"
+  },
+  {
+   "id": "s3-04/query-two-four",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "4e39146f6afa8e13",
+   "verdict": "agrees",
+   "note": "区间 [2,4] 的和为 sum[4] - sum[1] = 12 - 2 = 10。"
+  },
+  {
+   "id": "s3-04/first-index",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "df8cde21ac1d4076",
+   "verdict": "agrees",
+   "note": "[1,r] 的和是 sum[r] - sum[0]，且 sum[0] = 0。"
+  },
+  {
+   "id": "s3-05/what-two-pointers",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "83fb87e58cf0f94e",
+   "verdict": "agrees",
+   "note": "双指针通常用 left 和 right 表示当前连续窗口的两端。"
+  },
+  {
+   "id": "s3-05/keep-condition",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "baa70c24e006fe86",
+   "verdict": "agrees",
+   "note": "窗口条件被破坏时，通常移动 left 缩小窗口使条件恢复。"
+  },
+  {
+   "id": "s3-05/trace-window",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "4dc9285b64f15649",
+   "verdict": "agrees",
+   "note": "right = 2 时窗口包含 1 和 2，窗口和为 3。"
+  },
+  {
+   "id": "s3-05/empty-window",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "a8b96f8e7180e84c",
+   "verdict": "agrees",
+   "note": "left = 1、right = 0 表示右端在左端之前，窗口为空。"
+  },
+  {
+   "id": "s3-05/full-window",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "8321892b8c053f71",
+   "verdict": "agrees",
+   "note": "加入 3 后和超限，应先移动 left 丢掉左端，不能两边一起跳。"
+  },
+  {
+   "id": "s3-06/what-greedy",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "3acedca86c6ee4ef",
+   "verdict": "agrees",
+   "note": "贪心首先需要明确选择标准，再按标准逐步作出选择。"
+  },
+  {
+   "id": "s3-06/activity-rule",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "36cbc993129e5edc",
+   "verdict": "agrees",
+   "note": "活动选择的贪心标准是优先选择结束最早且与已选活动兼容的活动。"
+  },
+  {
+   "id": "s3-06/trace-greedy",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "a3cd12614ca7bcd1",
+   "verdict": "agrees",
+   "note": "书法在 2 结束后可接着选围棋，因此共选 2 个活动。"
+  },
+  {
+   "id": "s3-06/empty-choice",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "d8dc7a1ea65b219b",
+   "verdict": "agrees",
+   "note": "还未选择活动时计数为 0，初始结束时间可设为 0。"
+  },
+  {
+   "id": "s3-06/longest-counterexample",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "6b170793e293f6af",
+   "verdict": "agrees",
+   "note": "最长的美术活动占据时间段，之后只能选 1 个，而按结束最早可选书法和围棋。"
+  },
+  {
+   "id": "s3-07/what-stack-queue",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "68fe57e5696809d5",
+   "verdict": "agrees",
+   "note": "栈遵循后进先出，队列遵循先进先出。"
+  },
+  {
+   "id": "s3-07/bracket-uses-stack",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "a9aede0e775c85a2",
+   "verdict": "agrees",
+   "note": "括号嵌套要求最后出现的左括号最先与右括号匹配，正是栈的后进先出。"
+  },
+  {
+   "id": "s3-07/trace-brackets",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "593fa6db9f2424aa",
+   "verdict": "agrees",
+   "note": "读到 ] 弹出 [，读到 ) 弹出 (，最后栈为空且匹配成功。"
+  },
+  {
+   "id": "s3-07/empty-stack",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "e27d4c2dc21f572c",
+   "verdict": "agrees",
+   "note": "尚未读入任何括号时，栈中没有元素。"
+  },
+  {
+   "id": "s3-07/mismatch-and-queue",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "72ca844cab17ce3a",
+   "verdict": "agrees",
+   "note": "读到 ) 时栈顶是 [ 无法匹配，而队列按先进先出仍按 1、2、3 出队。"
+  },
+  {
+   "id": "s3-08/what-is-dp",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "2682e0c31acefd80",
+   "verdict": "agrees",
+   "note": "动态规划通过已求得的小问题结果推导更大的问题。"
+  },
+  {
+   "id": "s3-08/what-is-state",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "ff05674659cc260c",
+   "verdict": "agrees",
+   "note": "在爬楼梯问题中 dp[i] 表示到达第 i 级台阶的方法数。"
+  },
+  {
+   "id": "s3-08/hand-trace",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "159732fb14a6ae9b",
+   "verdict": "agrees",
+   "note": "按每次走 1 或 2 级，前三个状态为 dp[1]=1、dp[2]=2、dp[3]=3。"
+  },
+  {
+   "id": "s3-08/why-init",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "43b2fa2d8fc561db",
+   "verdict": "agrees",
+   "note": "转移计算 dp[3] 需要先有 dp[1] 和 dp[2] 这两个初值。"
+  },
+  {
+   "id": "s3-08/n1-and-extension",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "586e7702a7afac7f",
+   "verdict": "agrees",
+   "note": "只有一级台阶时只有 1 种走法，状态压缩属于后续扩展而非当前硬门槛。"
+  },
+  {
+   "id": "s4-01/what-is-contest-program",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "41d502d9b1d8ab79",
+   "verdict": "agrees",
+   "note": "竞赛程序应从标准输入读取并向标准输出输出答案，不能添加提示语。"
+  },
+  {
+   "id": "s4-01/what-is-data-range",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "4eba55ab17ba1b58",
+   "verdict": "agrees",
+   "note": "n≤1000 给出输入规模上限，可据此判断数组大小和循环范围。"
+  },
+  {
+   "id": "s4-01/sample-walk",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "d8c09cef95af1ecb",
+   "verdict": "agrees",
+   "note": "输入 3 时 n+1 等于 4，标准输出中只应有答案 4。"
+  },
+  {
+   "id": "s4-01/why-clean-output",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "09073070681ab366",
+   "verdict": "agrees",
+   "note": "评测通常按要求比较输出，多出的提示文字会导致结果不匹配。"
+  },
+  {
+   "id": "s4-01/n1-and-extension",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "2cbf674228d4e0ed",
+   "verdict": "agrees",
+   "note": "1+1 等于 2，freopen 是文件重定向扩展而非当前必需内容。"
+  },
+  {
+   "id": "s4-02/what-is-modeling-card",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "84e20bb7f5c6743f",
+   "verdict": "agrees",
+   "note": "建模应先整理已知、未知和目标，再据此编写代码。"
+  },
+  {
+   "id": "s4-02/what-is-known-unknown",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "c7de86c343d2739c",
+   "verdict": "agrees",
+   "note": "n 和这 n 个数是已知量，它们的总和是要求出的未知量。"
+  },
+  {
+   "id": "s4-02/sample-reverse-walk",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "e9c2004327fb231a",
+   "verdict": "agrees",
+   "note": "样例表明要计算 1、2、3 的和，即 1+2+3=6。"
+  },
+  {
+   "id": "s4-02/why-algorithm-candidate",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "fdd76dd331387fb4",
+   "verdict": "agrees",
+   "note": "对求和题应先考虑循环累加，搜索树不是当前必要方法。"
+  },
+  {
+   "id": "s4-02/two-boundaries",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "76445414cc7b55d4",
+   "verdict": "agrees",
+   "note": "n=1 时唯一数 7 的和为 7，全为 0 时总和为 0，分别覆盖两个边界。"
+  },
+  {
+   "id": "s4-03/why-state-table",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "29dca627da6ae2b7",
+   "verdict": "agrees",
+   "note": "状态表记录每一步后的余额等状态，能避免凭记忆计算整个过程。"
+  },
+  {
+   "id": "s4-03/why-event-order",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "be622ec6fcb37f25",
+   "verdict": "agrees",
+   "note": "模拟必须按输入给出的事件顺序逐步更新状态，不能打乱或跳过。"
+  },
+  {
+   "id": "s4-03/sample-trace-walk",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "e11ec47df40eefb6",
+   "verdict": "agrees",
+   "note": "余额依次为 5、2，-10 因余额不足跳过，所以最终余额 2、跳过 1 次。"
+  },
+  {
+   "id": "s4-03/condition-branch-check",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "7c5762235ab98019",
+   "verdict": "agrees",
+   "note": "取款前必须判断余额是否足够，不足时跳过而不能扣成负数。"
+  },
+  {
+   "id": "s4-03/two-boundaries-sim",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "591b4e2475b6994f",
+   "verdict": "agrees",
+   "note": "应覆盖 n=1 的正常存入，以及余额不足导致所有取款被跳过的边界。"
+  },
+  {
+   "id": "s4-04/why-search-tree",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "09885b43de81d334",
+   "verdict": "agrees",
+   "note": "把每一步选或不选画成分支，能看清搜索方案和可剪掉的分支。"
+  },
+  {
+   "id": "s4-04/why-dfs-choose-undo",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "1e86630839c59f75",
+   "verdict": "agrees",
+   "note": "不撤销会让下一次尝试继承上一次选择的错误残留数据。"
+  },
+  {
+   "id": "s4-04/sample-search-walk",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "8a3134fd84ccbe86",
+   "verdict": "agrees",
+   "note": "选择 1 和 3 且跳过 2 后总和为 4，正好命中目标。"
+  },
+  {
+   "id": "s4-04/pruning-condition-check",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "86285a89a1946dd6",
+   "verdict": "agrees",
+   "note": "数字均为正数时，当前和超过 target 后继续选择不可能回到 target。"
+  },
+  {
+   "id": "s4-04/two-boundaries-search",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "24e5c77197ce04fe",
+   "verdict": "agrees",
+   "note": "要处理只剩一个数的判断，也要处理试完所有数仍未命中的无解情况。"
+  },
+  {
+   "id": "s4-05/why-range-decides-tool",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "ddb884ff5e6f1ce9",
+   "verdict": "agrees",
+   "note": "0 到 100 的整数范围很小，可用 101 个位置直接按分数下标累计次数。"
+  },
+  {
+   "id": "s4-05/why-sort-before-scan",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "ba7f754cd8db4cc6",
+   "verdict": "agrees",
+   "note": "排序会使相同数字相邻，扫描连续相同段即可统计出现次数。"
+  },
+  {
+   "id": "s4-05/duplicate-tie-rule",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "3d17cf8af555f695",
+   "verdict": "agrees",
+   "note": "90 在序列中出现 3 次，次数多于 85 的 2 次和 78 的 1 次。"
+  },
+  {
+   "id": "s4-05/tie-break-rule",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "06b88a15661258a6",
+   "verdict": "agrees",
+   "note": "出现次数并列时应按明确约定取数值更小者，不能随意选择。"
+  },
+  {
+   "id": "s4-05/range-vs-hashmap",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "32cdf570f6fc3359",
+   "verdict": "agrees",
+   "note": "范围达到十亿时直接开数组会造成不可接受的空间开销，应改用 map 等映射结构。"
+  },
+  {
+   "id": "s4-06/why-state-first",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "b3e966dba405f561",
+   "verdict": "agrees",
+   "note": "明确 dp[i] 的含义后才能建立选或不选的状态转移，而不必枚举所有方案。"
+  },
+  {
+   "id": "s4-06/pick-or-skip-formula",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "ddb24abfd39fd735",
+   "verdict": "agrees",
+   "note": "不选第 i 个位置得到 dp[i-1]，选它则得到 dp[i-2]+nums[i]，取较大值。"
+  },
+  {
+   "id": "s4-06/trace-dp-3746",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "d7074a1f925551a4",
+   "verdict": "agrees",
+   "note": "dp[3]=max(dp[2],dp[1]+6)=max(7,13)=13。"
+  },
+  {
+   "id": "s4-06/boundary-i-minus-2",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "16f56cd7feaea7eb",
+   "verdict": "agrees",
+   "note": "i=0 和 i=1 时应使用预先定义的 dp[0]、dp[1]，避免访问不存在的下标。"
+  },
+  {
+   "id": "s4-06/why-dp-faster",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "753d02b7cc0c5176",
+   "verdict": "agrees",
+   "note": "DP 按状态递推约为 O(n)，而枚举所有选法需要遍历 2^n 种组合。"
+  },
+  {
+   "id": "s4-07/why-adjacency-list",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "19944e03cb8f9614",
+   "verdict": "agrees",
+   "note": "邻接表直接保存每个点的邻居列表，查询时无需重新扫描所有边。"
+  },
+  {
+   "id": "s4-07/why-visited-array",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "af386622c29a1270",
+   "verdict": "agrees",
+   "note": "没有访问标记可能沿边回到已访问点，造成死循环或重复计数。"
+  },
+  {
+   "id": "s4-07/count-components-sample",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "6c012f13ceb6d86e",
+   "verdict": "agrees",
+   "note": "遍历后还要寻找未访问点如 3，并从它再次 DFS，同时将连通块数加一。"
+  },
+  {
+   "id": "s4-07/dfs-vs-bfs-order",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "a9d30e70f1724f5a",
+   "verdict": "agrees",
+   "note": "DFS 沿路径深入到底再回溯，BFS 则借助队列按层向外扩展。"
+  },
+  {
+   "id": "s4-07/isolated-point-component",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "8c4a2b4459ddc6d7",
+   "verdict": "agrees",
+   "note": "没有边时每个点都是独立的连通块，因此共有 5 个。"
+  },
+  {
+   "id": "s4-08/why-fallback-first",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "896739545becad2c",
+   "verdict": "agrees",
+   "note": "先写能通过小数据的暴力方案，可以先稳拿子任务 1 的 30 分。"
+  },
+  {
+   "id": "s4-08/why-check-before-submit",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "e003a3892bb1484e",
+   "verdict": "agrees",
+   "note": "复查保底方案可确认优化过程中没有误改它，避免丢失确定能拿的分数。"
+  },
+  {
+   "id": "s4-08/easy-first-reason",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "2f0155a12bc43a7e",
+   "verdict": "agrees",
+   "note": "先完成有把握的子任务能保住得分，避免难题未完成又没有时间写保底方案。"
+  },
+  {
+   "id": "s4-08/complexity-downgrade-meaning",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "382d5736a4168031",
+   "verdict": "agrees",
+   "note": "复杂度降级是在写不出最优算法时先用较简单但正确的方案覆盖小数据。"
+  },
+  {
+   "id": "s4-08/zero-subtask-risk",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "e02f2ca8f41eff84",
+   "verdict": "agrees",
+   "note": "只有正确且能运行的提交程序才能得分，没有提交程序就是 0 分。"
+  },
+  {
+   "id": "s5-01/why-process-card",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "a4198af10ef32499",
+   "verdict": "agrees",
+   "note": "流程卡把审题、建模、编码、测试和检查按顺序固定下来，能减少漏步骤。"
+  },
+  {
+   "id": "s5-01/why-reserve-check-time",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "d222317b562e01a0",
+   "verdict": "agrees",
+   "note": "检查样例和边界可以发现错误，避免最后仓促改坏原本能运行的程序。"
+  },
+  {
+   "id": "s5-01/why-not-skip-sample",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "c49535c3a1f45ee2",
+   "verdict": "agrees",
+   "note": "样例是验证基本逻辑的最低检查，样例不对通常说明程序还不能提交。"
+  },
+  {
+   "id": "s5-01/modeling-draft-meaning",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "9c94c0753aa1b4d4",
+   "verdict": "agrees",
+   "note": "建模草稿应先整理已知条件、目标和解题打算，而不是抄代码。"
+  },
+  {
+   "id": "s5-01/skip-reading-risk",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "3f224993930d3418",
+   "verdict": "agrees",
+   "note": "忽略数据范围可能选错算法，耗时调试后还来不及测试和检查。"
+  },
+  {
+   "id": "s5-02/why-minimal-repro",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "2f098941cd21f8a6",
+   "verdict": "agrees",
+   "note": "小数据更容易手算并逐行核对，有助于定位错误。"
+  },
+  {
+   "id": "s5-02/why-debug-print",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "8b69d7d0a0510b27",
+   "verdict": "agrees",
+   "note": "中间值能验证具体假设并缩小出错位置，最终答案本身往往不能定位问题。"
+  },
+  {
+   "id": "s5-02/why-not-guess-edit",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "8bc866a0e3ec17fc",
+   "verdict": "agrees",
+   "note": "没有证据的碰巧修好无法说明原因，换数据后仍可能出错。"
+  },
+  {
+   "id": "s5-02/assert-idea-meaning",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "03f644d614ee45a7",
+   "verdict": "agrees",
+   "note": "这里的断言是先写出对中间结果的预期，再和程序实际值比较。"
+  },
+  {
+   "id": "s5-02/diff-check-extra",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "01d2084440f26161",
+   "verdict": "agrees",
+   "note": "用暴力解和待测解比较输出是有效的拓展调试方法，并非参赛硬性门槛。"
+  },
+  {
+   "id": "s5-03/array-init-trap",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "d2e4afabac55696b",
+   "verdict": "agrees",
+   "note": "未初始化的自动数组元素没有确定值，读取它们会导致不可靠结果，且严格说属于未定义行为。"
+  },
+  {
+   "id": "s5-03/why-overflow",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "a5e26d654d179ca1",
+   "verdict": "agrees",
+   "note": "在通常的 32 位 int 中 30000×30000=900000000 未超出范围，不应因该表达式变成负数；选项0只是题目可能想表达的原因。"
+  },
+  {
+   "id": "s5-03/why-long-long",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "0896dce7f4c994ff",
+   "verdict": "agrees",
+   "note": "让参与运算的变量使用 long long，才能使乘法按更大的整数范围计算。"
+  },
+  {
+   "id": "s5-03/why-out-of-bounds",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "6d0908b0fff90e07",
+   "verdict": "agrees",
+   "note": "长度为 n 的数组下标范围是 0 到 n-1，i 等于 n 时访问越界。"
+  },
+  {
+   "id": "s5-03/equal-vs-assign",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "c4334f5dd1f5177f",
+   "verdict": "agrees",
+   "note": "= 是赋值且表达式值为 5，条件为真；相等比较应使用 ==。"
+  },
+  {
+   "id": "s5-03/priority-parentheses",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "a94cbaf399cad934",
+   "verdict": "agrees",
+   "note": "括号使 a+b 先计算，随后再除以 2。"
+  },
+  {
+   "id": "s5-03/clean-output-check",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "67cb4ab9e0c66f5f",
+   "verdict": "agrees",
+   "note": "评测通常要求精确输出，应删除提示语并重新用样例确认输出格式。"
+  },
+  {
+   "id": "s5-04/why-baseline-first",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "5e2bd69c75066967",
+   "verdict": "agrees",
+   "note": "暴力基线可先验证正确性并取得其覆盖范围内的分数，再进行复杂度优化。"
+  },
+  {
+   "id": "s5-04/why-label-limits",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "96ab0fa1914d00dc",
+   "verdict": "agrees",
+   "note": "记录覆盖范围和边界能明确基线的能力，升级算法时也不容易遗漏特殊输入。"
+  },
+  {
+   "id": "s5-04/special-case-meaning",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "f411c0a92ce6c67c",
+   "verdict": "agrees",
+   "note": "l>r 是否定义为空区间及其和为0取决于题目约定；题干没有给出该约定，不能排除它是非法输入。"
+  },
+  {
+   "id": "s5-04/pseudo-optimization-detect",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "003322004561ea78",
+   "verdict": "agrees",
+   "note": "少减一次并不等价，而且 sum[r]-sum[l] 通常会漏掉 l；结果应偏小而非选项所说的偏大，因此没有完全正确的选项。"
+  },
+  {
+   "id": "s5-04/why-cross-check",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "6a4c4eb763d738fa",
+   "verdict": "agrees",
+   "note": "在小数据上比较基线和优化版输出，可以及时发现升级引入的错误。"
+  },
+  {
+   "id": "s5-04/complexity-upgrade-meaning",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "09eb0a33908c3bce",
+   "verdict": "agrees",
+   "note": "复杂度升级是在保持结果不变的前提下，把已验证的基线逐步换成更高效算法。"
+  },
+  {
+   "id": "s5-04/zero-code-risk",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "58072908e843c63a",
+   "verdict": "agrees",
+   "note": "没有提交可运行程序就没有程序得分，纸面上的正确思路不会自动产生分数。"
+  },
+  {
+   "id": "s5-05/why-order-first",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "5235ba49c5116ce4",
+   "verdict": "agrees",
+   "note": "先按把握程度安排顺序能优先拿稳分，再把剩余时间用于难题。"
+  },
+  {
+   "id": "s5-05/order-example-check",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "4bf3ad728a0a825c",
+   "verdict": "agrees",
+   "note": "先完成最简单的 T1，再处理能拿部分分的 T2，最后做 T3 的可行部分更稳妥。"
+  },
+  {
+   "id": "s5-05/self-test-table-meaning",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "87b8ff3b1d3de39e",
+   "verdict": "agrees",
+   "note": "自测记录应包含测试数据、结果和耗时，才能支持复盘。"
+  },
+  {
+   "id": "s5-05/skip-self-test-risk",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "f267d1e3afb7a739",
+   "verdict": "agrees",
+   "note": "不记自测表会导致之后换题或复盘时无法确认测过的数据和结果可靠性"
+  },
+  {
+   "id": "s5-05/time-log-purpose",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "769bfa4ead2f823f",
+   "verdict": "agrees",
+   "note": "定期查看能发现某题是否超出计划时长并及时调整策略"
+  },
+  {
+   "id": "s5-05/incomplete-reason-honesty",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "26684d8e1792411a",
+   "verdict": "agrees",
+   "note": "应如实记录未测数据及时间不足的原因，便于考后复盘"
+  },
+  {
+   "id": "s5-05/zero-progress-risk",
+   "answer": 3,
+   "difficulty": "recommended",
+   "contentHash": "80fc0275f408ce50",
+   "verdict": "agrees",
+   "note": "没有提交任何能运行的程序就没有可得的提交分数"
+  },
+  {
+   "id": "s5-06/why-classify-first",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "da44bddde0b2059f",
+   "verdict": "agrees",
+   "note": "先分类才能定位失分原因并决定对应的改进方法"
+  },
+  {
+   "id": "s5-06/identify-misread",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "e994041f77e1c596",
+   "verdict": "agrees",
+   "note": "漏掉题目明确的取模要求属于没有读清题意"
+  },
+  {
+   "id": "s5-06/identify-implementation",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "33c59c56c59060ec",
+   "verdict": "agrees",
+   "note": "下标起点写错是代码实现时的具体失误"
+  },
+  {
+   "id": "s5-06/identify-boundary",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "710cd12057a5f5b6",
+   "verdict": "agrees",
+   "note": "只在边界输入出错属于边界覆盖不足"
+  },
+  {
+   "id": "s5-06/identify-time",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "3bbd7f87de4b5cf5",
+   "verdict": "agrees",
+   "note": "算法已想清楚但未能按时写完提交属于时间问题"
+  },
+  {
+   "id": "s5-06/why-write-fix-rule",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "4c5caaa823d107b5",
+   "verdict": "agrees",
+   "note": "具体规则才能在类似场景中执行，只写类别容易遗忘"
+  },
+  {
+   "id": "s5-06/honest-uncertain-classification",
+   "answer": 2,
+   "difficulty": "stretch",
+   "contentHash": "f1aa13eff2e393e4",
+   "verdict": "agrees",
+   "note": "不确定时应如实保留不确定状态，待复盘或请教确认"
+  },
+  {
+   "id": "s5-06/redo-key-question-check",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "972af5cffbbe874a",
+   "verdict": "agrees",
+   "note": "重做相关关键题并确认避开同类错误，才有修复证据"
+  },
+  {
+   "id": "s5-07/why-fresh-problem-set",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "a56084148fb123b9",
+   "verdict": "agrees",
+   "note": "新题才能检验习惯和流程是否迁移，而非记住旧题答案"
+  },
+  {
+   "id": "s5-07/bring-habit-before-start",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "906b67180bb3dae4",
+   "verdict": "agrees",
+   "note": "赛前回顾旧记录能把已确定的有效习惯带入新模拟赛"
+  },
+  {
+   "id": "s5-07/cross-check-meaning",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "9b54a5542397ee7f",
+   "verdict": "agrees",
+   "note": "应对照记录确认这次独立重复了同一个具体行为"
+  },
+  {
+   "id": "s5-07/stable-habit-definition",
+   "answer": 2,
+   "difficulty": "required",
+   "contentHash": "d3a58b856fc1689c",
+   "verdict": "agrees",
+   "note": "稳定习惯应在连续两次独立模拟赛中无需提醒地重复做到"
+  },
+  {
+   "id": "s5-07/time-allocation-compare",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "bba5ecd05ff0ce21",
+   "verdict": "agrees",
+   "note": "并列比较每题实际用时才能看出具体变化"
+  },
+  {
+   "id": "s5-07/habit-not-repeated",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "39f24835553615ed",
+   "verdict": "agrees",
+   "note": "没做到说明尚未稳定，应如实记录并继续独立验证"
+  },
+  {
+   "id": "s5-07/skip-comparison-risk",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "3b537074740fac10",
+   "verdict": "agrees",
+   "note": "不对照就无法知道进退步来自哪个习惯及其是否稳定"
+  },
+  {
+   "id": "s5-08/why-knowledge-map-first",
+   "answer": 3,
+   "difficulty": "required",
+   "contentHash": "5373061b977d03c2",
+   "verdict": "agrees",
+   "note": "应先列出各阶段知识点，再逐项标注掌握程度"
+  },
+  {
+   "id": "s5-08/weak-module-must-be-specific",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "732e6437d3d6efff",
+   "verdict": "agrees",
+   "note": "具体知识点和针对性复习安排才能有效处理薄弱模块"
+  },
+  {
+   "id": "s5-08/pre-contest-checklist-purpose",
+   "answer": 1,
+   "difficulty": "required",
+   "contentHash": "c9a3edd7f97f61a0",
+   "verdict": "agrees",
+   "note": "清单用于确认环境、代码片段、提交流程和时间计划已准备"
+  },
+  {
+   "id": "s5-08/weak-module-priority-order",
+   "answer": 1,
+   "difficulty": "recommended",
+   "contentHash": "8ecc9bd5f8fc1382",
+   "verdict": "agrees",
+   "note": "应优先复习出现多且影响面大的薄弱模块"
+  },
+  {
+   "id": "s5-08/csp-s-boundary-meaning",
+   "answer": 0,
+   "difficulty": "required",
+   "contentHash": "757f950d7affe9bd",
+   "verdict": "agrees",
+   "note": "只需了解更高阶内容的边界并标记为以后学习，不是当前必会"
+  },
+  {
+   "id": "s5-08/checklist-is-not-cram",
+   "answer": 0,
+   "difficulty": "recommended",
+   "contentHash": "b3e89ac4490d7796",
+   "verdict": "agrees",
+   "note": "赛前清单用于核对已有准备，不是临时学习新算法"
+  },
+  {
+   "id": "s5-08/knowledge-map-not-relearn-everything",
+   "answer": 2,
+   "difficulty": "recommended",
+   "contentHash": "943c94d4f6f01a62",
+   "verdict": "agrees",
+   "note": "知识地图是盘点已学内容并标注掌握程度，不要求全部重学"
+  }
+ ]
+}

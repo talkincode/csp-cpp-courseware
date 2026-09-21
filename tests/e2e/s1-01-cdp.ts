@@ -317,12 +317,20 @@ try {
     out.submitLabelBefore = submit().textContent.trim();
     out.submitDisabledBefore = submit().disabled;
     out.explanationsBefore = document.querySelectorAll("#quizForm .explanation").length;
-    const answerOne = (index) => questions()[index].querySelectorAll("input[type=radio]")[1].click();
-    answerOne(0);
+    // 题库的正确答案位置是打乱过的，不能假设「第 2 个选项一定错」：按页面自己的
+    // questionPool 算出每题的错误下标再点。
+    const answerWrong = (index) => {
+      const radios = [...questions()[index].querySelectorAll("input[type=radio]")];
+      const pool = typeof questionPool === "undefined" ? [] : questionPool;
+      const question = pool.find((item) => item.id === radios[0].name);
+      const wrongIndex = ((question ? question.answer : 0) + 1) % radios.length;
+      radios[wrongIndex].click();
+    };
+    answerWrong(0);
     out.submitLabelAfterOne = submit().textContent.trim();
     out.checkedAfterOne = document.querySelectorAll("#quizForm input:checked").length;
-    answerOne(1);
-    answerOne(2);
+    answerWrong(1);
+    answerWrong(2);
     out.submitDisabledAfterAll = submit().disabled;
     submit().click();
     out.resultText = document.querySelector("#quizResult").textContent.trim();
@@ -332,7 +340,7 @@ try {
     out.lockedInputs = [...document.querySelectorAll("#quizForm input[type=radio]")].filter((input) => input.disabled).length;
     out.reviewExit = !!document.querySelector("#newQuizButton");
     out.reading = document.body.textContent.includes("每次从本课题库抽出三道不同的选择题");
-    out.reviewNote = document.body.textContent.includes("待人工审校");
+    out.reviewNote = document.body.textContent.includes("已通过校验");
     document.querySelector("#newQuizButton").click();
     out.seed2 = document.querySelector("#quizSeed").textContent.trim();
     out.answersAfterNewPaper = document.querySelectorAll("#quizForm input:checked").length;
@@ -384,7 +392,7 @@ try {
   check("提交后标注正确与错误选项", quiz.correctMarks === 3 && quiz.incorrectMarks >= 1, `正确 ${quiz.correctMarks} 错误 ${quiz.incorrectMarks}`);
   check("提交后锁定作答不可改动", quiz.lockedInputs === 12, `锁定 ${quiz.lockedInputs} 个选项`);
   check("提供复习出口并可换一套题", quiz.reviewExit === true, "");
-  check("页面说明抽题方式并标明题目待人工审校", quiz.reading === true && quiz.reviewNote === true, "");
+  check("页面说明抽题方式并标明题目与解析已通过校验", quiz.reading === true && quiz.reviewNote === true, "");
   check("换一套题后试卷标识变化", quiz.seed2 !== quiz.seed1 && /本次试卷标识：\d+/.test(quiz.seed2), `${quiz.seed1} -> ${quiz.seed2}`);
   check("换一套题重置作答与结果", quiz.answersAfterNewPaper === 0 && quiz.resultAfterNewPaper === "" && quiz.submitLabelAfterNewPaper.includes("还差"), `已选 ${quiz.answersAfterNewPaper} 题`);
 

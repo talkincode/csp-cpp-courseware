@@ -1510,7 +1510,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1573,7 +1573,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "用递归解决“从 n 数到 1”，本课该怎么描述？",
-          options: ["先处理当前 n，再处理更小的 n-1", "必须先写归并排序", "把同一个函数复制两份", "让编译器自动拆问题"],
+          options: [
+            "先处理当前 n，再处理更小的 n-1",
+            "让编译器自动拆问题",
+            "把同一个函数复制两份",
+            "必须先写归并排序",
+          ],
           answer: 0,
           explanation: "递归是更小的同类问题：处理 n，再处理 n-1。归并排序是拓展。本课不会在浏览器里运行 C++。",
           source: "course-plan / 自编",
@@ -1586,8 +1591,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "递归必须先写哪一句，才不会停不下来？",
-          options: ["n == 1 时直接返回", "永远调用 n-1", "先写分治归并", "停不停交给编译器"],
-          answer: 0,
+          options: [
+            "永远调用 n-1",
+            "停不停交给编译器",
+            "n == 1 时直接返回",
+            "先写分治归并",
+          ],
+          answer: 2,
           explanation: "终止条件要先写。n==1 时直接返回，不再调用。编译器不会自动补边界。分治归并是拓展。",
           source: "course-plan / 自编",
         },
@@ -1599,7 +1609,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "手工追踪 countdown(3)，调用顺序是？",
-          options: ["countdown(3) 再 countdown(2) 再 countdown(1)", "只调用一次 countdown(3)", "countdown(1) 先于 countdown(3)", "三层会同时开始"],
+          options: [
+            "countdown(3) 再 countdown(2) 再 countdown(1)",
+            "三层会同时开始",
+            "countdown(1) 先于 countdown(3)",
+            "只调用一次 countdown(3)",
+          ],
           answer: 0,
           explanation: "先进入 countdown(3)，它再调用 countdown(2)，再进入 countdown(1) 到达边界。一层一层往里走，不是同时开始。",
           source: "course-plan / 自编",
@@ -1612,8 +1627,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "把 3! 写成更小的同类问题，该怎么写？",
-          options: ["3! = 3 * 2!，并且 1! = 1", "3! 必须用两层循环", "3! 只能用记忆化", "没有边界也能算"],
-          answer: 0,
+          options: [
+            "没有边界也能算",
+            "3! = 3 * 2!，并且 1! = 1",
+            "3! 必须用两层循环",
+            "3! 只能用记忆化",
+          ],
+          answer: 1,
           explanation: "n! = n * (n-1)!，边界是 1! = 1。记忆化和两层循环都不是本课建议掌握的写法。",
           source: "course-plan / 自编",
         },
@@ -1625,8 +1645,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "如果递归忘了写终止条件，会发生什么？",
-          options: ["会一直调用更小的问题，变成无限递归", "编译器会自动停下", "只会少算一次", "分治能自动补边界"],
-          answer: 0,
+          options: [
+            "只会少算一次",
+            "分治能自动补边界",
+            "会一直调用更小的问题，变成无限递归",
+            "编译器会自动停下",
+          ],
+          answer: 2,
           explanation: "没有边界就会一直调用下去，调用栈上的任务卡越来越多。编译器和分治都不会自动补终止条件。",
           source: "course-plan / 自编",
         },

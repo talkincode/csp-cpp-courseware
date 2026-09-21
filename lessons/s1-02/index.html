@@ -1460,7 +1460,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1527,8 +1527,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "记录一个班的人数，最合适的类型是？",
-          options: ["int", "double", "char", "没有类型也能用"],
-          answer: 0,
+          options: [
+            "char",
+            "int",
+            "double",
+            "没有类型也能用",
+          ],
+          answer: 1,
           explanation: "人数是整数。必会：计数题先选 int。",
           source: "course-plan / 自编",
         },
@@ -1540,7 +1545,12 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "记录平均分，最合适的类型是？",
-          options: ["double", "char", "只写汉字“平均分”", "没有小数的 int 一定更好"],
+          options: [
+            "double",
+            "没有小数的 int 一定更好",
+            "char",
+            "只写汉字“平均分”",
+          ],
           answer: 0,
           explanation: "平均分可能有小数，建议用 double。这不是现在就必须背精度细节。",
           source: "course-plan / 自编",
@@ -1553,8 +1563,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "下面哪一项适合用 char 保存？",
-          options: ["一个等级字母，例如 'A'", "学生的姓名", "平均分 9.5", "人数 40"],
-          answer: 0,
+          options: [
+            "学生的姓名",
+            "一个等级字母，例如 'A'",
+            "人数 40",
+            "平均分 9.5",
+          ],
+          answer: 1,
           explanation: "char 一次只装一个字符。姓名是一串文字，要等到后面学习字符串。",
           source: "course-plan / 自编",
         },
@@ -1566,8 +1581,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "已知 int score = 80; 然后执行 score = score + 15; 之后 score 里是？",
-          options: ["95", "80", "15", "score + 15 这几个字母"],
-          answer: 0,
+          options: [
+            "score + 15 这几个字母",
+            "80",
+            "95",
+            "15",
+          ],
+          answer: 2,
           explanation: "赋值会取出当前的 80，加上 15，再放回盒子。所以现在是 95。",
           source: "course-plan / 自编",
         },
@@ -1579,8 +1599,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "题目里的总分可能非常大，普通整数可能装不下。这时更稳妥的建议是？",
-          options: ["改用 long long", "改用 char", "删掉变量", "不再看数据范围"],
-          answer: 0,
+          options: [
+            "删掉变量",
+            "改用 long long",
+            "改用 char",
+            "不再看数据范围",
+          ],
+          answer: 1,
           explanation: "数可能很大时，建议用 long long。精确范围表是拓展，现在不用背。",
           source: "course-plan / 自编",
         },

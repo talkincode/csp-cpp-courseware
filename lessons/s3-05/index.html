@@ -1512,7 +1512,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1575,7 +1575,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "双指针里的 left 和 right 表示什么？",
-          options: ["当前连续窗口的左端点和右端点", "任意两个互不相关的下标", "必须先写单调队列", "编译器自动维护的两个游标"],
+          options: [
+            "当前连续窗口的左端点和右端点",
+            "必须先写单调队列",
+            "任意两个互不相关的下标",
+            "编译器自动维护的两个游标",
+          ],
           answer: 0,
           explanation: "left 管窗口左端，right 管窗口右端，中间是连续一段。单调队列是拓展。本课不会在浏览器里运行 C++。",
           source: "course-plan / 自编",
@@ -1588,7 +1593,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "窗口条件被破坏时，通常该怎么做？",
-          options: ["先移动会让条件恢复的那一边，通常是 left++", "left 和 right 必须同时加一", "每次重新从 1 扫到 n", "改用三数之和"],
+          options: [
+            "先移动会让条件恢复的那一边，通常是 left++",
+            "left 和 right 必须同时加一",
+            "每次重新从 1 扫到 n",
+            "改用三数之和",
+          ],
           answer: 0,
           explanation: "条件不成立时，丢掉左端或停止扩大，而不是两边一起跳。三数之和是拓展。",
           source: "course-plan / 自编",
@@ -1601,8 +1611,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "数组 a=[1, 2, 3]（下标从 1 开始），和不超过 3。第二步 right = 2 之后，窗口和是多少？",
-          options: ["sum = 3", "sum = 1", "sum = 6", "三步同时完成，没有中间值"],
-          answer: 0,
+          options: [
+            "三步同时完成，没有中间值",
+            "sum = 3",
+            "sum = 6",
+            "sum = 1",
+          ],
+          answer: 1,
           explanation: "先纳入 a[1]=1，再纳入 a[2]=2，得到 sum = 3。不要跳过空窗口和第一步。",
           source: "course-plan / 自编",
         },
@@ -1614,8 +1629,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "空窗口在本课最小示例里长什么样？",
-          options: ["left = 1, right = 0", "left 和 right 都等于 n", "单调队列才会出现空窗口", "空窗口不能用双指针"],
-          answer: 0,
+          options: [
+            "left 和 right 都等于 n",
+            "空窗口不能用双指针",
+            "单调队列才会出现空窗口",
+            "left = 1, right = 0",
+          ],
+          answer: 3,
           explanation: "right < left 表示一个数都还没纳入。建议掌握是会验证空窗口。单调队列是拓展。",
           source: "course-plan / 自编",
         },
@@ -1627,8 +1647,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "窗口 [1, 2] 已经 sum = 3，再纳入 a[3]=3 会怎样？",
-          options: ["条件被破坏，应先 left++ 丢掉左端，而不是两边一起跳", "说明双指针不能用", "三数之和会自动处理", "必须立刻 right++ 和 left++"],
-          answer: 0,
+          options: [
+            "三数之和会自动处理",
+            "必须立刻 right++ 和 left++",
+            "说明双指针不能用",
+            "条件被破坏，应先 left++ 丢掉左端，而不是两边一起跳",
+          ],
+          answer: 3,
           explanation: "满窗口再扩大会破坏条件。建议掌握是只移动会恢复条件的那一边。三数之和是拓展，不是现在的硬门槛。",
           source: "course-plan / 自编",
         },

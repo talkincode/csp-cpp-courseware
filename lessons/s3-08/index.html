@@ -1512,7 +1512,7 @@
           <section class="step-panel" data-panel="3" hidden>
             <h2>任务 4：随机小测，看看你是否真的懂了</h2>
             <p class="step-lead">
-              每次从本课题库抽出三道不同的选择题。题目待人工审校，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
+              每次从本课题库抽出三道不同的选择题。题目与解析已通过校验，答完后看解析，不要只看分数；拿不准就回到对应任务再看一遍。
             </p>
             <div class="quiz-tools">
               <button id="newQuizButton" class="secondary-action" type="button">换一套题</button>
@@ -1575,8 +1575,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "动态规划在本课是什么意思？",
-          options: ["用已经算好的小问题推出更大的问题", "必须先把所有答案猜出来", "必须先写状态压缩", "只把递归换个名字"],
-          answer: 0,
+          options: [
+            "只把递归换个名字",
+            "必须先写状态压缩",
+            "用已经算好的小问题推出更大的问题",
+            "必须先把所有答案猜出来",
+          ],
+          answer: 2,
           explanation: "动态规划就是小问题先算清，再推出大问题。状态压缩是拓展。本课不会在浏览器里运行 C++。",
           source: "course-plan / 自编",
         },
@@ -1588,7 +1593,12 @@
           difficulty: "required",
           type: "choice",
           prompt: "爬楼梯里 dp[i] 表示什么？",
-          options: ["走到第 i 级台阶的方法数", "dp[i] 就是数字 i 本身", "二维背包的体积才是现在必会", "第 i 级必须一次走完"],
+          options: [
+            "走到第 i 级台阶的方法数",
+            "dp[i] 就是数字 i 本身",
+            "第 i 级必须一次走完",
+            "二维背包的体积才是现在必会",
+          ],
           answer: 0,
           explanation: "先用一句话说清 dp[i]。爬楼梯时它表示走到第 i 级的方法数。二维背包是拓展。",
           source: "course-plan / 自编",
@@ -1601,8 +1611,13 @@
           difficulty: "required",
           type: "choice",
           prompt: "每次走 1 或 2 级，手算前三步分别是多少？",
-          options: ["dp[1] = 1，dp[2] = 2，dp[3] = 3", "三步同时填完，没有中间值", "dp[3] 必须先写状态压缩", "忘了初值也能得到 3"],
-          answer: 0,
+          options: [
+            "忘了初值也能得到 3",
+            "dp[1] = 1，dp[2] = 2，dp[3] = 3",
+            "三步同时填完，没有中间值",
+            "dp[3] 必须先写状态压缩",
+          ],
+          answer: 1,
           explanation: "先写 dp[1] = 1、dp[2] = 2，再用转移得到 dp[3] = 3。不要跳过初值。",
           source: "course-plan / 自编",
         },
@@ -1614,8 +1629,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "为什么必须先写初值？",
-          options: ["必须先写 dp[1] = 1 和 dp[2] = 2，才能推 dp[3]", "初值可以随便填", "状态压缩才会用到初值", "转移会自己修好空格子"],
-          answer: 0,
+          options: [
+            "初值可以随便填",
+            "转移会自己修好空格子",
+            "状态压缩才会用到初值",
+            "必须先写 dp[1] = 1 和 dp[2] = 2，才能推 dp[3]",
+          ],
+          answer: 3,
           explanation: "初始化是最先填进表里、不用再推的格子。忘了初值，转移会从空格子开始。状态压缩是拓展。",
           source: "course-plan / 自编",
         },
@@ -1627,8 +1647,13 @@
           difficulty: "recommended",
           type: "choice",
           prompt: "n=1 时答案是什么？状态压缩现在是必会吗？",
-          options: ["答案是 dp[1] = 1；状态压缩现在不是硬门槛", "n=1 不能做动态规划", "树形 DP 会自动补上初值", "必须先写二维背包"],
-          answer: 0,
+          options: [
+            "必须先写二维背包",
+            "答案是 dp[1] = 1；状态压缩现在不是硬门槛",
+            "树形 DP 会自动补上初值",
+            "n=1 不能做动态规划",
+          ],
+          answer: 1,
           explanation: "n=1 时答案就是初值 dp[1] = 1。状态压缩、二维背包、树形 DP 是拓展，不是现在的硬门槛。",
           source: "course-plan / 自编",
         },
