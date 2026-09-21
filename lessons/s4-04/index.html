@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>画搜索树，学会选择、剪枝与回溯</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s3-02/index.html">S3-02 递归与分治直觉</a><span>用更小的同类问题描述过程</span></li>
+              <li><a class="prereq-link" href="../s3-07/index.html">S3-07 栈、队列与过程顺序</a><span>区分后进先出和先进先出</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s4-03/index.html">S4-03 模拟题专项</a></p>
+          </aside>
           <p>
             这一课只练一件事：把每一步的选择画成 <button type="button" class="faq-term" data-faq="search-tree">搜索树</button>，用 <button type="button" class="faq-term" data-faq="dfs">深度优先搜索</button> 逐条走完。必会：判断安全的 <button type="button" class="faq-term" data-faq="pruning">剪枝</button> 条件、写完一条分支后正确 <button type="button" class="faq-term" data-faq="backtrack">回溯</button>、写出停止搜索的边界。最小示例：从 3 个数 1、2、3 中选出若干个，使它们的和恰好等于 <span class="inline-code">target = 4</span>；每个数只能选或不选，<span class="inline-code">1 &lt;= n &lt;= 20</span>。样例追踪：选 1、跳过 2、选 3，和为 <span class="inline-code">1 + 3 = 4</span>，命中后记录方案并回溯，继续尝试其他组合。边界是 n=1（只判断这一个数是否等于 target），以及所有数都试完仍未凑出 target（无解，回溯到底）。建议掌握：统计一共找到几种方案。多维状态剪枝、双向搜索、记忆化是拓展。这里不会在浏览器里运行 C++。
           </p>

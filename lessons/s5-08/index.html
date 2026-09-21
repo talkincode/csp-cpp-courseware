@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>整理知识地图，划清 CSP-S 的边界</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s5-06/index.html">S5-06 模拟赛复盘：错误分类</a><span>从失分中抽取可改规则</span></li>
+              <li><a class="prereq-link" href="../s5-07/index.html">S5-07 模拟赛二：稳定性</a><span>用新题验证流程改进</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s5-07/index.html">S5-07 模拟赛二：稳定性</a></p>
+          </aside>
           <p>
             这一课只练一件事：把五个阶段学过的内容整理成一张<button type="button" class="faq-term" data-faq="knowledge-map">知识地图</button>，标出还不熟练的<button type="button" class="faq-term" data-faq="weak-module">薄弱模块</button>并安排一次有针对性的复习，再完成一张<button type="button" class="faq-term" data-faq="pre-contest-checklist">赛前检查清单</button>，最后看清 CSP-J 和更高级内容之间的<button type="button" class="faq-term" data-faq="csp-s-boundary">CSP-S 衔接条件</button>边界在哪里。必会：能完成个人知识地图；能标出自己的薄弱模块；能区分 CSP-J 核心与后续拓展。最小示例：把 S1~S5 每个阶段挑 1-2 个知识点列成表格，在“熟练/一般/薄弱”里选一个，比如“递归”标记为“一般”、“DP 状态设计”标记为“薄弱”。给薄弱模块各安排一次具体复习（比如“周三晚上重做 S3-08 的三道 DP 题”），再对照赛前清单确认编译环境、常用代码片段、时间分配计划都准备好了。边界是不能只写“基础不好”这种笼统标注，也不能把 CSP-S 的更高级算法当成 CSP-J 现在就要会。建议掌握：把薄弱模块按优先级排序，先复习出现次数最多、影响面最大的那个。拓展：知道 CSP-S 大致会遇到更复杂的数据结构和算法模型，但现在只需要知道边界在哪，不必现在展开学习。这里不会在浏览器里运行 C++。
           </p>

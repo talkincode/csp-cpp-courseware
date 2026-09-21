@@ -436,10 +436,52 @@ test("键盘清单的固定项编号与脚本声明的每课项数对齐，且�
 });
 
 test("三个复验脚本都自带项数自查，声明与实跑不符会当场失败", () => {
-  for (const document of [typedScript, singleLessonScript, keyboardScript]) {
+  for (const document of [typedScript, singleLessonScript, keyboardScript, prereqScript]) {
     expect({ document, selfCheck: read(document).includes("检查项数与声明不符") }).toEqual({
       document,
       selfCheck: true,
     });
   }
+});
+
+// ── 先修关系可见与可达段 ────────────────────────────────────────────────────
+// 先修块是每课进页面第一眼看到的东西：位置、文字、链接可达、键盘可达、手机竖屏各有一项检查，
+// 再加两项「检查器自己有没有空转」的自检。清单与文档里的项数绑回脚本声明，脚本加了检查而文档
+// 没跟上就会当场失败——本轮就是靠这个把「每课 5 项」改回「每课 6 项」的。
+const prereqScript = "tests/e2e/prereq-cdp.ts";
+const prereqChecklist = "tests/e2e/prereq-manual-checklist.md";
+
+test("先修复验的每课项数与总项数都写进了文档", async () => {
+  const { loadCurriculum } = await import("../scripts/curriculum.ts");
+  const lessonCount = (await loadCurriculum()).length;
+  const perLesson = declaration(prereqScript, "checksPerLesson");
+  const selfChecks = declaration(prereqScript, "selfChecks");
+  const total = lessonCount * perLesson + selfChecks;
+
+  for (const document of [...proseDocuments, prereqChecklist]) {
+    const claims = claimsAfter(document, "e2e:prereq");
+
+    expect({ document, claimed: claims.totals.length > 0 }).toEqual({ document, claimed: true });
+    for (const claim of claims.totals) expect({ document, claim }).toEqual({ document, claim: total });
+  }
+
+  const row = read(prereqChecklist)
+    .split("\n")
+    .filter((line) => line.startsWith("|") && line.includes("prereq-cdp.ts"))
+    .at(-1);
+  if (!row) throw new Error(`${prereqChecklist} 里找不到先修复验记录`);
+  expect(row).toContain(`${total}/${total} 项检查通过`);
+  expect(row).toContain(`各 ${perLesson} 项`);
+});
+
+test("先修清单的固定项编号与脚本声明的每课项数对齐，且没有重号", () => {
+  const source = read(prereqChecklist);
+  const perLesson = declaration(prereqScript, "checksPerLesson");
+  const heading = source.match(/## 每课固定复验的\s*(\d+)\s*项/);
+  if (!heading) throw new Error(`${prereqChecklist} 里找不到「每课固定复验的 N 项」标题`);
+  expect(Number(heading[1])).toBe(perLesson);
+
+  const section = source.slice(heading.index! + heading[0].length).split(/\n##\s/)[0];
+  const numbers = [...section.matchAll(/^\s*(\d+)\.\s/gm)].map((entry) => Number(entry[1]));
+  expect(numbers).toEqual(Array.from({ length: perLesson }, (_, index) => index + 1));
 });

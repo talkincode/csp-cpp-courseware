@@ -24,6 +24,7 @@
     "e2e:flow:s3": "CSP_E2E_LESSONS=s3-01,s3-02,s3-03,s3-04,s3-05,s3-06,s3-07,s3-08 bun tests/e2e/flow-cdp.ts",
     "e2e:flow:s4": "CSP_E2E_LESSONS=s4-01,s4-02,s4-03,s4-04,s4-05,s4-06,s4-07,s4-08 bun tests/e2e/flow-cdp.ts",
     "e2e:flow:s5": "CSP_E2E_LESSONS=s5-01,s5-02,s5-03,s5-04,s5-05,s5-06,s5-07,s5-08 bun tests/e2e/flow-cdp.ts",
-    "e2e:keyboard": "bun tests/e2e/keyboard-cdp.ts"
+    "e2e:keyboard": "bun tests/e2e/keyboard-cdp.ts",
+    "e2e:prereq": "bun tests/e2e/prereq-cdp.ts"
   }
 }

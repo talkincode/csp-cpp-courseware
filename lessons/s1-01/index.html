@@ -238,6 +238,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .mission-slip {
         z-index: 1;
         align-self: end;
@@ -1187,6 +1239,10 @@
       <section class="lesson-hero">
         <div>
           <h1>让你的第一行 <code>C++</code> 跑起来</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <p class="prereq-empty">这是全课程第一课：不用先修，会用键盘和浏览器就能开始。</p>
+          </aside>
           <p>
             这一课不要求你背很多单词。你只要完成四个小任务：看懂程序入口、走一遍编译流程、修复一个小错误，再做一套随机小测。
           </p>

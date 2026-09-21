@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>把字母和单词分开装</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s1-02/index.html">S1-02 变量与数据类型</a><span>用变量记录题目中的量</span></li>
+              <li><a class="prereq-link" href="../s2-01/index.html">S2-01 数组与下标</a><span>存储一组同类数据</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s2-01/index.html">S2-01 数组与下标</a></p>
+          </aside>
           <p>
             这一课只练一件事：分清 <button type="button" class="faq-term" data-faq="char">char</button> 和 <button type="button" class="faq-term" data-faq="string">string</button>，再按 <button type="button" class="faq-term" data-faq="string-index">下标</button> 逐个访问字符。完成四个小任务：选出 <span class="inline-code">char c = 'A'</span> 和 <span class="inline-code">string s = "Ada"</span>，走一遍 <span class="inline-code">s[0]</span> 到 <span class="inline-code">s[n - 1]</span>，再统计指定字符。这里不会在浏览器里运行 C++。
           </p>

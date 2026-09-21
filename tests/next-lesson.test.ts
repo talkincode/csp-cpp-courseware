@@ -79,8 +79,18 @@ test("最后一课给出课程收尾出口，不指向不存在的下一课", as
   expect(page).toMatch(/<nav[^>]*id="nextStep"[^>]*hidden/);
   expect(renderStepsBody(page, directory)).toContain("nextStep.hidden =");
   expect(page).not.toContain("data-next-lesson=");
-  // 没有下一课目录可指，就不能留下指向兄弟课目录的死链。
-  expect(page).not.toMatch(/href="\.\.\/s\d/);
+  // 没有下一课目录可指。末课页面仍会回指更早的课（先修与「上一课」入口），所以这里不再拿
+  // 「页面里不许出现 ../sN 链接」当替身，而是逐条核对课内链接都指向真实存在的课目录：
+  // 既挡住指向不存在课的死链，也不会误伤回看入口。
+  const siblingDirectories = [...page.matchAll(/href="\.\.\/([a-z0-9-]+)\/index\.html"/g)].map((match) => match[1]);
+
+  expect(siblingDirectories.length).toBeGreaterThan(0);
+  for (const directory of siblingDirectories) {
+    expect({ directory, exists: await Bun.file(`${lessonsRoot}/${directory}/index.html`).exists() }).toEqual({
+      directory,
+      exists: true,
+    });
+  }
   expect(nav.element).toContain("data-course-complete");
 
   // 收尾出口要指向课程路线，且如实说明五阶段 40 课已经走完。

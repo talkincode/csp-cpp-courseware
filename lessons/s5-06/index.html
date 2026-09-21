@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>分清错在哪，才知道怎么改</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s5-02/index.html">S5-02 系统化调试</a><span>按证据缩小错误范围</span></li>
+              <li><a class="prereq-link" href="../s5-05/index.html">S5-05 模拟赛一：实现与自测</a><span>在题组中执行固定流程</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s5-05/index.html">S5-05 模拟赛一：实现与自测</a></p>
+          </aside>
           <p>
             这一课只练一件事：模拟赛结束、看到失分之后，先做<button type="button" class="faq-term" data-faq="error-classification">错误分类</button>——判断这处失分属于读题错（看漏或看错题目条件）、算法错（方法本身不对）、实现错（思路对但代码写错）、<button type="button" class="faq-term" data-faq="boundary-data">边界错</button>（没测最小或最大等边界）还是时间错（没能在规定时间内完成）中的哪一种；再给这一类写一条<button type="button" class="faq-term" data-faq="fix-rule">改法</button>；最后挑一道用得上这条改法的题<button type="button" class="faq-term" data-faq="redo-key-question">重做</button>一遍，验证改法是否真的有效。必会：能把每处失分分类到五种错误之一；能给每一类写一条具体、下次能照做的改法。最小示例：模拟赛的 T2 提交后只过了 40% 的测试点——重新跑一遍样例和几组边界数据后发现，样例和 n=1 都正确，但 n 取到题目允许的最大值时输出少了最后一个元素；定位到代码里数组下标从 1 开始却写成了从 0 开始，最后一个元素被漏算。这属于实现错（思路没问题，是写代码时的具体失误），改法是“写循环前先在纸上画出下标范围，和数组大小对一遍”，然后挑一道用到同类下标的题重做一次，确认这次没有再漏算。边界是不能把说不清原因的失分笼统地归为“粗心”，也不能写完分类就结束、不落到具体改法上。建议掌握：时间不够复盘完所有题时，优先给丢分最多的几道题分类、写改法。拓展：拿不准一处失分具体属于哪一类时，要如实标注“暂不确定”，留到下次复盘或请教时再确认，而不是随便选一个类别凑数。这里不会在浏览器里运行 C++。
           </p>

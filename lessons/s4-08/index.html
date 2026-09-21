@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>先保底再冲刺，稳住子任务得分</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s2-08/index.html">S2-08 复杂度与测试点</a><span>用规模判断程序能否通过</span></li>
+              <li><a class="prereq-link" href="../s4-01/index.html">S4-01 CSP-J 题面与程序规范</a><span>按竞赛要求提交干净程序</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s4-07/index.html">S4-07 图与遍历基础</a></p>
+          </aside>
           <p>
             这一课只练一件事：题目按数据范围拆成多个<button type="button" class="faq-term" data-faq="subtask">子任务</button>时，如何在有限时间里稳稳拿到<button type="button" class="faq-term" data-faq="partial-score">部分分</button>。做法是先写一份能过小数据的<button type="button" class="faq-term" data-faq="fallback-solution">保底方案</button>，再按<button type="button" class="faq-term" data-faq="easy-first-order">先易后难</button>的顺序挑战更难的子任务；写不出最优算法时，可以先用<button type="button" class="faq-term" data-faq="complexity-downgrade">复杂度降级</button>的简单实现去覆盖数据较小的子任务。必会：能圈出每个子任务的数据范围、能先写保底方案、能安排提交前的检查时间。最小示例：一道满分 100 分的题拆成两个子任务——子任务 1（<span class="inline-code">1 &lt;= n &lt;= 1000</span>，30 分，暴力 O(n²) 可过）、子任务 2（<span class="inline-code">1 &lt;= n &lt;= 100000</span>，70 分，需要 O(n log n)）。你目前只会写 O(n²) 暴力。样例追踪：先写暴力覆盖子任务 1，本地用小数据测试通过，预计至少拿到 30 分；再尝试把算法优化到 O(n log n) 冲子任务 2 的 70 分；如果优化没调完，仍然提交能跑的暴力版本，保住已经确定的 30 分。边界是不能因为一心冲满分而不写任何代码（0 分）、也不能在合并优化代码时把还能跑的保底方案改坏。建议掌握：先完成有把握、分值明确的子任务，再挑战更难的子任务，不要把全部时间押在最难的部分。拓展：复杂度降级只是拓展技巧——用更简单但正确的实现去换取小数据子任务的分数，不强制现在就会写出满分算法。这里不会在浏览器里运行 C++。
           </p>

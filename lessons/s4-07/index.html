@@ -991,6 +991,58 @@
         background: rgba(24, 55, 47, 0.1);
       }
 
+      .prereq-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 2px dashed rgba(24, 55, 47, 0.28);
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .prereq-note > strong {
+        display: block;
+        color: var(--forest);
+        font-family: "Songti SC", "STSong", serif;
+        font-size: 1rem;
+      }
+
+      .prereq-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .prereq-list li + li {
+        margin-top: 5px;
+      }
+
+      .prereq-list span {
+        display: block;
+        color: rgba(24, 55, 47, 0.78);
+      }
+
+      .prereq-link {
+        color: var(--forest);
+        font-weight: 800;
+        text-decoration: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+      }
+
+      .prereq-link:hover {
+        color: var(--orange);
+      }
+
+      .prereq-path,
+      .prereq-empty {
+        margin: 9px 0 0;
+        color: rgba(24, 55, 47, 0.82);
+        font-size: 0.76rem;
+        line-height: 1.6;
+      }
+
+
       .type-grid {
         display: grid;
         gap: 12px;
@@ -1350,6 +1402,14 @@
       <section class="lesson-hero">
         <div>
           <h1>用邻接表和访问标记，数出连通块</h1>
+          <aside class="prereq-note" aria-label="先修">
+            <strong>先修</strong>
+            <ul class="prereq-list">
+              <li><a class="prereq-link" href="../s3-07/index.html">S3-07 栈、队列与过程顺序</a><span>区分后进先出和先进先出</span></li>
+              <li><a class="prereq-link" href="../s4-04/index.html">S4-04 搜索与剪枝</a><span>把选择过程画成搜索树</span></li>
+            </ul>
+            <p class="prereq-path">上一课：<a class="prereq-link" href="../s4-06/index.html">S4-06 DP 经典模型</a></p>
+          </aside>
           <p>
             这一课只练一件事：遇到“若干个点、若干条边，问一共分成几组互相连通”这类问题时，用<button type="button" class="faq-term" data-faq="graph">图</button>把点和边画出来，用<button type="button" class="faq-term" data-faq="adjacency-list">邻接表</button>记录每个点连着谁，再用<button type="button" class="faq-term" data-faq="visited-marker">访问标记</button>防止重复访问，跑一次<button type="button" class="faq-term" data-faq="dfs">DFS</button>或<button type="button" class="faq-term" data-faq="bfs-intuition">BFS</button>数出<button type="button" class="faq-term" data-faq="connected-component">连通块</button>数量。必会：能画出小图和邻接关系、能写访问标记、能说明 DFS 与 BFS 的顺序差异。最小示例：5 个点（编号 0~4），边为 <span class="inline-code">(0,1) (1,2) (3,4)</span>，这是无向图，<span class="inline-code">1 &lt;= n &lt;= 1000</span>。样例追踪：邻接表 adj[0]={1}, adj[1]={0,2}, adj[2]={1}, adj[3]={4}, adj[4]={3}；访问标记 visited 全部初始化为 false；从 0 出发 DFS 访问到 {0,1,2}，再从还没访问过的 3 出发 DFS 访问到 {3,4}，连通块数 = 2。边界是没有边的孤立点（自己就是一个连通块）和已经访问过的点（不能再重复计数）。建议掌握：DFS 沿一条路径尽量走到底再回头，BFS 按“一层一层”向外扩展，得到的是离起点的最短步数层级，这两种顺序本质不同。拓展：BFS 求出的层数可以直接当作“最短步数”的初步认识，现在只需要知道概念，不强制要求现在就写完整的最短路模板。这里不会在浏览器里运行 C++。
           </p>
