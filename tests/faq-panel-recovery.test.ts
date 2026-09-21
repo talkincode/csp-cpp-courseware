@@ -216,6 +216,7 @@ interface Harness {
   answerFallbackClicks(): number;
   catalogRequests: string[];
   setCatalogMode(mode: CatalogMode): void;
+  bootMarker(): { booted?: boolean; catalogUrl?: string } | undefined;
   boot(): void;
 }
 
@@ -242,7 +243,7 @@ const catalogPayload = {
   ],
 };
 
-function createHarness(script: string): Harness {
+function createHarness(script: string, scriptSrc?: string): Harness {
   const documentListeners: Record<string, Listener[]> = {};
   const catalogRequests: string[] = [];
   let catalogMode: CatalogMode = "ok";
@@ -287,6 +288,8 @@ function createHarness(script: string): Harness {
     get activeElement() {
       return undefined;
     },
+    // 真实浏览器里脚本读出的是自己那个 <script> 元素；面板靠它推导词条表地址。
+    currentScript: scriptSrc === undefined ? undefined : { src: scriptSrc },
   };
 
   const windowStub = {
@@ -334,6 +337,8 @@ function createHarness(script: string): Harness {
     setCatalogMode: (mode) => {
       catalogMode = mode;
     },
+    // 课件页的守卫脚本就是读这个标记判断面板有没有启动。
+    bootMarker: () => (windowStub as { cspFaqPanel?: { booted?: boolean; catalogUrl?: string } }).cspFaqPanel,
     boot: () => {
       factory(documentStub, windowStub, HTMLElementStub, fetchStub, windowStub.requestAnimationFrame);
     },
@@ -348,13 +353,34 @@ async function settle() {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-async function bootPanel(mode: CatalogMode = "ok"): Promise<Harness> {
-  const harness = createHarness(panelScript);
+async function bootPanel(mode: CatalogMode = "ok", scriptSrc?: string): Promise<Harness> {
+  const harness = createHarness(panelScript, scriptSrc);
   harness.setCatalogMode(mode);
   harness.boot();
   await settle();
   return harness;
 }
+
+test("面板启动时留下可被课件页读到的标记", async () => {
+  const harness = createHarness(panelScript);
+  harness.boot();
+
+  // 必须在脚本同步阶段就留好标记：载入失败时标记缺席正是课件页揭开说明的依据。
+  expect(harness.bootMarker()?.booted).toBe(true);
+});
+
+test("词条表地址跟着面板脚本自己的地址走，子路径部署也能取到", async () => {
+  const subPath = await bootPanel("ok", "https://example.github.io/csp-cpp-courseware/glossary/faq-panel.js");
+
+  expect(subPath.catalogRequests).toEqual(["https://example.github.io/csp-cpp-courseware/glossary/faq.json"]);
+  expect(subPath.bootMarker()?.catalogUrl).toBe("https://example.github.io/csp-cpp-courseware/glossary/faq.json");
+});
+
+test("读不到面板脚本自己的地址时退回站点根目录", async () => {
+  const noScriptSrc = await bootPanel("ok");
+
+  expect(noScriptSrc.catalogRequests).toEqual(["/glossary/faq.json"]);
+});
 
 test("词条表载入失败时当场说明并给出重新载入入口", async () => {
   const harness = await bootPanel("network");

@@ -23,10 +23,13 @@ async function expectLessonFaqWiring(directory: string, extraIds: string[] = [])
   const lesson = await Bun.file(`${import.meta.dir}/../lessons/${directory}/index.html`).text();
   const panel = await panelFile.text();
 
-  expect(panel).toContain('const catalogUrl = "/glossary/faq.json"');
+  // 词条表地址跟着面板脚本自己的地址走，写死站点根目录会在子路径部署时 404。
+  expect(panel).toContain('new URL("faq.json", script.src)');
+  expect(panel).toContain('const fallbackUrl = "/glossary/faq.json"');
+  expect(panel).not.toContain('const catalogUrl = "/glossary/faq.json"');
   expect(panel).toContain("faq-shell");
   expect(panel).toContain("继续学习");
-  expect(lesson).toContain('src="/glossary/faq-panel.js"');
+  expect(lesson).toContain('src="../../glossary/faq-panel.js"');
   expect(lesson).toContain('id="faqCatalogButton"');
   expect(manifest.faqTermIds.length).toBeGreaterThan(0);
 

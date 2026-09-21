@@ -1,5 +1,21 @@
 (() => {
-  const catalogUrl = "/glossary/faq.json";
+  // 词条表地址跟着面板脚本自己的地址走：课程既可能挂在站点根目录，也可能挂在子路径下
+  // （例如项目站点 /csp-cpp-courseware/），写死 /glossary/faq.json 在子路径部署时必然
+  // 404，整套词条都不见了。只有读不到脚本地址时才退回站点根目录。
+  const fallbackUrl = "/glossary/faq.json";
+  const catalogUrl = (() => {
+    const script = document.currentScript;
+    if (!script || !script.src) return fallbackUrl;
+    try {
+      return new URL("faq.json", script.src).href;
+    } catch {
+      return fallbackUrl;
+    }
+  })();
+
+  // 课件页的守卫脚本靠这个标记判断面板有没有真正接管页面：面板脚本根本没载入成功、
+  // 或者中途出错时它一直是 undefined，页面就能当场说明并给出重新载入入口，
+  // 而不是按钮点了没反应。所以它在整段脚本最后、也就是界面接线完成之后才留下。
   const root = document.body;
   const lessonTermIds = (root.dataset.faqTerms ?? "")
     .split(/[\s,]+/)
@@ -457,4 +473,7 @@
   });
 
   loadCatalog();
+
+  // 界面接线到这里才真的完成，此时才留下标记；中途出错就当作没启动成功。
+  window.cspFaqPanel = { booted: true, catalogUrl };
 })();
