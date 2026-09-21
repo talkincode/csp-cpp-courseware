@@ -882,6 +882,27 @@
         transform: translateY(0);
       }
 
+      .faq-panel-notice {
+        position: fixed;
+        right: 20px;
+        top: 76px;
+        z-index: 9;
+        max-width: min(370px, calc(100vw - 40px));
+        margin: 0;
+        padding: 11px 14px;
+        color: #6e421e;
+        background: #fff0d5;
+        border-top: 3px solid var(--orange);
+        border-radius: 4px;
+        box-shadow: 5px 7px 0 rgba(24, 55, 47, 0.14);
+        font-size: 0.76rem;
+        line-height: 1.55;
+      }
+
+      .faq-panel-notice a {
+        color: #9f3b20;
+      }
+
       .storage-notice {
         position: fixed;
         right: 20px;
@@ -1518,6 +1539,10 @@
         </div>
       </section>
     </main>
+
+    <p id="faqPanelNotice" class="faq-panel-notice" role="status" aria-live="polite" hidden>
+      常见问题词条这次没有载入成功：带虚线的词条和顶部「常见问题」按钮暂时打不开。课件其他任务与随机小测照常可用，<a href="index.html">重新载入本课</a>可以再试一次；已保存的进度仍在这台设备的浏览器里。
+    </p>
 
     <p id="storageNotice" class="storage-notice" hidden></p>
     <div id="completionRibbon" class="completion-ribbon" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -2465,6 +2490,13 @@
 
       render();
     </script>
-    <script src="/glossary/faq-panel.js"></script>
+    <script src="../../glossary/faq-panel.js"></script>
+    <script>
+      // 面板脚本可能没载入成功（子路径部署、网络中断或离线）。那时按钮不能点了没反应：
+      // 当场说明这次没载入成功、给出重新载入入口，课件其他互动照常。
+      if (!window.cspFaqPanel) {
+        document.querySelector("#faqPanelNotice").hidden = false;
+      }
+    </script>
   </body>
 </html>

@@ -74,7 +74,7 @@ async function expectImplementedInteractiveLesson(directory: string) {
   expect(source).toContain("prefers-reduced-motion");
   expect(source).toContain('aria-disabled="true"');
   expect(source).toContain("grid-template-columns: 20px 26px minmax(0, 1fr);");
-  expect(source).toContain('src="/glossary/faq-panel.js"');
+  expect(source).toContain('src="../../glossary/faq-panel.js"');
   expect(source).toContain('id="faqCatalogButton"');
   expect(source).not.toContain("<video");
   return { manifest, source };

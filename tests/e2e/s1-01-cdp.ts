@@ -37,9 +37,9 @@ const chromeCandidates = [
 type Check = { name: string; ok: boolean; detail: string };
 const checks: Check[] = [];
 
-// 七个场景固定 84 项；跑完拿这个数字自查，声明与实跑不符就直接失败；
+// 八个场景固定 88 项；跑完拿这个数字自查，声明与实跑不符就直接失败；
 // 文档里的项数也绑在这里（见 tests/e2e-count-facts.test.ts）。
-const expectedChecks = 84;
+const expectedChecks = 88;
 
 function check(name: string, ok: boolean, detail = "") {
   checks.push({ name, ok, detail });
@@ -462,6 +462,36 @@ try {
   check("重新载入后回到学习者刚才想看的词条", catalogRecovered.status.includes("程序开始干活的地方") && catalogRecovered.remember.includes("现在记住"), catalogRecovered.status.slice(0, 24));
   check("恢复后收起重新载入入口", catalogRecovered.retryHidden === true && catalogRecovered.emptyHidden === true, `hidden=${catalogRecovered.retryHidden}`);
   check("恢复后词条可以继续点选", catalogRecovered.chips > 0, `词条 ${catalogRecovered.chips} 个`);
+
+  section("E2E-S1-01-08 词条面板脚本根本没载入成功");
+  // 面板脚本自己也可能请求失败：课程挂在子路径下时旧地址会 404，网络中断或离线同样
+  // 会让它拿不到。这时页面原先一句话都没有——按钮和带虚线的词条点了没反应，学习者
+  // 只会以为课件坏了。这里屏蔽掉面板脚本本体，验证课件页会当场说明并给出重新载入入口。
+  await client.send("Network.setBlockedURLs", { urls: ["*/glossary/faq-panel.js"] });
+  await visit(client);
+  const panelMissing = await client.evaluateJson<any>(`(() => {
+    const out = {};
+    const notice = document.querySelector("#faqPanelNotice");
+    out.noticeExists = !!notice;
+    out.noticeHidden = notice ? notice.hidden : null;
+    out.text = notice ? notice.textContent.replace(/\\s+/g, " ").trim() : "";
+    out.role = notice ? notice.getAttribute("role") : "";
+    out.live = notice ? notice.getAttribute("aria-live") : "";
+    out.reload = notice ? !!notice.querySelector('a[href="index.html"]') : false;
+    out.panelBooted = typeof window.cspFaqPanel !== "undefined";
+    // 面板缺席时按钮点了也不能崩：页面只是没有面板可用。
+    document.querySelector("#faqCatalogButton").click();
+    document.querySelector("#inspectSourceButton").click();
+    out.pageFeedback = document.querySelector("#sourceFeedback").textContent.trim();
+    return JSON.stringify(out);
+  })()`);
+
+  check("面板脚本没载入成功时当场说明", panelMissing.noticeExists === true && panelMissing.noticeHidden === false && panelMissing.text.includes("没有载入成功"), panelMissing.text.slice(0, 30));
+  check("说明向辅助技术播报", panelMissing.role === "status" && panelMissing.live === "polite", `${panelMissing.role}/${panelMissing.live}`);
+  check("给出重新载入入口", panelMissing.reload === true, "");
+  check("面板缺席时课件其他互动照常", panelMissing.panelBooted === false && panelMissing.pageFeedback.includes("找到了"), panelMissing.pageFeedback.slice(0, 20));
+
+  await client.send("Network.setBlockedURLs", { urls: [] });
 
   section("E2E-S1-01-03 刷新恢复（存储可用）");
   await visit(client);

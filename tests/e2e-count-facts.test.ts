@@ -22,7 +22,7 @@ function checksPerLesson(): number {
   return Number(match[1]);
 }
 
-/** S1-01 不在这张表里：它的七个场景由 `s1-01-cdp.ts` 单独复验。 */
+/** S1-01 不在这张表里：它的八个场景由 `s1-01-cdp.ts` 单独复验。 */
 function coveredLessons(): number {
   return lessonFlows.length;
 }
@@ -294,7 +294,7 @@ test("验收矩阵每课的微编程复验记录与脚本声明的每课项数�
     const id = row.match(/^\| (S\d-\d\d) /)![1];
     const lesson = lessonFlows.find((entry) => entry.directory === id.toLowerCase());
 
-    // S1-01 不在这套样板里：它的七个场景由 `bun run e2e:s1-01` 单独复验。
+    // S1-01 不在这套样板里：它的八个场景由 `bun run e2e:s1-01` 单独复验。
     if (!lesson) {
       expect({ id, ownRun: row.includes("e2e:s1-01") }).toEqual({ id, ownRun: true });
       continue;
@@ -322,7 +322,7 @@ test("S1-01 单课复验的项数与 s1-01-cdp.ts 的声明一致", () => {
     .split("\n")
     .find((line) => line.startsWith("| 单课浏览器自动化复验"));
   if (!row) throw new Error("docs/roadmap.md 里找不到单课复验样板行");
-  expect(row).toContain(`${actual} 项检查覆盖七个场景`);
+  expect(row).toContain(`${actual} 项检查覆盖八个场景`);
 });
 
 test("两个复验脚本都自带项数自查，声明与实跑不符会当场失败", () => {

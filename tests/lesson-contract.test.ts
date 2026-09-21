@@ -118,7 +118,7 @@ test("every planned course ships the shared online-learning page and manifest co
       ['aria-disabled="true"', "no disabled affordance for assistive tech"],
       ["aria-live", "no announced status region"],
       ["grid-template-columns: 20px 26px minmax(0, 1fr);", "no shared task grid layout"],
-      ['src="/glossary/faq-panel.js"', "no shared FAQ panel"],
+      ['src="../../glossary/faq-panel.js"', "no shared FAQ panel"],
       ['id="faqCatalogButton"', "no FAQ catalog entry"],
       ["必会", "no 必会 tier"],
       ["建议掌握", "no 建议掌握 tier"],
